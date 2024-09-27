@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"text/template"
 	"unicode/utf8"
@@ -143,11 +144,17 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 	return dateTimeFormats
 }
 
-func (g *Generator) numberingSystems() []NumberingSystem {
+func (g *Generator) numberingSystems(defaultNumberingSystems []DefaultNumberingSystem) []NumberingSystem {
 	var numberingSystems []NumberingSystem
 
+	ids := make([]string, 0, len(defaultNumberingSystems))
+	for i := range defaultNumberingSystems {
+		ids = append(ids, defaultNumberingSystems[i].ID)
+	}
+
 	for _, v := range g.cldr.Supplemental().NumberingSystems.NumberingSystem {
-		if v.Type != "numeric" {
+		// only use default numbering systems
+		if v.Type != "numeric" || !slices.Contains(ids, v.Id) {
 			continue
 		}
 
@@ -174,12 +181,14 @@ func (g *Generator) Write() error {
 		return fmt.Errorf("parse datetime template: %w", err)
 	}
 
+	defaultNumberingSystems := g.defaultNumberingSystems()
+
 	data := TemplateData{
 		Numerals:                g.numerals(),
 		CalendarPreferences:     g.calendarPreferences(),
 		DateTimeFormats:         g.dateTimeFormats(),
-		NumberingSystems:        g.numberingSystems(),
-		DefaultNumberingSystems: g.defaultNumberingSystems(),
+		NumberingSystems:        g.numberingSystems(defaultNumberingSystems),
+		DefaultNumberingSystems: defaultNumberingSystems,
 	}
 
 	if err := tpl.Execute(os.Stdout, data); err != nil {
