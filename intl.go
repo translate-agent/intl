@@ -14,8 +14,6 @@ func (y Year) String() string {
 	switch y {
 	default:
 		return ""
-	case YearUnknown:
-		return ""
 	case YearNumeric:
 		return "numeric"
 	case Year2Digit:
@@ -24,8 +22,7 @@ func (y Year) String() string {
 }
 
 const (
-	YearUnknown Year = iota
-	YearNumeric
+	YearNumeric Year = iota
 	Year2Digit
 )
 
@@ -43,14 +40,8 @@ func NewDateTimeFormat(locale language.Tag, options Options) *DateTimeFormat {
 }
 
 func (f *DateTimeFormat) Format(v time.Time) string {
-	calendars := calendarPreferences(f.locale)
-
-	if len(calendars) == 0 {
-		return fmtYear(f.fmtYear(v), f.locale)
-	}
-
-	switch calendars[0] {
-	default:
+	switch defaultCalendar(f.locale) {
+	default: // gregorian
 		return fmtYear(f.fmtYear(v), f.locale)
 	case "persian":
 		return fmtYear(f.fmtPersianYear(v), f.locale)

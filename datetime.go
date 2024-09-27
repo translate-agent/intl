@@ -164,41 +164,16 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
   }
 }
 
-
-func calendarPreferences(locale language.Tag) []string {
+func defaultCalendar(locale language.Tag) string {
   switch v, _ := locale.Region(); v.String() {
   default:
-    return nil
-  case "001":
-    return []string{"gregorian"}
-  case "BD", "DJ", "DZ", "EH", "ER", "ID", "IQ", "JO", "KM", "LB", "LY", "MA", "MR", "MY", "NE", "OM", "PK", "PS", "SD", "SY", "TD", "TN", "YE":
-    return []string{"gregorian", "islamic", "islamic-civil", "islamic-tbla"}
-  case "AL", "AZ", "MV", "TJ", "TM", "TR", "UZ", "XK":
-    return []string{"gregorian", "islamic-civil", "islamic-tbla"}
-  case "AE", "BH", "KW", "QA":
-    return []string{"gregorian", "islamic-umalqura", "islamic", "islamic-civil", "islamic-tbla"}
+    return "gregorian"
   case "AF", "IR":
-    return []string{"persian", "gregorian", "islamic", "islamic-civil", "islamic-tbla"}
-  case "CN", "CX", "HK", "MO", "SG":
-    return []string{"gregorian", "chinese"}
-  case "EG":
-    return []string{"gregorian", "coptic", "islamic", "islamic-civil", "islamic-tbla"}
-  case "ET":
-    return []string{"gregorian", "ethiopic"}
-  case "IL":
-    return []string{"gregorian", "hebrew", "islamic", "islamic-civil", "islamic-tbla"}
-  case "IN":
-    return []string{"gregorian", "indian"}
-  case "JP":
-    return []string{"gregorian", "japanese"}
-  case "KR":
-    return []string{"gregorian", "dangi"}
+    return "persian"
   case "SA":
-    return []string{"islamic-umalqura", "gregorian", "islamic", "islamic-rgsa"}
+    return "islamic-umalqura"
   case "TH":
-    return []string{"buddhist", "gregorian"}
-  case "TW":
-    return []string{"gregorian", "roc", "chinese"}
+    return "buddhist"
   }
 }
 

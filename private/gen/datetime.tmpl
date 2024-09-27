@@ -42,14 +42,15 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
   }
 }
 
-
-func calendarPreferences(locale language.Tag) []string {
+func defaultCalendar(locale language.Tag) string {
   switch v, _ := locale.Region(); v.String() {
   default:
-    return nil
+    return "gregorian"
 {{- range $v := .CalendarPreferences }}
+  {{- if ne (index $v.Calendars 0) "gregorian" }}
   case "{{ join $v.Regions "\", \"" }}":
-    return []string{"{{ join $v.Calendars "\", \""}}"}
+    return "{{ index $v.Calendars 0 }}"
+  {{- end }}
 {{- end }}
   }
 }

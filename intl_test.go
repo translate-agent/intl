@@ -96,7 +96,7 @@ func TestDateTime_Format(t *testing.T) {
 }
 
 func BenchmarkDateTime_Format(b *testing.B) {
-	locale := language.MustParse("lv-LV")
+	locale := language.MustParse("fa-IR")
 	f := NewDateTimeFormat(locale, Options{})
 	now := time.Now()
 
