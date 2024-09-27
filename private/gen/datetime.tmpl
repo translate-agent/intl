@@ -35,10 +35,12 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
   switch {
   default:
     return numberingSystemLatn
-  {{- range $v := .DefaultNumberingSystems }}
+{{- range $v := .DefaultNumberingSystems }}
+  {{- if ne $v.ID "latn" }}
   case s == "{{ $v.Locale }}" || strings.HasPrefix(s, "{{ $v.Locale }}-"):
     return numberingSystem{{ title $v.ID }}
   {{- end }}
+{{- end }}
   }
 }
 

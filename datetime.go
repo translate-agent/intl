@@ -47,22 +47,14 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
   switch {
   default:
     return numberingSystemLatn
-  case s == "root" || strings.HasPrefix(s, "root-"):
-    return numberingSystemLatn
   case s == "ar" || strings.HasPrefix(s, "ar-"):
     return numberingSystemArab
-  case s == "ar-AE" || strings.HasPrefix(s, "ar-AE-"):
-    return numberingSystemLatn
   case s == "ar-BH" || strings.HasPrefix(s, "ar-BH-"):
     return numberingSystemArab
   case s == "ar-DJ" || strings.HasPrefix(s, "ar-DJ-"):
     return numberingSystemArab
-  case s == "ar-DZ" || strings.HasPrefix(s, "ar-DZ-"):
-    return numberingSystemLatn
   case s == "ar-EG" || strings.HasPrefix(s, "ar-EG-"):
     return numberingSystemArab
-  case s == "ar-EH" || strings.HasPrefix(s, "ar-EH-"):
-    return numberingSystemLatn
   case s == "ar-ER" || strings.HasPrefix(s, "ar-ER-"):
     return numberingSystemArab
   case s == "ar-IL" || strings.HasPrefix(s, "ar-IL-"):
@@ -77,10 +69,6 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
     return numberingSystemArab
   case s == "ar-LB" || strings.HasPrefix(s, "ar-LB-"):
     return numberingSystemArab
-  case s == "ar-LY" || strings.HasPrefix(s, "ar-LY-"):
-    return numberingSystemLatn
-  case s == "ar-MA" || strings.HasPrefix(s, "ar-MA-"):
-    return numberingSystemLatn
   case s == "ar-MR" || strings.HasPrefix(s, "ar-MR-"):
     return numberingSystemArab
   case s == "ar-OM" || strings.HasPrefix(s, "ar-OM-"):
@@ -101,8 +89,6 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
     return numberingSystemArab
   case s == "ar-TD" || strings.HasPrefix(s, "ar-TD-"):
     return numberingSystemArab
-  case s == "ar-TN" || strings.HasPrefix(s, "ar-TN-"):
-    return numberingSystemLatn
   case s == "ar-YE" || strings.HasPrefix(s, "ar-YE-"):
     return numberingSystemArab
   case s == "as" || strings.HasPrefix(s, "as-"):
