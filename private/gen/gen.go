@@ -9,6 +9,8 @@ import (
 	"text/template"
 	"unicode/utf8"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"golang.org/x/text/unicode/cldr"
 )
 
@@ -72,28 +74,6 @@ func (g *Generator) defaultNumberingSystems() []DefaultNumberingSystem {
 	}
 
 	return defaultNumberingSystems
-}
-
-func (g *Generator) numerals() []Numerals {
-	var numerals []Numerals
-
-	for _, locale := range g.cldr.Locales() {
-		ldml := g.cldr.RawLDML(locale)
-
-		if ldml.Characters != nil {
-			for _, characters := range ldml.Characters.ExemplarCharacters {
-				entry := Numerals{Locale: Locale(ldml)}
-
-				if characters.Type == "numbers" && strings.Contains(characters.CharData, " 0") && !strings.Contains(characters.CharData, " 0 ") {
-					entry.Characters = numeralCharacters(characters.CharData)
-				}
-
-				numerals = append(numerals, entry)
-			}
-		}
-	}
-
-	return numerals
 }
 
 func (g *Generator) dateTimeFormats() DateTimeFormats {
@@ -172,10 +152,23 @@ func (g *Generator) numberingSystems(defaultNumberingSystems []DefaultNumberingS
 	return numberingSystems
 }
 
+func (g *Generator) numberingSystemsIota(defaultNumberingSystems []DefaultNumberingSystem) []string {
+	list := make([]string, 0, len(defaultNumberingSystems))
+
+	for _, v := range defaultNumberingSystems {
+		list = append(list, v.ID)
+	}
+
+	slices.Sort(list)
+
+	return slices.Compact(list)
+}
+
 func (g *Generator) Write() error {
 	tpl, err := template.New("datetime").Funcs(template.FuncMap{
 		"join":     strings.Join,
 		"contains": strings.Contains,
+		"title":    cases.Title(language.English).String,
 	}).Parse(datetimeTemplate)
 	if err != nil {
 		return fmt.Errorf("parse datetime template: %w", err)
@@ -184,10 +177,10 @@ func (g *Generator) Write() error {
 	defaultNumberingSystems := g.defaultNumberingSystems()
 
 	data := TemplateData{
-		Numerals:                g.numerals(),
 		CalendarPreferences:     g.calendarPreferences(),
 		DateTimeFormats:         g.dateTimeFormats(),
 		NumberingSystems:        g.numberingSystems(defaultNumberingSystems),
+		NumberingSystemIota:     g.numberingSystemsIota(defaultNumberingSystems),
 		DefaultNumberingSystems: defaultNumberingSystems,
 	}
 
@@ -237,7 +230,7 @@ func numeralCharacters(text string) *NumeralCharacters {
 }
 
 type TemplateData struct {
-	Numerals                []Numerals
+	NumberingSystemIota     []string
 	CalendarPreferences     []CalendarPreference
 	DateTimeFormats         DateTimeFormats
 	NumberingSystems        []NumberingSystem
@@ -255,11 +248,6 @@ type DateTimeFormatItems struct {
 type CalendarPreference struct {
 	Regions   []string
 	Calendars []string
-}
-
-type Numerals struct {
-	Locale     string
-	Characters *NumeralCharacters
 }
 
 func Locale(ldml *cldr.LDML) string {

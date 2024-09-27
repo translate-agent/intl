@@ -7,28 +7,37 @@ import (
   "golang.org/x/text/language"
 )
 
-func numberingSystem(id string) [10]rune {
-  switch id {
-  default:
-    return [10]rune{}
-  {{- range $v := .NumberingSystems }}
-  case "{{ $v.ID }}":
-    return [10]rune{
-    {{- range $char := $v.Digits }}{{ printf "'%c'" $char }},{{- end -}}
-    }
+type numberingSystem int
+
+const (
+  numberingSystemLatn numberingSystem = iota
+{{- range $v := .NumberingSystemIota }}
+  {{- if ne $v "latn" }}
+  numberingSystem{{ title $v }}
   {{- end }}
-  }
+{{- end }}
+  numberingSystemLast
+)
+
+var numberingSystems = [][10]rune{
+{{- range $v := .NumberingSystems }}
+  {{- if ne $v.ID "latn" }}
+  numberingSystem{{ title $v.ID }}: {
+    {{- range $char := $v.Digits }}{{ printf "'%c'" $char }},{{- end -}}
+    },
+  {{- end }}
+{{- end }}
 }
 
-func defaultNumberingSystem(locale language.Tag) string {
+func defaultNumberingSystem(locale language.Tag) numberingSystem {
   s := locale.String()
 
   switch {
   default:
-    return "latn"
+    return numberingSystemLatn
   {{- range $v := .DefaultNumberingSystems }}
   case s == "{{ $v.Locale }}" || strings.HasPrefix(s, "{{ $v.Locale }}-"):
-    return "{{ $v.ID }}"
+    return numberingSystem{{ title $v.ID }}
   {{- end }}
   }
 }

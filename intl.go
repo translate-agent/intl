@@ -81,11 +81,11 @@ func (f *DateTimeFormat) fmtPersianYear(v time.Time) string {
 
 func (f *DateTimeFormat) fmtNumeral(s string) string {
 	num := defaultNumberingSystem(f.locale)
-	if num == "latn" {
+	if num == numberingSystemLatn {
 		return s
 	}
 
-	digits := numberingSystem(num)
+	digits := numberingSystems[num]
 
 	var r string
 

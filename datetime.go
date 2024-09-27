@@ -7,159 +7,160 @@ import (
   "golang.org/x/text/language"
 )
 
-func numberingSystem(id string) [10]rune {
-  switch id {
-  default:
-    return [10]rune{}
-  case "adlm":
-    return [10]rune{'𞥐','𞥑','𞥒','𞥓','𞥔','𞥕','𞥖','𞥗','𞥘','𞥙',}
-  case "arab":
-    return [10]rune{'٠','١','٢','٣','٤','٥','٦','٧','٨','٩',}
-  case "arabext":
-    return [10]rune{'۰','۱','۲','۳','۴','۵','۶','۷','۸','۹',}
-  case "beng":
-    return [10]rune{'০','১','২','৩','৪','৫','৬','৭','৮','৯',}
-  case "cakm":
-    return [10]rune{'𑄶','𑄷','𑄸','𑄹','𑄺','𑄻','𑄼','𑄽','𑄾','𑄿',}
-  case "deva":
-    return [10]rune{'०','१','२','३','४','५','६','७','८','९',}
-  case "hmnp":
-    return [10]rune{'𞅀','𞅁','𞅂','𞅃','𞅄','𞅅','𞅆','𞅇','𞅈','𞅉',}
-  case "latn":
-    return [10]rune{'0','1','2','3','4','5','6','7','8','9',}
-  case "mtei":
-    return [10]rune{'꯰','꯱','꯲','꯳','꯴','꯵','꯶','꯷','꯸','꯹',}
-  case "mymr":
-    return [10]rune{'၀','၁','၂','၃','၄','၅','၆','၇','၈','၉',}
-  case "nkoo":
-    return [10]rune{'߀','߁','߂','߃','߄','߅','߆','߇','߈','߉',}
-  case "olck":
-    return [10]rune{'᱐','᱑','᱒','᱓','᱔','᱕','᱖','᱗','᱘','᱙',}
-  case "tibt":
-    return [10]rune{'༠','༡','༢','༣','༤','༥','༦','༧','༨','༩',}
-  }
+type numberingSystem int
+
+const (
+  numberingSystemLatn numberingSystem = iota
+  numberingSystemAdlm
+  numberingSystemArab
+  numberingSystemArabext
+  numberingSystemBeng
+  numberingSystemCakm
+  numberingSystemDeva
+  numberingSystemHmnp
+  numberingSystemMtei
+  numberingSystemMymr
+  numberingSystemNkoo
+  numberingSystemOlck
+  numberingSystemTibt
+  numberingSystemLast
+)
+
+var numberingSystems = [][10]rune{
+  numberingSystemAdlm: {'𞥐','𞥑','𞥒','𞥓','𞥔','𞥕','𞥖','𞥗','𞥘','𞥙',},
+  numberingSystemArab: {'٠','١','٢','٣','٤','٥','٦','٧','٨','٩',},
+  numberingSystemArabext: {'۰','۱','۲','۳','۴','۵','۶','۷','۸','۹',},
+  numberingSystemBeng: {'০','১','২','৩','৪','৫','৬','৭','৮','৯',},
+  numberingSystemCakm: {'𑄶','𑄷','𑄸','𑄹','𑄺','𑄻','𑄼','𑄽','𑄾','𑄿',},
+  numberingSystemDeva: {'०','१','२','३','४','५','६','७','८','९',},
+  numberingSystemHmnp: {'𞅀','𞅁','𞅂','𞅃','𞅄','𞅅','𞅆','𞅇','𞅈','𞅉',},
+  numberingSystemMtei: {'꯰','꯱','꯲','꯳','꯴','꯵','꯶','꯷','꯸','꯹',},
+  numberingSystemMymr: {'၀','၁','၂','၃','၄','၅','၆','၇','၈','၉',},
+  numberingSystemNkoo: {'߀','߁','߂','߃','߄','߅','߆','߇','߈','߉',},
+  numberingSystemOlck: {'᱐','᱑','᱒','᱓','᱔','᱕','᱖','᱗','᱘','᱙',},
+  numberingSystemTibt: {'༠','༡','༢','༣','༤','༥','༦','༧','༨','༩',},
 }
 
-func defaultNumberingSystem(locale language.Tag) string {
+func defaultNumberingSystem(locale language.Tag) numberingSystem {
   s := locale.String()
 
   switch {
   default:
-    return "latn"
+    return numberingSystemLatn
   case s == "root" || strings.HasPrefix(s, "root-"):
-    return "latn"
+    return numberingSystemLatn
   case s == "ar" || strings.HasPrefix(s, "ar-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-AE" || strings.HasPrefix(s, "ar-AE-"):
-    return "latn"
+    return numberingSystemLatn
   case s == "ar-BH" || strings.HasPrefix(s, "ar-BH-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-DJ" || strings.HasPrefix(s, "ar-DJ-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-DZ" || strings.HasPrefix(s, "ar-DZ-"):
-    return "latn"
+    return numberingSystemLatn
   case s == "ar-EG" || strings.HasPrefix(s, "ar-EG-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-EH" || strings.HasPrefix(s, "ar-EH-"):
-    return "latn"
+    return numberingSystemLatn
   case s == "ar-ER" || strings.HasPrefix(s, "ar-ER-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-IL" || strings.HasPrefix(s, "ar-IL-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-IQ" || strings.HasPrefix(s, "ar-IQ-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-JO" || strings.HasPrefix(s, "ar-JO-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-KM" || strings.HasPrefix(s, "ar-KM-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-KW" || strings.HasPrefix(s, "ar-KW-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-LB" || strings.HasPrefix(s, "ar-LB-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-LY" || strings.HasPrefix(s, "ar-LY-"):
-    return "latn"
+    return numberingSystemLatn
   case s == "ar-MA" || strings.HasPrefix(s, "ar-MA-"):
-    return "latn"
+    return numberingSystemLatn
   case s == "ar-MR" || strings.HasPrefix(s, "ar-MR-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-OM" || strings.HasPrefix(s, "ar-OM-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-PS" || strings.HasPrefix(s, "ar-PS-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-QA" || strings.HasPrefix(s, "ar-QA-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-SA" || strings.HasPrefix(s, "ar-SA-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-SD" || strings.HasPrefix(s, "ar-SD-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-SO" || strings.HasPrefix(s, "ar-SO-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-SS" || strings.HasPrefix(s, "ar-SS-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-SY" || strings.HasPrefix(s, "ar-SY-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-TD" || strings.HasPrefix(s, "ar-TD-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ar-TN" || strings.HasPrefix(s, "ar-TN-"):
-    return "latn"
+    return numberingSystemLatn
   case s == "ar-YE" || strings.HasPrefix(s, "ar-YE-"):
-    return "arab"
+    return numberingSystemArab
   case s == "as" || strings.HasPrefix(s, "as-"):
-    return "beng"
+    return numberingSystemBeng
   case s == "bgc" || strings.HasPrefix(s, "bgc-"):
-    return "deva"
+    return numberingSystemDeva
   case s == "bho" || strings.HasPrefix(s, "bho-"):
-    return "deva"
+    return numberingSystemDeva
   case s == "bn" || strings.HasPrefix(s, "bn-"):
-    return "beng"
+    return numberingSystemBeng
   case s == "ccp" || strings.HasPrefix(s, "ccp-"):
-    return "cakm"
+    return numberingSystemCakm
   case s == "ckb" || strings.HasPrefix(s, "ckb-"):
-    return "arab"
+    return numberingSystemArab
   case s == "dz" || strings.HasPrefix(s, "dz-"):
-    return "tibt"
+    return numberingSystemTibt
   case s == "fa" || strings.HasPrefix(s, "fa-"):
-    return "arabext"
+    return numberingSystemArabext
   case s == "ff-Adlm" || strings.HasPrefix(s, "ff-Adlm-"):
-    return "adlm"
+    return numberingSystemAdlm
   case s == "hnj" || strings.HasPrefix(s, "hnj-"):
-    return "hmnp"
+    return numberingSystemHmnp
   case s == "ks" || strings.HasPrefix(s, "ks-"):
-    return "arabext"
+    return numberingSystemArabext
   case s == "lrc" || strings.HasPrefix(s, "lrc-"):
-    return "arabext"
+    return numberingSystemArabext
   case s == "mni" || strings.HasPrefix(s, "mni-"):
-    return "beng"
+    return numberingSystemBeng
   case s == "mni-Mtei" || strings.HasPrefix(s, "mni-Mtei-"):
-    return "mtei"
+    return numberingSystemMtei
   case s == "mr" || strings.HasPrefix(s, "mr-"):
-    return "deva"
+    return numberingSystemDeva
   case s == "my" || strings.HasPrefix(s, "my-"):
-    return "mymr"
+    return numberingSystemMymr
   case s == "ne" || strings.HasPrefix(s, "ne-"):
-    return "deva"
+    return numberingSystemDeva
   case s == "nqo" || strings.HasPrefix(s, "nqo-"):
-    return "nkoo"
+    return numberingSystemNkoo
   case s == "pa-Arab" || strings.HasPrefix(s, "pa-Arab-"):
-    return "arabext"
+    return numberingSystemArabext
   case s == "ps" || strings.HasPrefix(s, "ps-"):
-    return "arabext"
+    return numberingSystemArabext
   case s == "raj" || strings.HasPrefix(s, "raj-"):
-    return "deva"
+    return numberingSystemDeva
   case s == "sa" || strings.HasPrefix(s, "sa-"):
-    return "deva"
+    return numberingSystemDeva
   case s == "sat" || strings.HasPrefix(s, "sat-"):
-    return "olck"
+    return numberingSystemOlck
   case s == "sat-Deva" || strings.HasPrefix(s, "sat-Deva-"):
-    return "deva"
+    return numberingSystemDeva
   case s == "sd" || strings.HasPrefix(s, "sd-"):
-    return "arab"
+    return numberingSystemArab
   case s == "sdh" || strings.HasPrefix(s, "sdh-"):
-    return "arab"
+    return numberingSystemArab
   case s == "ur-IN" || strings.HasPrefix(s, "ur-IN-"):
-    return "arabext"
+    return numberingSystemArabext
   case s == "uz-Arab" || strings.HasPrefix(s, "uz-Arab-"):
-    return "arabext"
+    return numberingSystemArabext
   }
 }
 
