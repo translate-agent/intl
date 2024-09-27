@@ -1,0 +1,59 @@
+// DO NOT EDIT!
+package intl
+
+import (
+  "strings"
+
+  "golang.org/x/text/language"
+)
+
+func numberingSystem(id string) [10]rune {
+  switch id {
+  default:
+    return [10]rune{}
+  {{- range $v := .NumberingSystems }}
+  case "{{ $v.ID }}":
+    return [10]rune{
+    {{- range $char := $v.Digits }}{{ printf "'%c'" $char }},{{- end -}}
+    }
+  {{- end }}
+  }
+}
+
+func defaultNumberingSystem(locale language.Tag) string {
+  s := locale.String()
+
+  switch {
+  default:
+    return "latn"
+  {{- range $v := .DefaultNumberingSystems }}
+  case s == "{{ $v.Locale }}" || strings.HasPrefix(s, "{{ $v.Locale }}-"):
+    return "{{ $v.ID }}"
+  {{- end }}
+  }
+}
+
+
+func calendarPreferences(locale language.Tag) []string {
+  switch v, _ := locale.Region(); v.String() {
+  default:
+    return nil
+{{- range $v := .CalendarPreferences }}
+  case "{{ join $v.Regions "\", \"" }}":
+    return []string{"{{ join $v.Calendars "\", \""}}"}
+{{- end }}
+  }
+}
+
+func fmtYear(y string, locale language.Tag) string {
+  lang, _ := locale.Base()
+
+  switch lang.String() {
+  default:
+    return y
+{{- range $fmt, $languages := .DateTimeFormats.Y }}
+  case "{{ join $languages "\", \"" }}":
+    return {{ $fmt }}
+{{- end }}
+  }
+}
