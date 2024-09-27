@@ -1,0 +1,49 @@
+linters:
+  enable-all: true
+  disable:
+    - depguard
+    - dupl
+    - err113
+    - execinquery
+    - exhaustruct
+    - exportloopref # deprecated
+    - forbidigo
+    - funlen
+    - gci
+    - ginkgolinter
+    - goconst
+    - gochecknoglobals
+    - gochecknoinits
+    - gocyclo
+    - godox
+    - gofmt
+    - goheader
+    - goimports
+    - gomnd
+    - gomodguard
+    - gosmopolitan
+    - grouper
+    - inamedparam
+    - loggercheck
+    - maintidx
+    - nlreturn
+    - nonamedreturns
+    - promlinter
+    - tagliatelle
+    - testableexamples
+    - testpackage
+    - thelper
+    - tparallel
+    - varnamelen
+    - wastedassign
+    - whitespace
+    - zerologlint
+linters-settings:
+  cyclop:
+    max-complexity: 30
+  exhaustive:
+    default-signifies-exhaustive: true
+  govet:
+    enable-all: true
+  predeclared:
+    ignore: ""

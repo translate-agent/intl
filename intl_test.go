@@ -14,8 +14,8 @@ import (
 )
 
 type Test struct {
-	Options Options
 	Output  string
+	Options Options
 }
 
 type Tests struct {
@@ -27,10 +27,15 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 	var data [2]any // first options, second formatted output
 
 	if err := json.Unmarshal(b, &data); err != nil {
-		return err
+		return fmt.Errorf("unmarshal test data: %w", err)
 	}
 
-	test := Test{Output: data[1].(string)}
+	out, ok := data[1].(string)
+	if !ok {
+		panic("want formatted string value")
+	}
+
+	test := Test{Output: out}
 
 	if o, ok := data[0].(map[string]any); ok {
 		if v, ok := o["year"].(string); ok {
@@ -52,6 +57,8 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 var data []byte
 
 func TestDateTime_Format(t *testing.T) {
+	t.Parallel()
+
 	var tests Tests
 
 	if err := json.Unmarshal(data, &tests); err != nil {
@@ -76,13 +83,17 @@ func TestDateTime_Format(t *testing.T) {
 		}
 
 		t.Run(locale.String(), func(t *testing.T) {
+			t.Parallel()
+
 			for _, test := range cases {
 				t.Run(fmt.Sprintf("%v: %s", test.Options, test.Output), func(t *testing.T) {
+					t.Parallel()
+
 					got := NewDateTimeFormat(locale, test.Options).Format(tests.Date)
 
 					// replace space with non-breaking space. Latest CLDR uses non-breaking space.
 					if strings.ContainsRune(got, ' ') {
-						test.Output = strings.Replace(test.Output, " ", " ", -1)
+						test.Output = strings.ReplaceAll(test.Output, " ", " ")
 					}
 
 					if test.Output != got {
@@ -93,6 +104,18 @@ func TestDateTime_Format(t *testing.T) {
 			}
 		})
 	}
+}
+
+func BenchmarkNewDateTime(b *testing.B) {
+	locale := language.MustParse("fa-IR")
+
+	var v *DateTimeFormat
+
+	for range b.N {
+		v = NewDateTimeFormat(locale, Options{})
+	}
+
+	runtime.KeepAlive(v)
 }
 
 func BenchmarkDateTime_Format(b *testing.B) {

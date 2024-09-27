@@ -30,17 +30,32 @@ type Options struct {
 	Year Year
 }
 
+type digits [10]rune
+
 type DateTimeFormat struct {
-	locale  language.Tag
-	options Options
+	locale   language.Tag
+	calendar string
+	digits   digits
+	options  Options
 }
 
 func NewDateTimeFormat(locale language.Tag, options Options) *DateTimeFormat {
-	return &DateTimeFormat{locale: locale, options: options}
+	var d digits
+
+	if i := defaultNumberingSystem(locale); i > 0 && int(i) < len(numberingSystems) { // isInBounds()
+		d = numberingSystems[i]
+	}
+
+	return &DateTimeFormat{
+		locale:   locale,
+		options:  options,
+		calendar: defaultCalendar(locale),
+		digits:   d,
+	}
 }
 
 func (f *DateTimeFormat) Format(v time.Time) string {
-	switch defaultCalendar(f.locale) {
+	switch f.calendar {
 	default: // gregorian
 		return fmtYear(f.fmtYear(v), f.locale)
 	case "persian":
@@ -66,22 +81,28 @@ func (f *DateTimeFormat) fmtPersianYear(v time.Time) string {
 	case YearNumeric:
 		return f.fmtNumeral(year)
 	case Year2Digit:
-		return f.fmtNumeral(year[len(year)-2:])
+		const last2digits = 2
+
+		if len(year) > last2digits {
+			return f.fmtNumeral(year[len(year)-last2digits:])
+		}
+
+		return f.fmtNumeral(year)
 	}
 }
 
 func (f *DateTimeFormat) fmtNumeral(s string) string {
-	num := defaultNumberingSystem(f.locale)
-	if num == numberingSystemLatn {
+	if f.digits[0] == 0 { // latn
 		return s
 	}
 
-	digits := numberingSystems[num]
-
 	var r string
 
-	for _, c := range s {
-		r += string(digits[c-'0'])
+	// s contains only digits
+	for _, digit := range []byte(s) {
+		if i := int(digit - '0'); i >= 0 && i < len(f.digits) { // isInBounds()
+			r += string(f.digits[i])
+		}
 	}
 
 	return r

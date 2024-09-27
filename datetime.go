@@ -26,7 +26,7 @@ const (
   numberingSystemLast
 )
 
-var numberingSystems = [][10]rune{
+var numberingSystems = []digits{
   numberingSystemAdlm: {'𞥐','𞥑','𞥒','𞥓','𞥔','𞥕','𞥖','𞥗','𞥘','𞥙',},
   numberingSystemArab: {'٠','١','٢','٣','٤','٥','٦','٧','٨','٩',},
   numberingSystemArabext: {'۰','۱','۲','۳','۴','۵','۶','۷','۸','۹',},

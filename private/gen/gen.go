@@ -7,7 +7,6 @@ import (
 	"slices"
 	"strings"
 	"text/template"
-	"unicode/utf8"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -38,10 +37,11 @@ func (g *Generator) Load(dir string) error {
 }
 
 func (g *Generator) calendarPreferences() []CalendarPreference {
-	var preferences []CalendarPreference
+	calendarPreferences := g.cldr.Supplemental().CalendarPreferenceData.CalendarPreference
+	preferences := make([]CalendarPreference, 0, len(calendarPreferences))
 
 	// calendar preferences
-	for _, v := range g.cldr.Supplemental().CalendarPreferenceData.CalendarPreference {
+	for _, v := range calendarPreferences {
 		preferences = append(preferences, CalendarPreference{
 			Regions:   strings.Split(v.Territories, " "),
 			Calendars: strings.Split(v.Ordering, " "),
@@ -88,34 +88,34 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 
 		ldml := g.cldr.RawLDML(locale)
 
-		if ldml.Dates != nil && ldml.Dates.Calendars != nil {
-			for _, calendar := range ldml.Dates.Calendars.Calendar {
-				if calendar.Type != "gregorian" {
-					continue
-				}
+		if ldml.Dates == nil || ldml.Dates.Calendars == nil {
+			continue
+		}
 
-				if calendar.DateTimeFormats != nil {
-					for _, availableFormats := range calendar.DateTimeFormats.AvailableFormats {
-						for _, dateFormatItem := range availableFormats.DateFormatItem {
-							// skip all but "y"
-							if dateFormatItem.Id != "y" || dateFormatItem.CharData == "y" {
-								continue
-							}
+		for _, calendar := range ldml.Dates.Calendars.Calendar {
+			if calendar.Type != "gregorian" || calendar.DateTimeFormats == nil {
+				continue
+			}
 
-							var fmt string
-
-							switch {
-							default:
-								fmt = `"` + strings.NewReplacer("y", `"+y+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
-							case strings.HasPrefix(dateFormatItem.CharData, "y"):
-								fmt = strings.NewReplacer("y", `y+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
-							case strings.HasSuffix(dateFormatItem.CharData, "y"):
-								fmt = `"` + strings.NewReplacer("y", `"+y`, "'", "").Replace(dateFormatItem.CharData)
-							}
-
-							dateTimeFormats.Y[fmt] = append(dateTimeFormats.Y[fmt], locale)
-						}
+			for _, availableFormats := range calendar.DateTimeFormats.AvailableFormats {
+				for _, dateFormatItem := range availableFormats.DateFormatItem {
+					// skip all but "y"
+					if dateFormatItem.Id != "y" || dateFormatItem.CharData == "y" {
+						continue
 					}
+
+					var fmt string
+
+					switch {
+					default:
+						fmt = `"` + strings.NewReplacer("y", `"+y+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
+					case strings.HasPrefix(dateFormatItem.CharData, "y"):
+						fmt = strings.NewReplacer("y", `y+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
+					case strings.HasSuffix(dateFormatItem.CharData, "y"):
+						fmt = `"` + strings.NewReplacer("y", `"+y`, "'", "").Replace(dateFormatItem.CharData)
+					}
+
+					dateTimeFormats.Y[fmt] = append(dateTimeFormats.Y[fmt], locale)
 				}
 			}
 		}
@@ -125,7 +125,7 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 }
 
 func (g *Generator) numberingSystems(defaultNumberingSystems []DefaultNumberingSystem) []NumberingSystem {
-	var numberingSystems []NumberingSystem
+	numberingSystems := make([]NumberingSystem, 0, 30) //nolint:mnd
 
 	ids := make([]string, 0, len(defaultNumberingSystems))
 	for i := range defaultNumberingSystems {
@@ -141,6 +141,7 @@ func (g *Generator) numberingSystems(defaultNumberingSystems []DefaultNumberingS
 		numberingSystem := NumberingSystem{ID: v.Id}
 
 		var i int
+
 		for _, digit := range v.Digits {
 			numberingSystem.Digits[i] = digit
 			i++
@@ -208,25 +209,6 @@ func Gen(dir string) error {
 type NumberingSystem struct {
 	ID     string
 	Digits [10]rune
-}
-
-type NumeralCharacters [10]rune
-
-func numeralCharacters(text string) *NumeralCharacters {
-	var numerals NumeralCharacters
-
-	for _, r := range strings.Split(text, " ") {
-		if r[0] >= '0' && r[0] <= '9' {
-			var n int
-			i := int(r[0] - '0')
-			numerals[i], n = utf8.DecodeRune([]byte(r)[1:])
-			if n == 0 {
-				panic("missing number rune")
-			}
-		}
-	}
-
-	return &numerals
 }
 
 type TemplateData struct {

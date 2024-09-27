@@ -19,7 +19,7 @@ const (
   numberingSystemLast
 )
 
-var numberingSystems = [][10]rune{
+var numberingSystems = []digits{
 {{- range $v := .NumberingSystems }}
   {{- if ne $v.ID "latn" }}
   numberingSystem{{ title $v.ID }}: {
