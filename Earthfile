@@ -30,7 +30,6 @@ generate:
   COPY --dir +cldr/cldr .
   COPY go.mod go.sum .
   COPY --dir private/gen private/
-  RUN ls -la private
   RUN \
     --mount=type=cache,id=go-mod,target=/go/pkg/mod \
     --mount=type=cache,id=go-build,target=/root/.cache/go-build \
