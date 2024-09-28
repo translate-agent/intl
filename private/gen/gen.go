@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"maps"
 	"os"
 	"slices"
 	"strings"
@@ -51,8 +52,8 @@ func (g *Generator) calendarPreferences() []CalendarPreference {
 	return preferences
 }
 
-func (g *Generator) defaultNumberingSystems() []DefaultNumberingSystem {
-	var defaultNumberingSystems []DefaultNumberingSystem
+func (g *Generator) defaultNumberingSystems() DefaultNumberingSystems {
+	defaultNumberingSystems := make(DefaultNumberingSystems)
 
 	for _, locale := range g.cldr.Locales() {
 		ldml := g.cldr.RawLDML(locale)
@@ -66,10 +67,8 @@ func (g *Generator) defaultNumberingSystems() []DefaultNumberingSystem {
 				continue
 			}
 
-			defaultNumberingSystems = append(defaultNumberingSystems, DefaultNumberingSystem{
-				Locale: strings.ReplaceAll(locale, "_", "-"),
-				ID:     v.CharData,
-			})
+			defaultNumberingSystems[v.CharData] = append(defaultNumberingSystems[v.CharData],
+				strings.ReplaceAll(locale, "_", "-"))
 		}
 	}
 
@@ -124,13 +123,10 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 	return dateTimeFormats
 }
 
-func (g *Generator) numberingSystems(defaultNumberingSystems []DefaultNumberingSystem) []NumberingSystem {
+func (g *Generator) numberingSystems(defaultNumberingSystems DefaultNumberingSystems) []NumberingSystem {
 	numberingSystems := make([]NumberingSystem, 0, 30) //nolint:mnd
 
-	ids := make([]string, 0, len(defaultNumberingSystems))
-	for i := range defaultNumberingSystems {
-		ids = append(ids, defaultNumberingSystems[i].ID)
-	}
+	ids := slices.Collect(maps.Keys(defaultNumberingSystems))
 
 	for _, v := range g.cldr.Supplemental().NumberingSystems.NumberingSystem {
 		// only use default numbering systems
@@ -153,16 +149,12 @@ func (g *Generator) numberingSystems(defaultNumberingSystems []DefaultNumberingS
 	return numberingSystems
 }
 
-func (g *Generator) numberingSystemsIota(defaultNumberingSystems []DefaultNumberingSystem) []string {
-	list := make([]string, 0, len(defaultNumberingSystems))
+func (g *Generator) numberingSystemsIota(defaultNumberingSystems DefaultNumberingSystems) []string {
+	ids := slices.Collect(maps.Keys(defaultNumberingSystems))
 
-	for _, v := range defaultNumberingSystems {
-		list = append(list, v.ID)
-	}
+	slices.Sort(ids)
 
-	slices.Sort(list)
-
-	return slices.Compact(list)
+	return slices.Compact(ids)
 }
 
 func (g *Generator) Write() error {
@@ -170,6 +162,7 @@ func (g *Generator) Write() error {
 		"join":     strings.Join,
 		"contains": strings.Contains,
 		"title":    cases.Title(language.English).String,
+		"sub":      func(a, b int) int { return a - b },
 	}).Parse(datetimeTemplate)
 	if err != nil {
 		return fmt.Errorf("parse datetime template: %w", err)
@@ -212,11 +205,11 @@ type NumberingSystem struct {
 }
 
 type TemplateData struct {
+	DefaultNumberingSystems DefaultNumberingSystems
 	NumberingSystemIota     []string
 	CalendarPreferences     []CalendarPreference
 	DateTimeFormats         DateTimeFormats
 	NumberingSystems        []NumberingSystem
-	DefaultNumberingSystems []DefaultNumberingSystem
 }
 
 type DateTimeFormats struct {
@@ -246,7 +239,4 @@ func Locale(ldml *cldr.LDML) string {
 	return lang
 }
 
-type DefaultNumberingSystem struct {
-	Locale string
-	ID     string
-}
+type DefaultNumberingSystems map[string][]string // key - numbering system, value - locales
