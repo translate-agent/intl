@@ -79,7 +79,7 @@ const tests = locales_.reduce((r, locale) => {
 
 const data = JSON.stringify({ date, tests });
 
-fs.writeFile("datetime.json", data, (err) => {
+fs.writeFile("tests.json", data, (err) => {
   if (err) {
     console.log(err);
   }

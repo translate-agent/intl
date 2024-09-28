@@ -53,7 +53,7 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-//go:embed datetime.json
+//go:embed tests.json
 var data []byte
 
 func TestDateTime_Format(t *testing.T) {

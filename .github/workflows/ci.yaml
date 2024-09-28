@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 1
+    steps:
+      - uses: earthly/actions-setup@v1
+        with:
+          version: 0.8.15
+          use-cache: true
+      - uses: actions/checkout@v4
+      - name: Generate cldr.go
+        run: |
+          earthly --ci +generate
+          if ! git diff --quiet; then
+            echo "Generated cldr.go file is not up to date"
+            git diff --stat
+            exit 1
+          fi
+      - name: Lint
+        run: earthly --ci +lint
+      - name: Test Unit
+        run: earthly --ci +test

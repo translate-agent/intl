@@ -1,8 +1,16 @@
 VERSION 0.8
-FROM golang:alpine
+ARG golang_version=1.23.1
+FROM golang:$golang_version-alpine
 WORKDIR /intl
 
-x:
+# init prepares the project for local development
+init:
+  BUILD +cldr
+  BUILD +generate
+  BUILD +testdata
+
+# cldr saves CLDR files to .cldr
+cldr:
   WORKDIR /cldr
   ARG cldr_version=45.0
   RUN wget https://unicode.org/Public/cldr/45/cldr-common-$cldr_version.zip
@@ -10,8 +18,16 @@ x:
   RUN rm cldr-common-$cldr_version.zip
   SAVE ARTIFACT /cldr AS LOCAL .cldr
 
-cldr:
-  COPY --dir +x/cldr .
+# testdata generates test cases and saves to tests.json
+testdata:
+  FROM node:22.9.0-alpine
+  COPY testdata.js .
+  RUN node testdata.js
+  SAVE ARTIFACT tests.json AS LOCAL tests.json
+
+# generate generates cldr.go
+generate:
+  COPY --dir +cldr/cldr .
   COPY go.mod go.sum .
   COPY --dir private/gen private/
   RUN ls -la private
@@ -20,3 +36,30 @@ cldr:
     --mount=type=cache,id=go-build,target=/root/.cache/go-build \
     go run -C private/gen . -dir /intl/cldr > cldr.go
   SAVE ARTIFACT cldr.go AS LOCAL cldr.go
+
+# test runs unit tests
+test:
+  COPY +testdata/tests.json .
+  COPY go.mod go.sum *.go .
+  RUN \
+    --mount=type=cache,id=go-mod,target=/go/pkg/mod \
+    --mount=type=cache,id=go-build,target=/root/.cache/go-build \
+    go test ./...
+
+# lint runs all linters for golang
+lint:
+  ARG golangci_lint_version=1.61.0
+  FROM golangci/golangci-lint:v$golangci_lint_version-alpine
+  WORKDIR /intl
+  COPY +testdata/tests.json .
+  COPY go.mod go.sum *.go .golangci.yml .
+  RUN \
+    --mount=type=cache,id=go-mod,target=/go/pkg/mod \
+    --mount=type=cache,id=go-build,target=/root/.cache/go-build \
+    --mount=type=cache,target=/root/.cache/golangci_lint \
+    golangci-lint run ./...
+
+# check verifies code quality by running linters and tests.
+check:
+  BUILD +test
+  BUILD +lint
