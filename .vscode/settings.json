@@ -1,0 +1,15 @@
+{
+  "editor.formatOnSave": true,
+  "go.formatTool": "gofumpt",
+  "go.lintOnSave": "workspace",
+  "go.lintTool": "golangci-lint",
+  "gopls": {
+    "ui.codelenses": {
+      "gc_details": true
+    },
+    "ui.diagnostic.annotations": {
+      "bounds": true,
+      "escape": true
+    }
+  }
+}

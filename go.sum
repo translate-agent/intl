@@ -1,0 +1,4 @@
+github.com/yaa110/go-persian-calendar v1.2.1 h1:5ntPqDMZaZpRF4j8iiokDsfgm8deSr0HXNJwERix3W4=
+github.com/yaa110/go-persian-calendar v1.2.1/go.mod h1:qtnmHCS9u1EiwzzSCSttGoxD5NfV9ZMzymxFCBYmqfg=
+golang.org/x/text v0.18.0 h1:XvMDiNzPAl0jr17s6W9lcaIhGUfUORdGCNsuLmPG224=
+golang.org/x/text v0.18.0/go.mod h1:BuEKDfySbSR4drPmRPG/7iBdf8hvFMuRexcpahXilzY=
