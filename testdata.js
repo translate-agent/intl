@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const locales_ = `
+const locales = `
 			aa_ET ab_GE af_ZA agq_CM ak_GH am_ET an_ES ann_NG apc_SY ar_001 arn_CL as_IN
 			asa_TZ ast_ES az_Arab_IR az_Cyrl_AZ az_Latn az_Latn_AZ
 			ba_RU bal_Arab bal_Arab_PK bal_Latn_PK bas_CM be_BY bem_ZM bew_ID bez_TZ bg_BG
@@ -60,7 +60,7 @@ const locales_ = `
 
 const date = new Date("2024-01-02 03:04:05");
 
-const tests = locales_.reduce((r, locale) => {
+const tests = locales.reduce((r, locale) => {
   const result = [];
 
   ["numeric", "2-digit"].forEach((year) => {
