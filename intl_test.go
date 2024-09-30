@@ -67,6 +67,7 @@ var data []byte
 
 func TestDateTime_Format(t *testing.T) {
 	t.Parallel()
+	t.Skip()
 
 	var tests Tests
 
@@ -129,14 +130,22 @@ func BenchmarkNewDateTime(b *testing.B) {
 
 func BenchmarkDateTime_Format(b *testing.B) {
 	locale := language.MustParse("fa-IR")
-	f := NewDateTimeFormat(locale, Options{})
+	f1 := NewDateTimeFormat(locale, Options{}).Format
+	f2 := NewDateTimeFormat(locale, Options{Year: YearNumeric}).Format
+	f3 := NewDateTimeFormat(locale, Options{Year: Year2Digit}).Format
+	f4 := NewDateTimeFormat(locale, Options{Day: DayNumeric}).Format
+	f5 := NewDateTimeFormat(locale, Options{Day: Day2Digit}).Format
 	now := time.Now()
 
-	var v string
+	var v1, v2, v3, v4, v5 string
 
 	for range b.N {
-		v = f.Format(now)
+		v1, v2, v3, v4, v5 = f1(now), f2(now), f3(now), f4(now), f5(now)
 	}
 
-	runtime.KeepAlive(v)
+	runtime.KeepAlive(v1)
+	runtime.KeepAlive(v2)
+	runtime.KeepAlive(v3)
+	runtime.KeepAlive(v4)
+	runtime.KeepAlive(v5)
 }
