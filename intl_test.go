@@ -46,6 +46,15 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 				test.Options.Year = Year2Digit
 			}
 		}
+
+		if v, ok := o["day"].(string); ok {
+			switch v {
+			case "numeric":
+				test.Options.Day = DayNumeric
+			case "2-digit":
+				test.Options.Day = Day2Digit
+			}
+		}
 	}
 
 	*t = test
@@ -86,7 +95,7 @@ func TestDateTime_Format(t *testing.T) {
 			t.Parallel()
 
 			for _, test := range cases {
-				t.Run(fmt.Sprintf("%v: %s", test.Options, test.Output), func(t *testing.T) {
+				t.Run(fmt.Sprintf("%+v: %s", test.Options, test.Output), func(t *testing.T) {
 					t.Parallel()
 
 					got := NewDateTimeFormat(locale, test.Options).Format(tests.Date)

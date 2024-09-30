@@ -76,7 +76,10 @@ func (g *Generator) defaultNumberingSystems() DefaultNumberingSystems {
 }
 
 func (g *Generator) dateTimeFormats() DateTimeFormats {
-	dateTimeFormats := DateTimeFormats{Y: make(map[string][]string)}
+	dateTimeFormats := DateTimeFormats{
+		Y: make(map[string][]string),
+		D: make(map[string][]string),
+	}
 
 	for _, locale := range g.cldr.Locales() {
 		// Ignore duplicate formatting for "y".
@@ -98,23 +101,46 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 
 			for _, availableFormats := range calendar.DateTimeFormats.AvailableFormats {
 				for _, dateFormatItem := range availableFormats.DateFormatItem {
-					// skip all but "y"
-					if dateFormatItem.Id != "y" || dateFormatItem.CharData == "y" {
+					if dateFormatItem.Draft != "" {
 						continue
 					}
 
-					var fmt string
+					switch dateFormatItem.Id {
+					case "y":
+						if dateFormatItem.CharData == "y" {
+							continue
+						}
 
-					switch {
-					default:
-						fmt = `"` + strings.NewReplacer("y", `"+y+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
-					case strings.HasPrefix(dateFormatItem.CharData, "y"):
-						fmt = strings.NewReplacer("y", `y+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
-					case strings.HasSuffix(dateFormatItem.CharData, "y"):
-						fmt = `"` + strings.NewReplacer("y", `"+y`, "'", "").Replace(dateFormatItem.CharData)
+						var fmt string
+
+						switch {
+						default:
+							fmt = `"` + strings.NewReplacer("y", `"+y+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
+						case strings.HasPrefix(dateFormatItem.CharData, "y"):
+							fmt = strings.NewReplacer("y", `y+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
+						case strings.HasSuffix(dateFormatItem.CharData, "y"):
+							fmt = `"` + strings.NewReplacer("y", `"+y`, "'", "").Replace(dateFormatItem.CharData)
+						}
+
+						dateTimeFormats.Y[fmt] = append(dateTimeFormats.Y[fmt], locale)
+					case "d":
+						if dateFormatItem.CharData == "d" {
+							continue
+						}
+
+						var fmt string
+
+						switch {
+						default:
+							fmt = `"` + strings.NewReplacer("d", `"+d+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
+						case strings.HasPrefix(dateFormatItem.CharData, "d"):
+							fmt = strings.NewReplacer("d", `d+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
+						case strings.HasSuffix(dateFormatItem.CharData, "d"):
+							fmt = `"` + strings.NewReplacer("d", `"+d`, "'", "").Replace(dateFormatItem.CharData)
+						}
+
+						dateTimeFormats.D[fmt] = append(dateTimeFormats.D[fmt], locale)
 					}
-
-					dateTimeFormats.Y[fmt] = append(dateTimeFormats.Y[fmt], locale)
 				}
 			}
 		}
@@ -212,8 +238,10 @@ type TemplateData struct {
 	NumberingSystems        []NumberingSystem
 }
 
+// key - expr (format), value - languages
 type DateTimeFormats struct {
-	Y map[string][]string // key - expr (format), value - languages
+	Y map[string][]string
+	D map[string][]string
 }
 
 type DateTimeFormatItems struct {

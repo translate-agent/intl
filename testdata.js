@@ -74,6 +74,17 @@ const tests = locales.reduce((r, locale) => {
     r[locale] = result;
   });
 
+  ["numeric", "2-digit"].forEach((day) => {
+    const options = { day };
+
+    result.push([
+      options,
+      new Intl.DateTimeFormat(locale, options).format(date),
+    ]);
+
+    r[locale] = result;
+  });
+
   return r;
 }, {});
 

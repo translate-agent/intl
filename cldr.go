@@ -95,8 +95,6 @@ func fmtYear(y string, locale language.Tag) string {
   switch lang.String() {
   default:
     return y
-  case "prg":
-    return y+" m."
   case "lv":
     return y+". g."
   case "bs", "hr", "hu", "sr":
@@ -107,5 +105,22 @@ func fmtYear(y string, locale language.Tag) string {
     return y+"年"
   case "ko":
     return y+"년"
+  }
+}
+
+func fmtDay(d string, locale language.Tag) string {
+  lang, _ := locale.Base()
+
+  switch lang.String() {
+  default:
+    return d
+  case "bs", "cs", "da", "dsb", "fo", "hr", "hsb", "no", "sk", "sl":
+    return d+"."
+  case "lt":
+    return d
+  case "ja", "yue", "zh":
+    return d+"日"
+  case "ko":
+    return d+"일"
   }
 }

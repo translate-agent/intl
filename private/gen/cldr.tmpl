@@ -71,3 +71,16 @@ func fmtYear(y string, locale language.Tag) string {
 {{- end }}
   }
 }
+
+func fmtDay(d string, locale language.Tag) string {
+  lang, _ := locale.Base()
+
+  switch lang.String() {
+  default:
+    return d
+{{- range $fmt, $languages := .DateTimeFormats.D }}
+  case "{{ join $languages "\", \"" }}":
+    return {{ $fmt }}
+{{- end }}
+  }
+}
