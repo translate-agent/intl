@@ -132,11 +132,15 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 
 						switch {
 						default:
-							fmt = `"` + strings.NewReplacer("d", `"+d+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
+							fmt = `"` + strings.NewReplacer("d", `"+f.fmtNumeral(v.Format(fmt()))+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
+						case dateFormatItem.CharData == "d":
+							fmt = `f.fmtNumeral(v.Format(fmt()))`
+						case dateFormatItem.CharData == "dd":
+							fmt = `f.fmtNumeral(v.Format("02"))`
 						case strings.HasPrefix(dateFormatItem.CharData, "d"):
-							fmt = strings.NewReplacer("d", `d+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
+							fmt = strings.NewReplacer("d", `f.fmtNumeral(v.Format(fmt()))+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
 						case strings.HasSuffix(dateFormatItem.CharData, "d"):
-							fmt = `"` + strings.NewReplacer("d", `"+d`, "'", "").Replace(dateFormatItem.CharData)
+							fmt = `"` + strings.NewReplacer("d", `"+f.fmtNumeral(v.Format(fmt()))`, "'", "").Replace(dateFormatItem.CharData)
 						}
 
 						dateTimeFormats.D[fmt] = append(dateTimeFormats.D[fmt], locale)

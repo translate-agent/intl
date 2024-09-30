@@ -87,7 +87,7 @@ func (f *DateTimeFormat) Format(v time.Time) string {
 			return fmtYear(f.fmtPersianYear(v), f.locale)
 		}
 	case f.options.Day != DayUnd:
-		return fmtDay(f.fmtDay(v), f.locale)
+		return f.fmtDay(v)
 	}
 }
 
@@ -95,15 +95,6 @@ func (f *DateTimeFormat) fmtYear(v time.Time) string {
 	s := v.Format("06")
 	if f.options.Year == YearNumeric {
 		s = v.Format("2006")
-	}
-
-	return f.fmtNumeral(s)
-}
-
-func (f *DateTimeFormat) fmtDay(v time.Time) string {
-	s := v.Format("02")
-	if f.options.Day == DayNumeric {
-		s = v.Format("2")
 	}
 
 	return f.fmtNumeral(s)

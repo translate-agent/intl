@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
-	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -65,9 +64,39 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 //go:embed tests.json
 var data []byte
 
+// skipTest returns true for locales where formatting is hard to be determined for given cases.
+func skipTest(locale language.Tag, options Options) bool {
+	type key struct {
+		locale  string
+		options Options
+	}
+	_, ok := map[key]struct{}{
+		{"hnj-Hmnp", Options{Year: Year2Digit}}:  {},
+		{"hnj-Hmnp", Options{Year: YearNumeric}}: {},
+		{"lrc-IR", Options{Year: Year2Digit}}:    {},
+		{"lrc-IR", Options{Year: YearNumeric}}:   {},
+		{"mzn-IR", Options{Year: Year2Digit}}:    {},
+		{"mzn-IR", Options{Year: YearNumeric}}:   {},
+		{"nb", Options{Day: Day2Digit}}:          {},
+		{"nb-NO", Options{Day: Day2Digit}}:       {},
+		{"nb-NO", Options{Day: DayNumeric}}:      {},
+		{"nn-NO", Options{Day: Day2Digit}}:       {},
+		{"nn-NO", Options{Day: DayNumeric}}:      {},
+		{"ps-AF", Options{Year: Year2Digit}}:     {},
+		{"ps-AF", Options{Year: YearNumeric}}:    {},
+		{"prg-PL", Options{Year: Year2Digit}}:    {},
+		{"prg-PL", Options{Year: YearNumeric}}:   {},
+		{"sdh-IR", Options{Year: Year2Digit}}:    {},
+		{"sdh-IR", Options{Year: YearNumeric}}:   {},
+		{"th-TH", Options{Year: Year2Digit}}:     {},
+		{"th-TH", Options{Year: YearNumeric}}:    {},
+	}[key{locale.String(), options}]
+
+	return ok
+}
+
 func TestDateTime_Format(t *testing.T) {
 	t.Parallel()
-	t.Skip()
 
 	var tests Tests
 
@@ -80,24 +109,16 @@ func TestDateTime_Format(t *testing.T) {
 	}
 
 	for locale, cases := range tests.Tests {
-		if slices.Contains([]string{
-			"hnj-Hmnp",
-			"lrc-IR",
-			"mzn-IR",
-			"ps-AF",
-			"prg-PL",
-			"sdh-IR",
-			"th-TH",
-		}, locale.String()) {
-			continue
-		}
-
 		t.Run(locale.String(), func(t *testing.T) {
 			t.Parallel()
 
 			for _, test := range cases {
 				t.Run(fmt.Sprintf("%+v: %s", test.Options, test.Output), func(t *testing.T) {
 					t.Parallel()
+
+					if skipTest(locale, test.Options) {
+						t.Skip()
+					}
 
 					got := NewDateTimeFormat(locale, test.Options).Format(tests.Date)
 
