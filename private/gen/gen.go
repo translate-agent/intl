@@ -58,7 +58,7 @@ func (g *Generator) defaultNumberingSystems() DefaultNumberingSystems {
 	for _, locale := range g.cldr.Locales() {
 		ldml := g.cldr.RawLDML(locale)
 
-		if ldml.Numbers == nil {
+		if ldml.Numbers == nil || locale == "root" {
 			continue
 		}
 

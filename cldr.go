@@ -62,7 +62,7 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
     return numberingSystemDeva
   case s == "hnj", strings.HasPrefix(s, "hnj-"):
     return numberingSystemHmnp
-  case s == "root", strings.HasPrefix(s, "root-"), s == "ar-AE", strings.HasPrefix(s, "ar-AE-"), s == "ar-DZ", strings.HasPrefix(s, "ar-DZ-"), s == "ar-EH", strings.HasPrefix(s, "ar-EH-"), s == "ar-LY", strings.HasPrefix(s, "ar-LY-"), s == "ar-MA", strings.HasPrefix(s, "ar-MA-"), s == "ar-TN", strings.HasPrefix(s, "ar-TN-"):
+  case s == "ar-AE", strings.HasPrefix(s, "ar-AE-"), s == "ar-DZ", strings.HasPrefix(s, "ar-DZ-"), s == "ar-EH", strings.HasPrefix(s, "ar-EH-"), s == "ar-LY", strings.HasPrefix(s, "ar-LY-"), s == "ar-MA", strings.HasPrefix(s, "ar-MA-"), s == "ar-TN", strings.HasPrefix(s, "ar-TN-"):
     return numberingSystemLatn
   case s == "mni-Mtei", strings.HasPrefix(s, "mni-Mtei-"):
     return numberingSystemMtei
