@@ -70,6 +70,7 @@ func skipTest(locale language.Tag, options Options) bool {
 		locale  string
 		options Options
 	}
+
 	_, ok := map[key]struct{}{
 		{"hnj-Hmnp", Options{Year: Year2Digit}}:  {},
 		{"hnj-Hmnp", Options{Year: YearNumeric}}: {},
