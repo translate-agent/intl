@@ -240,3 +240,74 @@ func Locale(ldml *cldr.LDML) string {
 }
 
 type DefaultNumberingSystems map[string][]string // key - numbering system, value - locales
+
+type datePatternElement struct {
+	value   string
+	literal bool
+}
+
+func splitDatePattern(pattern string) []datePatternElement {
+	var last rune
+
+	elements := make([]datePatternElement, 0)
+	elem := new(strings.Builder)
+	literal := false
+	quoted := false
+
+	for i, r := range pattern {
+		if i == 0 {
+			last = r
+			elem.WriteRune(r)
+			literal = !('a' <= r && r <= 'z' || 'A' <= r && r <= 'Z')
+
+			continue
+		}
+
+		write := func(r rune, asLiteral bool) {
+			if literal && asLiteral {
+				elem.WriteRune(r)
+				last = r
+
+				return
+			}
+
+			if !asLiteral && r == last {
+				elem.WriteRune(r)
+
+				return
+			}
+
+			elements = append(elements, datePatternElement{value: elem.String(), literal: literal})
+
+			elem.Reset()
+			elem.WriteRune(r)
+
+			last = r
+			literal = asLiteral
+		}
+
+		switch {
+		default:
+			write(r, true)
+		case r == '\'':
+			quoted = !quoted
+
+			if last != r {
+				last = r
+				continue
+			}
+
+			write(r, true)
+
+			last = 0
+		case !quoted && ('a' <= r && r <= 'z' || 'A' <= r && r <= 'Z'):
+			write(r, false)
+		}
+	}
+
+	if elem.Len() > 0 {
+		elements = append(elements, datePatternElement{value: elem.String(), literal: literal})
+	}
+
+	return elements
+}
