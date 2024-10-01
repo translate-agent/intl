@@ -2,6 +2,7 @@
 package intl
 
 import (
+  "strconv"
   "strings"
 
   "golang.org/x/text/language"
@@ -61,7 +62,7 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
     return numberingSystemDeva
   case s == "hnj", strings.HasPrefix(s, "hnj-"):
     return numberingSystemHmnp
-  case s == "root", strings.HasPrefix(s, "root-"), s == "ar-AE", strings.HasPrefix(s, "ar-AE-"), s == "ar-DZ", strings.HasPrefix(s, "ar-DZ-"), s == "ar-EH", strings.HasPrefix(s, "ar-EH-"), s == "ar-LY", strings.HasPrefix(s, "ar-LY-"), s == "ar-MA", strings.HasPrefix(s, "ar-MA-"), s == "ar-TN", strings.HasPrefix(s, "ar-TN-"):
+  case s == "ar-AE", strings.HasPrefix(s, "ar-AE-"), s == "ar-DZ", strings.HasPrefix(s, "ar-DZ-"), s == "ar-EH", strings.HasPrefix(s, "ar-EH-"), s == "ar-LY", strings.HasPrefix(s, "ar-LY-"), s == "ar-MA", strings.HasPrefix(s, "ar-MA-"), s == "ar-TN", strings.HasPrefix(s, "ar-TN-"):
     return numberingSystemLatn
   case s == "mni-Mtei", strings.HasPrefix(s, "mni-Mtei-"):
     return numberingSystemMtei
@@ -95,8 +96,6 @@ func fmtYear(y string, locale language.Tag) string {
   switch lang.String() {
   default:
     return y
-  case "prg":
-    return y+" m."
   case "lv":
     return y+". g."
   case "bs", "hr", "hu", "sr":
@@ -107,5 +106,31 @@ func fmtYear(y string, locale language.Tag) string {
     return y+"年"
   case "ko":
     return y+"년"
+  }
+}
+
+func (f *DateTimeFormat) fmtDay(d int) string {
+  lang, _ := f.locale.Base()
+
+  fmt := func(dd bool) string {
+    if dd && d <= 9 {
+      return "0"+strconv.Itoa(d)
+    }
+
+    return strconv.Itoa(d)
+  }
+
+
+  switch lang.String() {
+  default:
+    return f.fmtNumeral(fmt(f.options.Day == Day2Digit))
+  case "bs", "cs", "da", "dsb", "fo", "hr", "hsb", "no", "sk", "sl":
+    return f.fmtNumeral(fmt(f.options.Day == Day2Digit))+"."
+  case "ja", "yue", "zh":
+    return f.fmtNumeral(fmt(f.options.Day == Day2Digit))+"日"
+  case "ko":
+    return f.fmtNumeral(fmt(f.options.Day == Day2Digit))+"일"
+  case "lt":
+    return f.fmtNumeral(fmt(true))
   }
 }

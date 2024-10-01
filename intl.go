@@ -22,12 +22,33 @@ func (y Year) String() string {
 }
 
 const (
-	YearNumeric Year = iota
+	YearUnd Year = iota
+	YearNumeric
 	Year2Digit
+)
+
+type Day byte
+
+func (y Day) String() string {
+	switch y {
+	default:
+		return ""
+	case DayNumeric:
+		return "numeric"
+	case Day2Digit:
+		return "2-digit"
+	}
+}
+
+const (
+	DayUnd Day = iota
+	DayNumeric
+	Day2Digit
 )
 
 type Options struct {
 	Year Year
+	Day  Day
 }
 
 type digits [10]rune
@@ -55,11 +76,23 @@ func NewDateTimeFormat(locale language.Tag, options Options) *DateTimeFormat {
 }
 
 func (f *DateTimeFormat) Format(v time.Time) string {
-	switch f.calendar {
-	default: // gregorian
-		return fmtYear(f.fmtYear(v), f.locale)
-	case "persian":
-		return fmtYear(f.fmtPersianYear(v), f.locale)
+	switch {
+	default:
+		return ""
+	case f.options.Year != YearUnd:
+		switch f.calendar {
+		default: // gregorian
+			return fmtYear(f.fmtYear(v), f.locale)
+		case "persian":
+			return fmtYear(f.fmtPersianYear(v), f.locale)
+		}
+	case f.options.Day != DayUnd:
+		switch f.calendar {
+		default: // gregorian
+			return f.fmtDay(v.Day())
+		case "persian":
+			return f.fmtDay(ptime.New(v).Day())
+		}
 	}
 }
 

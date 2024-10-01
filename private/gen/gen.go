@@ -58,7 +58,7 @@ func (g *Generator) defaultNumberingSystems() DefaultNumberingSystems {
 	for _, locale := range g.cldr.Locales() {
 		ldml := g.cldr.RawLDML(locale)
 
-		if ldml.Numbers == nil {
+		if ldml.Numbers == nil || locale == "root" {
 			continue
 		}
 
@@ -76,7 +76,10 @@ func (g *Generator) defaultNumberingSystems() DefaultNumberingSystems {
 }
 
 func (g *Generator) dateTimeFormats() DateTimeFormats {
-	dateTimeFormats := DateTimeFormats{Y: make(map[string][]string)}
+	dateTimeFormats := DateTimeFormats{
+		Y: make(map[string][]string),
+		D: make(map[string][]string),
+	}
 
 	for _, locale := range g.cldr.Locales() {
 		// Ignore duplicate formatting for "y".
@@ -98,29 +101,76 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 
 			for _, availableFormats := range calendar.DateTimeFormats.AvailableFormats {
 				for _, dateFormatItem := range availableFormats.DateFormatItem {
-					// skip all but "y"
-					if dateFormatItem.Id != "y" || dateFormatItem.CharData == "y" {
-						continue
-					}
-
-					var fmt string
-
-					switch {
-					default:
-						fmt = `"` + strings.NewReplacer("y", `"+y+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
-					case strings.HasPrefix(dateFormatItem.CharData, "y"):
-						fmt = strings.NewReplacer("y", `y+"`, "'", "").Replace(dateFormatItem.CharData) + `"`
-					case strings.HasSuffix(dateFormatItem.CharData, "y"):
-						fmt = `"` + strings.NewReplacer("y", `"+y`, "'", "").Replace(dateFormatItem.CharData)
-					}
-
-					dateTimeFormats.Y[fmt] = append(dateTimeFormats.Y[fmt], locale)
+					g.addDateFormatItem(dateTimeFormats, (*CLDRDateFormatItem)(dateFormatItem), locale)
 				}
 			}
 		}
 	}
 
 	return dateTimeFormats
+}
+
+// CLDRDateFormatItem is a copy of CLDR DateFormatItem.
+type CLDRDateFormatItem struct {
+	cldr.Common
+	Id    string //nolint:revive,stylecheck
+	Count string
+}
+
+func (g *Generator) addDateFormatItem(
+	dateTimeFormats DateTimeFormats,
+	dateFormatItem *CLDRDateFormatItem,
+	locale string,
+) {
+	if dateFormatItem.Draft != "" {
+		return
+	}
+
+	switch dateFormatItem.Id {
+	case "y":
+		if dateFormatItem.CharData == "y" {
+			return
+		}
+
+		var sb strings.Builder
+
+		for i, v := range splitDatePattern(dateFormatItem.CharData) {
+			if i > 0 {
+				sb.WriteRune('+')
+			}
+
+			if v.literal {
+				sb.WriteString(`"` + v.value + `"`)
+			} else {
+				sb.WriteString("y")
+			}
+		}
+
+		dateTimeFormats.Y[sb.String()] = append(dateTimeFormats.Y[sb.String()], locale)
+	case "d":
+		if dateFormatItem.CharData == "d" {
+			return
+		}
+
+		var sb strings.Builder
+
+		for i, v := range splitDatePattern(dateFormatItem.CharData) {
+			if i > 0 {
+				sb.WriteRune('+')
+			}
+
+			switch {
+			default:
+				sb.WriteString("f.fmtNumeral(fmt(f.options.Day == Day2Digit))")
+			case v.literal:
+				sb.WriteString(`"` + v.value + `"`)
+			case v.value == "dd":
+				sb.WriteString(`f.fmtNumeral(fmt(true))`)
+			}
+		}
+
+		dateTimeFormats.D[sb.String()] = append(dateTimeFormats.D[sb.String()], locale)
+	}
 }
 
 func (g *Generator) numberingSystems(defaultNumberingSystems DefaultNumberingSystems) []NumberingSystem {
@@ -212,8 +262,10 @@ type TemplateData struct {
 	NumberingSystems        []NumberingSystem
 }
 
+// key - expr (format), value - languages.
 type DateTimeFormats struct {
-	Y map[string][]string // key - expr (format), value - languages
+	Y map[string][]string
+	D map[string][]string
 }
 
 type DateTimeFormatItems struct {

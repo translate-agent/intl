@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
-	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -46,6 +45,15 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 				test.Options.Year = Year2Digit
 			}
 		}
+
+		if v, ok := o["day"].(string); ok {
+			switch v {
+			case "numeric":
+				test.Options.Day = DayNumeric
+			case "2-digit":
+				test.Options.Day = Day2Digit
+			}
+		}
 	}
 
 	*t = test
@@ -55,6 +63,43 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 
 //go:embed tests.json
 var data []byte
+
+// skipTest returns true for locales where formatting is hard to be determined for given cases.
+func skipTest(locale language.Tag, options Options) bool {
+	type key struct {
+		locale  string
+		options Options
+	}
+
+	_, ok := map[key]struct{}{
+		{"hnj-Hmnp", Options{Year: Year2Digit}}:  {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"hnj-Hmnp", Options{Year: YearNumeric}}: {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"hnj-Hmnp", Options{Day: Day2Digit}}:    {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"hnj-Hmnp", Options{Day: DayNumeric}}:   {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"lrc-IR", Options{Year: Year2Digit}}:    {}, // CLDR stipules no "AP " prefix. Why Node.js adds prefix?
+		{"lrc-IR", Options{Year: YearNumeric}}:   {}, // CLDR stipules no "AP " prefix. Why Node.js adds prefix?
+		{"mzn-IR", Options{Year: Year2Digit}}:    {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
+		{"mzn-IR", Options{Year: YearNumeric}}:   {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
+		{"mzn-IR", Options{Day: Day2Digit}}:      {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
+		{"mzn-IR", Options{Day: DayNumeric}}:     {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
+		{"nb", Options{Day: Day2Digit}}:          {}, // CLDR stipules d formating. Why Node.js adds . suffix?
+		{"nb", Options{Day: DayNumeric}}:         {}, // CLDR stipules d formating. Why Node.js adds . suffix?
+		{"nb-NO", Options{Day: Day2Digit}}:       {}, // CLDR stipules d formating. Why Node.js adds . suffix?
+		{"nb-NO", Options{Day: DayNumeric}}:      {}, // CLDR stipules d formating. Why Node.js adds . suffix?
+		{"nn-NO", Options{Day: Day2Digit}}:       {}, // CLDR stipules d formating. Why Node.js adds . suffix?
+		{"nn-NO", Options{Day: DayNumeric}}:      {}, // CLDR stipules d formating. Why Node.js adds . suffix?
+		{"ps-AF", Options{Year: Year2Digit}}:     {}, // CLDR stipules no "AP " prefix. Why Node.js adds prefix?
+		{"ps-AF", Options{Year: YearNumeric}}:    {}, // CLDR stipules no "AP " prefix. Why Node.js adds prefix?
+		{"sdh-IR", Options{Year: Year2Digit}}:    {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"sdh-IR", Options{Year: YearNumeric}}:   {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"sdh-IR", Options{Day: Day2Digit}}:      {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"sdh-IR", Options{Day: DayNumeric}}:     {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"th-TH", Options{Year: Year2Digit}}:     {}, // requires buddhist calendar
+		{"th-TH", Options{Year: YearNumeric}}:    {}, // requires buddhist calendar
+	}[key{locale.String(), options}]
+
+	return ok
+}
 
 func TestDateTime_Format(t *testing.T) {
 	t.Parallel()
@@ -70,24 +115,16 @@ func TestDateTime_Format(t *testing.T) {
 	}
 
 	for locale, cases := range tests.Tests {
-		if slices.Contains([]string{
-			"hnj-Hmnp",
-			"lrc-IR",
-			"mzn-IR",
-			"ps-AF",
-			"prg-PL",
-			"sdh-IR",
-			"th-TH",
-		}, locale.String()) {
-			continue
-		}
-
 		t.Run(locale.String(), func(t *testing.T) {
 			t.Parallel()
 
 			for _, test := range cases {
-				t.Run(fmt.Sprintf("%v: %s", test.Options, test.Output), func(t *testing.T) {
+				t.Run(fmt.Sprintf("%+v: %s", test.Options, test.Output), func(t *testing.T) {
 					t.Parallel()
+
+					if skipTest(locale, test.Options) {
+						t.Skip()
+					}
 
 					got := NewDateTimeFormat(locale, test.Options).Format(tests.Date)
 
@@ -120,14 +157,22 @@ func BenchmarkNewDateTime(b *testing.B) {
 
 func BenchmarkDateTime_Format(b *testing.B) {
 	locale := language.MustParse("fa-IR")
-	f := NewDateTimeFormat(locale, Options{})
+	f1 := NewDateTimeFormat(locale, Options{}).Format
+	f2 := NewDateTimeFormat(locale, Options{Year: YearNumeric}).Format
+	f3 := NewDateTimeFormat(locale, Options{Year: Year2Digit}).Format
+	f4 := NewDateTimeFormat(locale, Options{Day: DayNumeric}).Format
+	f5 := NewDateTimeFormat(locale, Options{Day: Day2Digit}).Format
 	now := time.Now()
 
-	var v string
+	var v1, v2, v3, v4, v5 string
 
 	for range b.N {
-		v = f.Format(now)
+		v1, v2, v3, v4, v5 = f1(now), f2(now), f3(now), f4(now), f5(now)
 	}
 
-	runtime.KeepAlive(v)
+	runtime.KeepAlive(v1)
+	runtime.KeepAlive(v2)
+	runtime.KeepAlive(v3)
+	runtime.KeepAlive(v4)
+	runtime.KeepAlive(v5)
 }
