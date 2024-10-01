@@ -2,8 +2,8 @@
 package intl
 
 import (
+  "strconv"
   "strings"
-  "time"
 
   "golang.org/x/text/language"
 )
@@ -73,20 +73,21 @@ func fmtYear(y string, locale language.Tag) string {
   }
 }
 
-func (f *DateTimeFormat) fmtDay(v time.Time) string {
+func (f *DateTimeFormat) fmtDay(d int) string {
   lang, _ := f.locale.Base()
 
-  fmt := func() string {
-    if f.options.Day == Day2Digit {
-      return "02"
+  fmt := func(dd bool) string {
+    if dd && d <= 9 {
+      return "0"+strconv.Itoa(d)
     }
 
-    return "2"
+    return strconv.Itoa(d)
   }
+
 
   switch lang.String() {
   default:
-    return f.fmtNumeral(v.Format(fmt()))
+    return f.fmtNumeral(fmt(f.options.Day == Day2Digit))
 {{- range $fmt, $languages := .DateTimeFormats.D }}
   case "{{ join $languages "\", \"" }}":
     return {{ $fmt }}

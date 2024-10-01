@@ -161,11 +161,11 @@ func (g *Generator) addDateFormatItem(
 
 			switch {
 			default:
-				sb.WriteString("f.fmtNumeral(v.Format(fmt()))")
+				sb.WriteString("f.fmtNumeral(fmt(f.options.Day == Day2Digit))")
 			case v.literal:
 				sb.WriteString(`"` + v.value + `"`)
 			case v.value == "dd":
-				sb.WriteString(`f.fmtNumeral(v.Format("02"))`)
+				sb.WriteString(`f.fmtNumeral(fmt(true))`)
 			}
 		}
 

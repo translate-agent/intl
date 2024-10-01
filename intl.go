@@ -87,7 +87,12 @@ func (f *DateTimeFormat) Format(v time.Time) string {
 			return fmtYear(f.fmtPersianYear(v), f.locale)
 		}
 	case f.options.Day != DayUnd:
-		return f.fmtDay(v)
+		switch f.calendar {
+		default: // gregorian
+			return f.fmtDay(v.Day())
+		case "persian":
+			return f.fmtDay(ptime.New(v).Day())
+		}
 	}
 }
 

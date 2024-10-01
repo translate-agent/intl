@@ -2,8 +2,8 @@
 package intl
 
 import (
+  "strconv"
   "strings"
-  "time"
 
   "golang.org/x/text/language"
 )
@@ -109,27 +109,28 @@ func fmtYear(y string, locale language.Tag) string {
   }
 }
 
-func (f *DateTimeFormat) fmtDay(v time.Time) string {
+func (f *DateTimeFormat) fmtDay(d int) string {
   lang, _ := f.locale.Base()
 
-  fmt := func() string {
-    if f.options.Day == Day2Digit {
-      return "02"
+  fmt := func(dd bool) string {
+    if dd && d <= 9 {
+      return "0"+strconv.Itoa(d)
     }
 
-    return "2"
+    return strconv.Itoa(d)
   }
+
 
   switch lang.String() {
   default:
-    return f.fmtNumeral(v.Format(fmt()))
-  case "lt":
-    return f.fmtNumeral(v.Format("02"))
+    return f.fmtNumeral(fmt(f.options.Day == Day2Digit))
   case "bs", "cs", "da", "dsb", "fo", "hr", "hsb", "no", "sk", "sl":
-    return f.fmtNumeral(v.Format(fmt()))+"."
+    return f.fmtNumeral(fmt(f.options.Day == Day2Digit))+"."
   case "ja", "yue", "zh":
-    return f.fmtNumeral(v.Format(fmt()))+"日"
+    return f.fmtNumeral(fmt(f.options.Day == Day2Digit))+"日"
   case "ko":
-    return f.fmtNumeral(v.Format(fmt()))+"일"
+    return f.fmtNumeral(fmt(f.options.Day == Day2Digit))+"일"
+  case "lt":
+    return f.fmtNumeral(fmt(true))
   }
 }
