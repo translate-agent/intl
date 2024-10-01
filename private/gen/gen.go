@@ -254,6 +254,29 @@ func splitDatePattern(pattern string) []datePatternElement {
 	literal := false
 	quoted := false
 
+	write := func(r rune, asLiteral bool) {
+		if literal && asLiteral {
+			elem.WriteRune(r)
+			last = r
+
+			return
+		}
+
+		if !asLiteral && r == last {
+			elem.WriteRune(r)
+
+			return
+		}
+
+		elements = append(elements, datePatternElement{value: elem.String(), literal: literal})
+
+		elem.Reset()
+		elem.WriteRune(r)
+
+		last = r
+		literal = asLiteral
+	}
+
 	for i, r := range pattern {
 		if i == 0 {
 			last = r
@@ -261,29 +284,6 @@ func splitDatePattern(pattern string) []datePatternElement {
 			literal = !('a' <= r && r <= 'z' || 'A' <= r && r <= 'Z')
 
 			continue
-		}
-
-		write := func(r rune, asLiteral bool) {
-			if literal && asLiteral {
-				elem.WriteRune(r)
-				last = r
-
-				return
-			}
-
-			if !asLiteral && r == last {
-				elem.WriteRune(r)
-
-				return
-			}
-
-			elements = append(elements, datePatternElement{value: elem.String(), literal: literal})
-
-			elem.Reset()
-			elem.WriteRune(r)
-
-			last = r
-			literal = asLiteral
 		}
 
 		switch {
