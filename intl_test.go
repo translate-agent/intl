@@ -72,25 +72,30 @@ func skipTest(locale language.Tag, options Options) bool {
 	}
 
 	_, ok := map[key]struct{}{
-		{"hnj-Hmnp", Options{Year: Year2Digit}}:  {},
-		{"hnj-Hmnp", Options{Year: YearNumeric}}: {},
-		{"lrc-IR", Options{Year: Year2Digit}}:    {},
-		{"lrc-IR", Options{Year: YearNumeric}}:   {},
-		{"mzn-IR", Options{Year: Year2Digit}}:    {},
-		{"mzn-IR", Options{Year: YearNumeric}}:   {},
-		{"nb", Options{Day: Day2Digit}}:          {},
-		{"nb-NO", Options{Day: Day2Digit}}:       {},
-		{"nb-NO", Options{Day: DayNumeric}}:      {},
-		{"nn-NO", Options{Day: Day2Digit}}:       {},
-		{"nn-NO", Options{Day: DayNumeric}}:      {},
-		{"ps-AF", Options{Year: Year2Digit}}:     {},
-		{"ps-AF", Options{Year: YearNumeric}}:    {},
-		{"prg-PL", Options{Year: Year2Digit}}:    {},
-		{"prg-PL", Options{Year: YearNumeric}}:   {},
-		{"sdh-IR", Options{Year: Year2Digit}}:    {},
-		{"sdh-IR", Options{Year: YearNumeric}}:   {},
-		{"th-TH", Options{Year: Year2Digit}}:     {},
-		{"th-TH", Options{Year: YearNumeric}}:    {},
+		{"hnj-Hmnp", Options{Year: Year2Digit}}:  {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"hnj-Hmnp", Options{Year: YearNumeric}}: {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"hnj-Hmnp", Options{Day: Day2Digit}}:    {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"hnj-Hmnp", Options{Day: DayNumeric}}:   {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"lrc-IR", Options{Year: Year2Digit}}:    {}, // CLDR stipules no "AP " prefix. Why Node.js adds prefix?
+		{"lrc-IR", Options{Year: YearNumeric}}:   {}, // CLDR stipules no "AP " prefix. Why Node.js adds prefix?
+		{"mzn-IR", Options{Year: Year2Digit}}:    {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
+		{"mzn-IR", Options{Year: YearNumeric}}:   {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
+		{"mzn-IR", Options{Day: Day2Digit}}:      {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
+		{"mzn-IR", Options{Day: DayNumeric}}:     {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
+		{"nb", Options{Day: Day2Digit}}:          {}, // CLDR stipules d formating. Why Node.js adds . suffix?
+		{"nb", Options{Day: DayNumeric}}:         {}, // CLDR stipules d formating. Why Node.js adds . suffix?
+		{"nb-NO", Options{Day: Day2Digit}}:       {}, // CLDR stipules d formating. Why Node.js adds . suffix?
+		{"nb-NO", Options{Day: DayNumeric}}:      {}, // CLDR stipules d formating. Why Node.js adds . suffix?
+		{"nn-NO", Options{Day: Day2Digit}}:       {}, // CLDR stipules d formating. Why Node.js adds . suffix?
+		{"nn-NO", Options{Day: DayNumeric}}:      {}, // CLDR stipules d formating. Why Node.js adds . suffix?
+		{"ps-AF", Options{Year: Year2Digit}}:     {}, // CLDR stipules no "AP " prefix. Why Node.js adds prefix?
+		{"ps-AF", Options{Year: YearNumeric}}:    {}, // CLDR stipules no "AP " prefix. Why Node.js adds prefix?
+		{"sdh-IR", Options{Year: Year2Digit}}:    {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"sdh-IR", Options{Year: YearNumeric}}:   {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"sdh-IR", Options{Day: Day2Digit}}:      {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"sdh-IR", Options{Day: DayNumeric}}:     {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"th-TH", Options{Year: Year2Digit}}:     {}, // requires buddhist calendar
+		{"th-TH", Options{Year: YearNumeric}}:    {}, // requires buddhist calendar
 	}[key{locale.String(), options}]
 
 	return ok
