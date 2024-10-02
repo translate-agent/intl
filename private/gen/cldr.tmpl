@@ -68,8 +68,8 @@ func fmtYear{{ title $calendarType }}(locale language.Tag) func(string) string {
 
   switch lang.String() {
   default:
-    return func(y string) string { return y }
-{{- range $fmt, $languages := $formats.Y }}
+    return func(y string) string { return {{ $formats.Y.Default }} }
+{{- range $fmt, $languages := $formats.Y.Fmt }}
   case "{{ join $languages "\", \"" }}":
     return func (y string) string { return {{ $fmt }} }
 {{- end }}
@@ -91,7 +91,7 @@ func fmtDay{{ title $calendarType }}(locale language.Tag, digits digits) func(da
   switch lang.String() {
   default:
     return fmt
-{{- range $fmt, $languages := $formats.D }}
+{{- range $fmt, $languages := $formats.D.Fmt }}
   case "{{ join $languages "\", \"" }}":
     return func(d int, f string) string { return {{ $fmt }} }
 {{- end }}

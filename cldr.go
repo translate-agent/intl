@@ -143,7 +143,9 @@ func fmtYearPersian(locale language.Tag) func(string) string {
 
   switch lang.String() {
   default:
-    return func(y string) string { return y }
+    return func(y string) string { return "AP "+y }
+  case "fa":
+    return func (y string) string { return y }
   }
 }
 

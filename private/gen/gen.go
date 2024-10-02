@@ -99,6 +99,8 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 			formats, ok := dateTimeFormats[calendar.Type]
 			if !ok {
 				formats = NewCalendarDateTimeFormats()
+				formats.Y.Default = g.dateFormatItem(calendar.Type, "y")
+				formats.D.Default = g.dateFormatItem(calendar.Type, "d")
 				dateTimeFormats[calendar.Type] = formats
 			}
 
@@ -111,6 +113,41 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 	}
 
 	return dateTimeFormats
+}
+
+func (g *Generator) dateFormatItem(calendarType string, id string) string {
+	calendars := g.cldr.RawLDML("root").Dates.Calendars.Calendar
+
+	i := slices.IndexFunc(g.cldr.RawLDML("root").Dates.Calendars.Calendar, func(calendar *cldr.Calendar) bool {
+		return calendar.Type == calendarType
+	})
+
+	calendar := calendars[i]
+
+	if calendar.DateTimeFormats.Alias != nil {
+		switch {
+		case strings.Contains(calendar.DateTimeFormats.Alias.Path, "gregorian"):
+			return g.dateFormatItem("gregorian", id)
+		case strings.Contains(calendar.DateTimeFormats.Alias.Path, "generic"):
+			return g.dateFormatItem("generic", id)
+		}
+	}
+
+	for _, availableFormats := range calendar.DateTimeFormats.AvailableFormats {
+		for _, dateFormatItem := range availableFormats.DateFormatItem {
+			if dateFormatItem.Id != id {
+				continue
+			}
+
+			if id != "y" && calendarType != "persian" {
+				return dateFormatItem.CharData
+			}
+
+			return strings.Replace(dateFormatItem.CharData, "G ", `"AP "+`, 1)
+		}
+	}
+
+	return ""
 }
 
 // CLDRDateFormatItem is a copy of CLDR DateFormatItem.
@@ -131,7 +168,7 @@ func (g *Generator) addDateFormatItem(
 
 	switch dateFormatItem.Id {
 	case "y":
-		if dateFormatItem.CharData == "y" {
+		if dateFormatItem.CharData == dateTimeFormats.Y.Default {
 			return
 		}
 
@@ -149,9 +186,9 @@ func (g *Generator) addDateFormatItem(
 			}
 		}
 
-		dateTimeFormats.Y[sb.String()] = append(dateTimeFormats.Y[sb.String()], locale)
+		dateTimeFormats.Y.Fmt[sb.String()] = append(dateTimeFormats.Y.Fmt[sb.String()], locale)
 	case "d":
-		if dateFormatItem.CharData == "d" {
+		if dateFormatItem.CharData == dateTimeFormats.D.Default {
 			return
 		}
 
@@ -172,7 +209,7 @@ func (g *Generator) addDateFormatItem(
 			}
 		}
 
-		dateTimeFormats.D[sb.String()] = append(dateTimeFormats.D[sb.String()], locale)
+		dateTimeFormats.D.Fmt[sb.String()] = append(dateTimeFormats.D.Fmt[sb.String()], locale)
 	}
 }
 
@@ -269,20 +306,25 @@ type TemplateData struct {
 type DateTimeFormats map[string]CalendarDateTimeFormats
 
 type CalendarDateTimeFormats struct {
-	// key - expr (format), value - languages.
-	Y map[string][]string
-	D map[string][]string
+	Y CalendarDateTimeFormat
+	D CalendarDateTimeFormat
 }
 
 func NewCalendarDateTimeFormats() CalendarDateTimeFormats {
 	return CalendarDateTimeFormats{
-		Y: make(map[string][]string),
-		D: make(map[string][]string),
+		Y: NewCalendarDateTimeFormat(),
+		D: NewCalendarDateTimeFormat(),
 	}
 }
 
-type DateTimeFormatItems struct {
-	Y string
+type CalendarDateTimeFormat struct {
+	// key - expr (format), value - languages.
+	Fmt     map[string][]string
+	Default string
+}
+
+func NewCalendarDateTimeFormat() CalendarDateTimeFormat {
+	return CalendarDateTimeFormat{Fmt: make(map[string][]string)}
 }
 
 type CalendarPreference struct {
