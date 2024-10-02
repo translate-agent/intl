@@ -4,8 +4,10 @@ package intl
 import (
   "strconv"
   "strings"
+  "time"
 
   "golang.org/x/text/language"
+	ptime "github.com/yaa110/go-persian-calendar"
 )
 
 type numberingSystem int
@@ -60,37 +62,82 @@ func defaultCalendar(locale language.Tag) string {
   }
 }
 
-func fmtYear(y string, locale language.Tag) string {
+func fmtYear(locale language.Tag) func(string) string {
   lang, _ := locale.Base()
 
   switch lang.String() {
   default:
-    return y
+    return func(y string) string { return y }
 {{- range $fmt, $languages := .DateTimeFormats.Y }}
   case "{{ join $languages "\", \"" }}":
-    return {{ $fmt }}
+    return func (y string) string { return {{ $fmt }} }
 {{- end }}
   }
 }
 
-func (f *DateTimeFormat) fmtDay(d int) string {
-  lang, _ := f.locale.Base()
+func fmtDay(locale language.Tag, digits digits) func(day int, format string) string {
+  lang, _ := locale.Base()
 
-  fmt := func(dd bool) string {
-    if dd && d <= 9 {
-      return "0"+strconv.Itoa(d)
+  fmt := func(d int, f string) string {
+    if f == "02" && d <= 9 {
+      return digits.Sprint("0"+strconv.Itoa(d))
     }
 
-    return strconv.Itoa(d)
+    return digits.Sprint(strconv.Itoa(d))
   }
 
 
   switch lang.String() {
   default:
-    return f.fmtNumeral(fmt(f.options.Day == Day2Digit))
+    return fmt
 {{- range $fmt, $languages := .DateTimeFormats.D }}
   case "{{ join $languages "\", \"" }}":
-    return {{ $fmt }}
+    return func(d int, f string) string { return {{ $fmt }} }
 {{- end }}
   }
+}
+
+type gregorianDateTimeFormat struct {
+  time    time.Time
+  fmtYear func(format string) string
+  fmtDay  func(day int, format string) string
+  digits  digits
+}
+
+func (f *gregorianDateTimeFormat) SetTime(v time.Time) {
+  f.time = v
+}
+
+func (f *gregorianDateTimeFormat) Year(format string) string {
+  return f.fmtYear(f.digits.Sprint(f.time.Format(format)))
+}
+
+func (f *gregorianDateTimeFormat) Day(format string) string {
+  return f.fmtDay(f.time.Day(), format)
+}
+
+type persianDateTimeFormat struct {
+  time    ptime.Time
+  fmtYear func(format string) string
+  fmtDay  func(day int, format string) string
+  digits  digits
+}
+
+func (f *persianDateTimeFormat) SetTime(v time.Time) {
+  f.time = ptime.New(v)
+}
+
+func (f *persianDateTimeFormat) Year(format string) string {
+  switch format {
+  case "06":
+    format = "yy"
+  case "2006":
+    format = "y"
+  }
+
+  return f.fmtYear(f.digits.Sprint(f.time.Format(format)))
+}
+
+func (f *persianDateTimeFormat) Day(format string) string {
+  return f.fmtDay(f.time.Day(), format)
 }
