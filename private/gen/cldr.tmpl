@@ -62,20 +62,21 @@ func defaultCalendar(locale language.Tag) string {
   }
 }
 
-func fmtYear(locale language.Tag) func(string) string {
+{{ range $calendarType, $formats := .DateTimeFormats }}
+func fmtYear{{ title $calendarType }}(locale language.Tag) func(string) string {
   lang, _ := locale.Base()
 
   switch lang.String() {
   default:
     return func(y string) string { return y }
-{{- range $fmt, $languages := .DateTimeFormats.Y }}
+{{- range $fmt, $languages := $formats.Y }}
   case "{{ join $languages "\", \"" }}":
     return func (y string) string { return {{ $fmt }} }
 {{- end }}
   }
 }
 
-func fmtDay(locale language.Tag, digits digits) func(day int, format string) string {
+func fmtDay{{ title $calendarType }}(locale language.Tag, digits digits) func(day int, format string) string {
   lang, _ := locale.Base()
 
   fmt := func(d int, f string) string {
@@ -90,12 +91,14 @@ func fmtDay(locale language.Tag, digits digits) func(day int, format string) str
   switch lang.String() {
   default:
     return fmt
-{{- range $fmt, $languages := .DateTimeFormats.D }}
+{{- range $fmt, $languages := $formats.D }}
   case "{{ join $languages "\", \"" }}":
     return func(d int, f string) string { return {{ $fmt }} }
 {{- end }}
   }
 }
+{{ end }}
+
 
 type gregorianDateTimeFormat struct {
   time    time.Time

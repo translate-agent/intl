@@ -76,10 +76,7 @@ func (g *Generator) defaultNumberingSystems() DefaultNumberingSystems {
 }
 
 func (g *Generator) dateTimeFormats() DateTimeFormats {
-	dateTimeFormats := DateTimeFormats{
-		Y: make(map[string][]string),
-		D: make(map[string][]string),
-	}
+	dateTimeFormats := make(DateTimeFormats)
 
 	for _, locale := range g.cldr.Locales() {
 		// Ignore duplicate formatting for "y".
@@ -95,13 +92,19 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 		}
 
 		for _, calendar := range ldml.Dates.Calendars.Calendar {
-			if calendar.Type != "gregorian" || calendar.DateTimeFormats == nil {
+			if !slices.Contains([]string{"gregorian", "persian"}, calendar.Type) || calendar.DateTimeFormats == nil {
 				continue
+			}
+
+			formats, ok := dateTimeFormats[calendar.Type]
+			if !ok {
+				formats = NewCalendarDateTimeFormats()
+				dateTimeFormats[calendar.Type] = formats
 			}
 
 			for _, availableFormats := range calendar.DateTimeFormats.AvailableFormats {
 				for _, dateFormatItem := range availableFormats.DateFormatItem {
-					g.addDateFormatItem(dateTimeFormats, (*CLDRDateFormatItem)(dateFormatItem), locale)
+					g.addDateFormatItem(formats, (*CLDRDateFormatItem)(dateFormatItem), locale)
 				}
 			}
 		}
@@ -118,7 +121,7 @@ type CLDRDateFormatItem struct {
 }
 
 func (g *Generator) addDateFormatItem(
-	dateTimeFormats DateTimeFormats,
+	dateTimeFormats CalendarDateTimeFormats,
 	dateFormatItem *CLDRDateFormatItem,
 	locale string,
 ) {
@@ -262,10 +265,20 @@ type TemplateData struct {
 	NumberingSystems        []NumberingSystem
 }
 
-// key - expr (format), value - languages.
-type DateTimeFormats struct {
+// key - calendar type.
+type DateTimeFormats map[string]CalendarDateTimeFormats
+
+type CalendarDateTimeFormats struct {
+	// key - expr (format), value - languages.
 	Y map[string][]string
 	D map[string][]string
+}
+
+func NewCalendarDateTimeFormats() CalendarDateTimeFormats {
+	return CalendarDateTimeFormats{
+		Y: make(map[string][]string),
+		D: make(map[string][]string),
+	}
 }
 
 type DateTimeFormatItems struct {

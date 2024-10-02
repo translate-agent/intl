@@ -87,14 +87,14 @@ func NewDateTimeFormat(locale language.Tag, options Options) *DateTimeFormat {
 	switch defaultCalendar(locale) {
 	default:
 		fmt = &gregorianDateTimeFormat{
-			fmtYear: fmtYear(locale),
-			fmtDay:  fmtDay(locale, d),
+			fmtYear: fmtYearGregorian(locale),
+			fmtDay:  fmtDayGregorian(locale, d),
 			digits:  d,
 		}
 	case "persian":
 		fmt = &persianDateTimeFormat{
-			fmtYear: fmtYear(locale),
-			fmtDay:  fmtDay(locale, d),
+			fmtYear: fmtYearPersian(locale),
+			fmtDay:  fmtDayPersian(locale, d),
 			digits:  d,
 		}
 	}
@@ -129,34 +129,6 @@ func (f *DateTimeFormat) Format(v time.Time) string {
 		return f.fmt.Day(s)
 	}
 }
-
-func (f *DateTimeFormat) fmtYear(v time.Time) string {
-	s := "06"
-	if f.options.Year == YearNumeric {
-		s = "2006"
-	}
-
-	return f.fmt.Year(s)
-}
-
-// func (f *DateTimeFormat) fmtPersianYear(v time.Time) string {
-// 	year := strconv.Itoa(ptime.New(v).Year())
-
-// 	switch f.options.Year {
-// 	default:
-// 		panic("invalid year option")
-// 	case YearNumeric:
-// 		return f.fmtNumeral(year)
-// 	case Year2Digit:
-// 		const last2digits = 2
-
-// 		if len(year) > last2digits {
-// 			return f.fmtNumeral(year[len(year)-last2digits:])
-// 		}
-
-// 		return f.fmtNumeral(year)
-// 	}
-// }
 
 // dateTimeFormatter is date time formatter for a specific calendar.
 type dateTimeFormatter interface {

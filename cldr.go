@@ -92,7 +92,8 @@ func defaultCalendar(locale language.Tag) string {
   }
 }
 
-func fmtYear(locale language.Tag) func(string) string {
+
+func fmtYearGregorian(locale language.Tag) func(string) string {
   lang, _ := locale.Base()
 
   switch lang.String() {
@@ -111,7 +112,7 @@ func fmtYear(locale language.Tag) func(string) string {
   }
 }
 
-func fmtDay(locale language.Tag, digits digits) func(day int, format string) string {
+func fmtDayGregorian(locale language.Tag, digits digits) func(day int, format string) string {
   lang, _ := locale.Base()
 
   fmt := func(d int, f string) string {
@@ -136,6 +137,35 @@ func fmtDay(locale language.Tag, digits digits) func(day int, format string) str
     return func(d int, f string) string { return fmt(d, f)+"일" }
   }
 }
+
+func fmtYearPersian(locale language.Tag) func(string) string {
+  lang, _ := locale.Base()
+
+  switch lang.String() {
+  default:
+    return func(y string) string { return y }
+  }
+}
+
+func fmtDayPersian(locale language.Tag, digits digits) func(day int, format string) string {
+  lang, _ := locale.Base()
+
+  fmt := func(d int, f string) string {
+    if f == "02" && d <= 9 {
+      return digits.Sprint("0"+strconv.Itoa(d))
+    }
+
+    return digits.Sprint(strconv.Itoa(d))
+  }
+
+
+  switch lang.String() {
+  default:
+    return fmt
+  }
+}
+
+
 
 type gregorianDateTimeFormat struct {
   time    time.Time
