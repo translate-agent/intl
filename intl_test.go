@@ -133,31 +133,46 @@ func TestDateTime_Format(t *testing.T) {
 	}
 }
 
-func BenchmarkNewDateTime(b *testing.B) {
-	locale := language.MustParse("fa-IR")
+var locales = []string{
+	"fa-IR", // persian calendar, arabext numerals
+	"lv-LV", // gregorian calendar, latn numerals
+	"dz-BT", // gregorian calendar, tibt numerals
+}
 
+func BenchmarkNewDateTime(b *testing.B) {
 	var v *DateTimeFormat
 
-	for range b.N {
-		v = NewDateTimeFormat(locale, Options{})
+	for _, s := range locales {
+		locale := language.MustParse(s)
+
+		b.Run(s, func(b *testing.B) {
+			for range b.N {
+				v = NewDateTimeFormat(locale, Options{})
+			}
+		})
 	}
 
 	runtime.KeepAlive(v)
 }
 
 func BenchmarkDateTime_Format(b *testing.B) {
-	locale := language.MustParse("fa-IR")
-	f1 := NewDateTimeFormat(locale, Options{}).Format
-	f2 := NewDateTimeFormat(locale, Options{Year: YearNumeric}).Format
-	f3 := NewDateTimeFormat(locale, Options{Year: Year2Digit}).Format
-	f4 := NewDateTimeFormat(locale, Options{Day: DayNumeric}).Format
-	f5 := NewDateTimeFormat(locale, Options{Day: Day2Digit}).Format
-	now := time.Now()
-
 	var v1, v2, v3, v4, v5 string
 
-	for range b.N {
-		v1, v2, v3, v4, v5 = f1(now), f2(now), f3(now), f4(now), f5(now)
+	now := time.Now()
+
+	for _, s := range locales {
+		locale := language.MustParse(s)
+		f1 := NewDateTimeFormat(locale, Options{}).Format
+		f2 := NewDateTimeFormat(locale, Options{Year: YearNumeric}).Format
+		f3 := NewDateTimeFormat(locale, Options{Year: Year2Digit}).Format
+		f4 := NewDateTimeFormat(locale, Options{Day: DayNumeric}).Format
+		f5 := NewDateTimeFormat(locale, Options{Day: Day2Digit}).Format
+
+		b.Run(s, func(b *testing.B) {
+			for range b.N {
+				v1, v2, v3, v4, v5 = f1(now), f2(now), f3(now), f4(now), f5(now)
+			}
+		})
 	}
 
 	runtime.KeepAlive(v1)

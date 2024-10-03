@@ -199,15 +199,22 @@ func (f *persianDateTimeFormat) SetTime(v time.Time) {
   f.time = ptime.New(v)
 }
 
+// Year returns formatted year (only "06" and "2006" is supported).
 func (f *persianDateTimeFormat) Year(format string) string {
-  switch format {
-  case "06":
-    format = "yy"
-  case "2006":
-    format = "y"
+  year := strconv.Itoa(f.time.Year())
+
+  // ptime.Time.Format is very slow. Make it fast!
+  if format == "06" {
+    switch len(year) {
+    default:
+      year = year[len(year)-2:]
+    case 1:
+      year = "0" + year
+    case 0, 2: // noop, isSliceInBounds()
+    }
   }
 
-  return f.fmtYear(f.digits.Sprint(f.time.Format(format)))
+  return f.fmtYear(f.digits.Sprint(year))
 }
 
 func (f *persianDateTimeFormat) Day(format string) string {
