@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"maps"
 	"os"
@@ -65,7 +66,20 @@ func (g *Generator) merge() {
 		}
 	}
 
-	// merge root to base
+	// merge root to language
+	root := g.cldr.RawLDML("root")
+
+	for _, locale := range g.cldr.Locales() {
+		if strings.ContainsRune(locale, '_') {
+			continue
+		}
+
+		ldml := g.cldr.RawLDML(locale)
+
+		merge(ldml, root)
+	}
+
+	// merge language to territory
 	for _, locale := range g.cldr.Locales() {
 		if !strings.ContainsRune(locale, '_') {
 			continue
@@ -83,8 +97,6 @@ func (g *Generator) merge() {
 }
 
 func merge(dst, fallback *cldr.LDML) {
-	// populate date time formats
-
 	findCalendar := func(ldml *cldr.LDML, calendarType string) *cldr.Calendar {
 		for _, v := range ldml.Dates.Calendars.Calendar {
 			if v.Type == calendarType {
@@ -95,23 +107,15 @@ func merge(dst, fallback *cldr.LDML) {
 		return nil
 	}
 
-	fmt.Printf("//\t%s -> '%s'\n", Locale(fallback), Locale(dst))
-
 	if dst.Dates == nil {
-		fmt.Println("//\t\t+.Dates")
-
-		dst.Dates = fallback.Dates
+		dst.Dates = deepCopy(fallback.Dates)
 	}
 
 	if dst.Dates.Calendars == nil {
-		fmt.Println("//\t\t+.Dates.Calendars")
-
-		dst.Dates.Calendars = fallback.Dates.Calendars
+		dst.Dates.Calendars = deepCopy(fallback.Dates.Calendars)
 	}
 
 	if len(dst.Dates.Calendars.Calendar) == 0 {
-		fmt.Println("//\t\t+.Dates.Calendars.Calendar")
-
 		dst.Dates.Calendars.Calendar = fallback.Dates.Calendars.Calendar
 	}
 
@@ -124,38 +128,43 @@ func merge(dst, fallback *cldr.LDML) {
 
 		if parentCalendar.Alias != nil &&
 			parentCalendar.Alias.Path == "../../calendar[@type='generic']/dateTimeFormats" {
-			fmt.Println("//\t\t+.DateTimeFormats")
-
-			parentCalendar.DateTimeFormats = findCalendar(fallback, "generic").DateTimeFormats
+			parentCalendar.DateTimeFormats = deepCopy(findCalendar(fallback, "generic").DateTimeFormats)
 		}
 
 		calendar := findCalendar(dst, calendarType)
 		if calendar == nil {
-			calendar = parentCalendar
+			calendar = deepCopy(parentCalendar)
 		}
 
 		if calendar.DateTimeFormats == nil {
-			calendar.DateTimeFormats = parentCalendar.DateTimeFormats
+			calendar.DateTimeFormats = deepCopy(parentCalendar.DateTimeFormats)
 		}
 
-		mergeFmt := func(fmtType string) {
-			for _, fmt := range calendar.DateTimeFormats.AvailableFormats {
-				if fmt.Type == fmtType {
-					return
-				}
-			}
+		if calendar.DateTimeFormats.AvailableFormats == nil {
+			calendar.DateTimeFormats.AvailableFormats = deepCopy(parentCalendar.DateTimeFormats.AvailableFormats)
+		}
 
-			for _, fmt := range parentCalendar.DateTimeFormats.AvailableFormats {
-				if fmt.Type != fmtType {
+		for _, availableFormats := range parentCalendar.DateTimeFormats.AvailableFormats {
+			for _, dateFormatItem := range availableFormats.DateFormatItem {
+				found := func() bool {
+					for _, v := range calendar.DateTimeFormats.AvailableFormats[0].DateFormatItem {
+						if v.Id == dateFormatItem.Id {
+							return true
+						}
+					}
+
+					return false
+				}()
+
+				if found {
 					continue
 				}
 
-				calendar.DateTimeFormats.AvailableFormats = append(calendar.DateTimeFormats.AvailableFormats, fmt)
+				calendar.DateTimeFormats.AvailableFormats[0].DateFormatItem = append(
+					calendar.DateTimeFormats.AvailableFormats[0].DateFormatItem,
+					deepCopy(dateFormatItem))
 			}
 		}
-
-		mergeFmt("y")
-		mergeFmt("d")
 	}
 }
 
@@ -541,4 +550,19 @@ func splitDatePattern(pattern string) []datePatternElement {
 	}
 
 	return elements
+}
+
+func deepCopy[T any](v T) T {
+	var r T
+
+	b, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := json.Unmarshal(b, &r); err != nil {
+		panic(err)
+	}
+
+	return r
 }
