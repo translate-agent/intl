@@ -34,7 +34,129 @@ func (g *Generator) Load(dir string) error {
 		return fmt.Errorf(`decode CLDR at path "%s": %w`, dir, err)
 	}
 
+	g.merge()
+
 	return nil
+}
+
+func (g *Generator) merge() {
+	// parent merge
+	for _, parentLocale := range g.cldr.Supplemental().ParentLocales.ParentLocale {
+		// ignore, cldr package does NOT have the attribute "component"
+		// <parentLocales component="collations">
+		// 	<parentLocale parent="sr_ME" locales="sr_Cyrl_ME"/>
+		// 	<parentLocale parent="zh_Hant" locales="yue yue_Hant"/>
+		// 	<parentLocale parent="zh_Hans" locales="yue_CN yue_Hans yue_Hans_CN"/>
+		// </parentLocales>
+		if slices.Contains([]string{"sr_ME", "zh_Hant", "zh_Hans"}, parentLocale.Parent) {
+			continue
+		}
+
+		parent := g.cldr.RawLDML(parentLocale.Parent)
+
+		for _, locale := range strings.Split(parentLocale.Locales, " ") {
+			child := g.cldr.RawLDML(locale)
+
+			if child == nil {
+				continue
+			}
+
+			merge(child, parent)
+		}
+	}
+
+	// merge root to base
+	for _, locale := range g.cldr.Locales() {
+		if !strings.ContainsRune(locale, '_') {
+			continue
+		}
+
+		ldml := g.cldr.RawLDML(locale)
+
+		parts := strings.Split(locale, "_")
+		parts = parts[:len(parts)-1]
+
+		fallback := g.cldr.RawLDML(strings.Join(parts, "_"))
+
+		merge(ldml, fallback)
+	}
+}
+
+func merge(dst, fallback *cldr.LDML) {
+	// populate date time formats
+
+	findCalendar := func(ldml *cldr.LDML, calendarType string) *cldr.Calendar {
+		for _, v := range ldml.Dates.Calendars.Calendar {
+			if v.Type == calendarType {
+				return v
+			}
+		}
+
+		return nil
+	}
+
+	fmt.Printf("//\t%s -> '%s'\n", Locale(fallback), Locale(dst))
+
+	if dst.Dates == nil {
+		fmt.Println("//\t\t+.Dates")
+
+		dst.Dates = fallback.Dates
+	}
+
+	if dst.Dates.Calendars == nil {
+		fmt.Println("//\t\t+.Dates.Calendars")
+
+		dst.Dates.Calendars = fallback.Dates.Calendars
+	}
+
+	if len(dst.Dates.Calendars.Calendar) == 0 {
+		fmt.Println("//\t\t+.Dates.Calendars.Calendar")
+
+		dst.Dates.Calendars.Calendar = fallback.Dates.Calendars.Calendar
+	}
+
+	for _, calendarType := range []string{"gregorian", "persian"} {
+		parentCalendar := findCalendar(fallback, calendarType)
+		// skip if parent calendar not found
+		if parentCalendar == nil {
+			continue
+		}
+
+		if parentCalendar.Alias != nil &&
+			parentCalendar.Alias.Path == "../../calendar[@type='generic']/dateTimeFormats" {
+			fmt.Println("//\t\t+.DateTimeFormats")
+
+			parentCalendar.DateTimeFormats = findCalendar(fallback, "generic").DateTimeFormats
+		}
+
+		calendar := findCalendar(dst, calendarType)
+		if calendar == nil {
+			calendar = parentCalendar
+		}
+
+		if calendar.DateTimeFormats == nil {
+			calendar.DateTimeFormats = parentCalendar.DateTimeFormats
+		}
+
+		mergeFmt := func(fmtType string) {
+			for _, fmt := range calendar.DateTimeFormats.AvailableFormats {
+				if fmt.Type == fmtType {
+					return
+				}
+			}
+
+			for _, fmt := range parentCalendar.DateTimeFormats.AvailableFormats {
+				if fmt.Type != fmtType {
+					continue
+				}
+
+				calendar.DateTimeFormats.AvailableFormats = append(calendar.DateTimeFormats.AvailableFormats, fmt)
+			}
+		}
+
+		mergeFmt("y")
+		mergeFmt("d")
+	}
 }
 
 func (g *Generator) calendarPreferences() []CalendarPreference {
@@ -99,8 +221,10 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 			formats, ok := dateTimeFormats[calendar.Type]
 			if !ok {
 				formats = NewCalendarDateTimeFormats()
-				formats.Y.Default = g.dateFormatItem(calendar.Type, "y")
-				formats.D.Default = g.dateFormatItem(calendar.Type, "d")
+
+				formats.Y.Default = g.dateFormatItem("root", calendar.Type, "y")
+				formats.D.Default = g.dateFormatItem("root", calendar.Type, "d")
+
 				dateTimeFormats[calendar.Type] = formats
 			}
 
@@ -115,10 +239,10 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 	return dateTimeFormats
 }
 
-func (g *Generator) dateFormatItem(calendarType string, id string) string {
-	calendars := g.cldr.RawLDML("root").Dates.Calendars.Calendar
+func (g *Generator) dateFormatItem(language string, calendarType string, id string) string {
+	calendars := g.cldr.RawLDML(language).Dates.Calendars.Calendar
 
-	i := slices.IndexFunc(g.cldr.RawLDML("root").Dates.Calendars.Calendar, func(calendar *cldr.Calendar) bool {
+	i := slices.IndexFunc(g.cldr.RawLDML(language).Dates.Calendars.Calendar, func(calendar *cldr.Calendar) bool {
 		return calendar.Type == calendarType
 	})
 
@@ -127,9 +251,9 @@ func (g *Generator) dateFormatItem(calendarType string, id string) string {
 	if calendar.DateTimeFormats.Alias != nil {
 		switch {
 		case strings.Contains(calendar.DateTimeFormats.Alias.Path, "gregorian"):
-			return g.dateFormatItem("gregorian", id)
+			return g.dateFormatItem("root", "gregorian", id)
 		case strings.Contains(calendar.DateTimeFormats.Alias.Path, "generic"):
-			return g.dateFormatItem("generic", id)
+			return g.dateFormatItem("root", "generic", id)
 		}
 	}
 
@@ -214,7 +338,7 @@ func (g *Generator) addDateFormatItem(
 }
 
 func (g *Generator) numberingSystems(defaultNumberingSystems DefaultNumberingSystems) []NumberingSystem {
-	numberingSystems := make([]NumberingSystem, 0, 30) //nolint:mnd
+	numberingSystems := make([]NumberingSystem, 0, 20) //nolint:mnd
 
 	ids := slices.Collect(maps.Keys(defaultNumberingSystems))
 
