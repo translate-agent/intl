@@ -41,7 +41,9 @@ func (g *Generator) Load(dir string) error {
 }
 
 func (g *Generator) merge() {
-	// parent merge
+	root := g.cldr.RawLDML("root")
+
+	// merge parent to child
 	for _, parentLocale := range g.cldr.Supplemental().ParentLocales.ParentLocale {
 		// ignore, cldr package does NOT have the attribute "component"
 		// <parentLocales component="collations">
@@ -55,6 +57,9 @@ func (g *Generator) merge() {
 
 		parent := g.cldr.RawLDML(parentLocale.Parent)
 
+		// merge root to parent
+		merge(parent, root)
+
 		for _, locale := range strings.Split(parentLocale.Locales, " ") {
 			child := g.cldr.RawLDML(locale)
 
@@ -67,7 +72,6 @@ func (g *Generator) merge() {
 	}
 
 	// merge root to language
-	root := g.cldr.RawLDML("root")
 
 	for _, locale := range g.cldr.Locales() {
 		if strings.ContainsRune(locale, '_') {
@@ -119,7 +123,7 @@ func merge(dst, fallback *cldr.LDML) {
 		dst.Dates.Calendars.Calendar = fallback.Dates.Calendars.Calendar
 	}
 
-	for _, calendarType := range []string{"gregorian", "persian"} {
+	for _, calendarType := range []string{"gregorian", "persian", "buddhist"} {
 		parentCalendar := findCalendar(fallback, calendarType)
 		// skip if parent calendar not found
 		if parentCalendar == nil {
@@ -223,7 +227,7 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 		}
 
 		for _, calendar := range ldml.Dates.Calendars.Calendar {
-			if !slices.Contains([]string{"gregorian", "persian"}, calendar.Type) || calendar.DateTimeFormats == nil {
+			if !slices.Contains([]string{"gregorian", "persian", "buddhist"}, calendar.Type) || calendar.DateTimeFormats == nil {
 				continue
 			}
 

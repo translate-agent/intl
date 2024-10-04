@@ -142,6 +142,12 @@ func NewDateTimeFormat(locale language.Tag, options Options) *DateTimeFormat {
 			fmtDay:  fmtDayPersian(locale, d),
 			digits:  d,
 		}
+	case "buddhist":
+		fmt = &buddhistDateTimeFormat{
+			fmtYear: fmtYearBuddhist(locale),
+			fmtDay:  fmtDayBuddhist(locale, d),
+			digits:  d,
+		}
 	}
 
 	return &DateTimeFormat{

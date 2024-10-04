@@ -93,6 +93,39 @@ func defaultCalendar(locale language.Tag) string {
 }
 
 
+func fmtYearBuddhist(locale language.Tag) func(string) string {
+  lang, _ := locale.Base()
+
+  switch lang.String() {
+  default:
+    return func(y string) string { return "AP "+y }
+  case "be", "hi":
+    return func (y string) string { return y+" "+y }
+  case "ja", "yue":
+    return func (y string) string { return y+y+"年" }
+  }
+}
+
+func fmtDayBuddhist(locale language.Tag, digits digits) func(day int, format string) string {
+  lang, _ := locale.Base()
+
+  fmt := func(d int, f string) string {
+    if f == "02" && d <= 9 {
+      return digits.Sprint("0"+strconv.Itoa(d))
+    }
+
+    return digits.Sprint(strconv.Itoa(d))
+  }
+
+
+  switch lang.String() {
+  default:
+    return fmt
+  case "vi":
+    return func(d int, f string) string { return "'"+fmt(d, f)+fmt(d, f)+"à"+fmt(d, f)+" dd" }
+  }
+}
+
 func fmtYearGregorian(locale language.Tag) func(string) string {
   lang, _ := locale.Base()
 
@@ -218,5 +251,37 @@ func (f *persianDateTimeFormat) Year(format string) string {
 }
 
 func (f *persianDateTimeFormat) Day(format string) string {
+  return f.fmtDay(f.time.Day(), format)
+}
+
+type buddhistDateTimeFormat struct {
+  time    time.Time
+  fmtYear func(format string) string
+  fmtDay  func(day int, format string) string
+  digits  digits
+}
+
+func (f *buddhistDateTimeFormat) SetTime(v time.Time) {
+  f.time = v.AddDate(543, 0, 0)
+}
+
+func (f *buddhistDateTimeFormat) Year(format string) string {
+  year := strconv.Itoa(f.time.Year())
+
+  // ptime.Time.Format is very slow. Make it fast!
+  if format == "06" {
+    switch len(year) {
+    default:
+      year = year[len(year)-2:]
+    case 1:
+      year = "0" + year
+    case 0, 2: // noop, isSliceInBounds()
+    }
+  }
+
+  return f.fmtYear(f.digits.Sprint(year))
+}
+
+func (f *buddhistDateTimeFormat) Day(format string) string {
   return f.fmtDay(f.time.Day(), format)
 }

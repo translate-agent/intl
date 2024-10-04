@@ -151,3 +151,35 @@ func (f *persianDateTimeFormat) Year(format string) string {
 func (f *persianDateTimeFormat) Day(format string) string {
   return f.fmtDay(f.time.Day(), format)
 }
+
+type buddhistDateTimeFormat struct {
+  time    time.Time
+  fmtYear func(format string) string
+  fmtDay  func(day int, format string) string
+  digits  digits
+}
+
+func (f *buddhistDateTimeFormat) SetTime(v time.Time) {
+  f.time = v.AddDate(543, 0, 0)
+}
+
+func (f *buddhistDateTimeFormat) Year(format string) string {
+  year := strconv.Itoa(f.time.Year())
+
+  // ptime.Time.Format is very slow. Make it fast!
+  if format == "06" {
+    switch len(year) {
+    default:
+      year = year[len(year)-2:]
+    case 1:
+      year = "0" + year
+    case 0, 2: // noop, isSliceInBounds()
+    }
+  }
+
+  return f.fmtYear(f.digits.Sprint(year))
+}
+
+func (f *buddhistDateTimeFormat) Day(format string) string {
+  return f.fmtDay(f.time.Day(), format)
+}
