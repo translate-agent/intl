@@ -1,6 +1,7 @@
 package intl
 
 import (
+	"fmt"
 	"time"
 
 	"golang.org/x/text/language"
@@ -17,6 +18,28 @@ func (y Year) String() string {
 	case Year2Digit:
 		return "2-digit"
 	}
+}
+
+func ParseYear(s string) (Year, error) {
+	switch s {
+	default:
+		return YearUnd, fmt.Errorf(`bad year value "%s", want "numeric", "2-digit" or ""`, s)
+	case "":
+		return YearUnd, nil
+	case "numeric":
+		return YearNumeric, nil
+	case "2-digit":
+		return Year2Digit, nil
+	}
+}
+
+func MustParseYear(s string) Year {
+	v, err := ParseYear(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
 }
 
 const (
@@ -36,6 +59,28 @@ func (y Day) String() string {
 	case Day2Digit:
 		return "2-digit"
 	}
+}
+
+func ParseDay(s string) (Day, error) {
+	switch s {
+	default:
+		return DayUnd, fmt.Errorf(`bad day value "%s", want "numeric", "2-digit" or ""`, s)
+	case "":
+		return DayUnd, nil
+	case "numeric":
+		return DayNumeric, nil
+	case "2-digit":
+		return Day2Digit, nil
+	}
+}
+
+func MustParseDay(s string) Day {
+	v, err := ParseDay(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
 }
 
 const (
