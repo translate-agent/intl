@@ -13,10 +13,11 @@ init:
 cldr:
   WORKDIR /cldr
   ARG cldr_version=45.0
-  RUN wget https://unicode.org/Public/cldr/45/cldr-common-$cldr_version.zip
+  ARG out=.cldr
+  RUN wget https://unicode.org/Public/cldr/$( printf "%.0f" $cldr_version )/cldr-common-$cldr_version.zip
   RUN unzip cldr-common-$cldr_version.zip
   RUN rm cldr-common-$cldr_version.zip
-  SAVE ARTIFACT /cldr AS LOCAL .cldr
+  SAVE ARTIFACT /cldr AS LOCAL $out
 
 # testdata generates test cases and saves to tests.json
 testdata:
