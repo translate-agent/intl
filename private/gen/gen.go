@@ -194,7 +194,7 @@ func (g *Generator) defaultNumberingSystems() DefaultNumberingSystems {
 		}
 
 		for _, v := range ldml.Numbers.DefaultNumberingSystem {
-			if v.Alt != "" || v.Draft != "" {
+			if v.Alt != "" || !isContributedOrApproved(v.Draft) {
 				continue
 			}
 
@@ -295,7 +295,7 @@ func (g *Generator) addDateFormatItem(
 	dateFormatItem *CLDRDateFormatItem,
 	locale string,
 ) {
-	if dateFormatItem.Draft != "" {
+	if !isContributedOrApproved(dateFormatItem.Draft) {
 		return
 	}
 
@@ -565,4 +565,8 @@ func deepCopy[T any](v T) T {
 	}
 
 	return r
+}
+
+func isContributedOrApproved(s string) bool {
+	return s == "" || s == "contributed"
 }

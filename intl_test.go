@@ -72,20 +72,25 @@ func skipTest(locale language.Tag, options Options) bool {
 	}
 
 	_, ok := map[key]struct{}{
-		{"hnj-Hmnp", Options{Year: Year2Digit}}:  {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"hnj-Hmnp", Options{Year: YearNumeric}}: {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"hnj-Hmnp", Options{Day: Day2Digit}}:    {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"hnj-Hmnp", Options{Day: DayNumeric}}:   {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"mzn-IR", Options{Year: Year2Digit}}:    {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
-		{"mzn-IR", Options{Year: YearNumeric}}:   {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
-		{"mzn-IR", Options{Day: Day2Digit}}:      {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
-		{"mzn-IR", Options{Day: DayNumeric}}:     {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
-		{"sdh-IR", Options{Year: Year2Digit}}:    {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"sdh-IR", Options{Year: YearNumeric}}:   {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"sdh-IR", Options{Day: Day2Digit}}:      {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"sdh-IR", Options{Day: DayNumeric}}:     {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"th-TH", Options{Year: Year2Digit}}:     {}, // requires buddhist calendar
-		{"th-TH", Options{Year: YearNumeric}}:    {}, // requires buddhist calendar
+		// CLDR stipulates arabext numbering. Why Node.js uses latn?
+		{"bgn-PK", Options{Year: Year2Digit}}:  {},
+		{"bgn-PK", Options{Year: YearNumeric}}: {},
+		{"bgn-PK", Options{Day: Day2Digit}}:    {},
+		{"bgn-PK", Options{Day: DayNumeric}}:   {},
+
+		// CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"hnj-Hmnp", Options{Year: Year2Digit}}:  {},
+		{"hnj-Hmnp", Options{Year: YearNumeric}}: {},
+		{"hnj-Hmnp", Options{Day: Day2Digit}}:    {},
+		{"hnj-Hmnp", Options{Day: DayNumeric}}:   {},
+		{"sdh-IR", Options{Year: Year2Digit}}:    {},
+		{"sdh-IR", Options{Year: YearNumeric}}:   {},
+		{"sdh-IR", Options{Day: Day2Digit}}:      {},
+		{"sdh-IR", Options{Day: DayNumeric}}:     {},
+
+		// requires buddhist calendar
+		{"th-TH", Options{Year: Year2Digit}}:  {},
+		{"th-TH", Options{Year: YearNumeric}}: {},
 	}[key{locale.String(), options}]
 
 	return ok
