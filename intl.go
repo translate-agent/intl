@@ -131,10 +131,12 @@ func (m Month) String() string {
 // ParseMonth converts a string representation of a month format to the [Month] type.
 //
 // Parameters:
-//   - s: A string representing the month format. Valid values are "numeric", "2-digit", "long", "short", "narrow", or an empty string.
+//   - s: A string representing the month format. Valid values are "numeric", "2-digit",
+//     "long", "short", "narrow", or an empty string.
 //
 // Returns:
-//   - Month: The corresponding [Month] constant ([MonthNumeric], [Month2Digit], [MonthLong], [MonthShort], [MonthNarrow], or [MonthUnd]).
+//   - Month: The corresponding [Month] constant ([MonthNumeric], [Month2Digit],
+//     [MonthLong], [MonthShort], [MonthNarrow], or [MonthUnd]).
 //   - error: An error if the input string is not a valid month format.
 func ParseMonth(s string) (Month, error) {
 	switch s {
@@ -228,8 +230,9 @@ func MustParseDay(s string) Day {
 // Options defines configuration parameters for [NewDateTimeFormat].
 // It allows customization of the date and time representations in formatted output.
 type Options struct {
-	Year Year
-	Day  Day
+	Year  Year
+	Month Month
+	Day   Day
 }
 
 // digits represents a set of numeral glyphs for a specific numeral system.
@@ -296,21 +299,24 @@ func NewDateTimeFormat(locale language.Tag, options Options) *DateTimeFormat {
 	switch defaultCalendar(locale) {
 	default:
 		fmt = &gregorianDateTimeFormat{
-			fmtYear: fmtYearGregorian(locale),
-			fmtDay:  fmtDayGregorian(locale, d),
-			digits:  d,
+			fmtYear:  fmtYearGregorian(locale),
+			fmtMonth: fmtMonthGregorian(locale, d),
+			fmtDay:   fmtDayGregorian(locale, d),
+			digits:   d,
 		}
 	case "persian":
 		fmt = &persianDateTimeFormat{
-			fmtYear: fmtYearPersian(locale),
-			fmtDay:  fmtDayPersian(locale, d),
-			digits:  d,
+			fmtYear:  fmtYearPersian(locale),
+			fmtMonth: fmtMonthPersian(locale, d),
+			fmtDay:   fmtDayPersian(locale, d),
+			digits:   d,
 		}
 	case "buddhist":
 		fmt = &buddhistDateTimeFormat{
-			fmtYear: fmtYearBuddhist(locale),
-			fmtDay:  fmtDayBuddhist(locale, d),
-			digits:  d,
+			fmtYear:  fmtYearBuddhist(locale),
+			fmtMonth: fmtMonthBuddhist(locale, d),
+			fmtDay:   fmtDayBuddhist(locale, d),
+			digits:   d,
 		}
 	}
 
@@ -339,6 +345,13 @@ func (f *DateTimeFormat) Format(v time.Time) string {
 		}
 
 		return f.fmt.Year(s)
+	case f.options.Month != MonthUnd:
+		s := "1"
+		if f.options.Month == Month2Digit {
+			s = "01"
+		}
+
+		return f.fmt.Month(s)
 	case f.options.Day != DayUnd:
 		s := "2"
 		if f.options.Day == Day2Digit {
@@ -353,5 +366,6 @@ func (f *DateTimeFormat) Format(v time.Time) string {
 type dateTimeFormatter interface {
 	SetTime(time.Time)
 	Year(format string) string
+	Month(format string) string
 	Day(format string) string
 }

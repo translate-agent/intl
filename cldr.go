@@ -156,6 +156,27 @@ func fmtYearBuddhist(locale language.Tag) func(string) string {
 	}
 }
 
+func fmtMonthBuddhist(locale language.Tag, digits digits) func(month int, format string) string {
+	lang, _ := locale.Base()
+
+	fmt := func(m int, f string) string {
+		if f == "01" && m <= 9 {
+			return digits.Sprint("0" + strconv.Itoa(m))
+		}
+
+		return digits.Sprint(strconv.Itoa(m))
+	}
+
+	switch lang.String() {
+	default:
+		return fmt
+	case "vi":
+		return func(m int, f string) string { return "tháng " + fmt(m, f) }
+	case "zh":
+		return func(m int, f string) string { return fmt(m, f) + "月" }
+	}
+}
+
 func fmtDayBuddhist(locale language.Tag, digits digits) func(day int, format string) string {
 	lang, _ := locale.Base()
 
@@ -191,6 +212,33 @@ func fmtYearGregorian(locale language.Tag) func(string) string {
 		return func(y string) string { return y + "年" }
 	case "ko":
 		return func(y string) string { return y + "년" }
+	}
+}
+
+func fmtMonthGregorian(locale language.Tag, digits digits) func(month int, format string) string {
+	lang, _ := locale.Base()
+
+	fmt := func(m int, f string) string {
+		if f == "01" && m <= 9 {
+			return digits.Sprint("0" + strconv.Itoa(m))
+		}
+
+		return digits.Sprint(strconv.Itoa(m))
+	}
+
+	switch lang.String() {
+	default:
+		return fmt
+	case "br", "lt":
+		return func(m int, f string) string { return fmt(m, "01") }
+	case "root", "aa", "ab", "af", "agq", "ak", "am", "an", "ann", "apc", "ar", "arn", "as", "asa", "ast", "az", "ba", "bal", "bas", "be", "bem", "bew", "bez", "bg", "bgc", "bgn", "bho", "blo", "blt", "bm", "bn", "bo", "brx", "bs", "bss", "byn", "ca", "cad", "cch", "ccp", "ce", "ceb", "cgg", "cho", "chr", "cic", "ckb", "co", "cs", "csw", "cu", "cv", "cy", "da", "dav", "de", "dje", "doi", "dsb", "dua", "dv", "dyo", "dz", "ebu", "ee", "el", "en", "eo", "es", "et", "eu", "ewo", "fa", "ff", "fi", "fil", "fo", "fr", "fur", "fy", "ga", "gaa", "gd", "gez", "gl", "gn", "gsw", "gu", "guz", "gv", "ha", "haw", "he", "hi", "hnj", "hsb", "hu", "hy", "ia", "id", "ie", "ig", "ii", "io", "is", "it", "iu", "jbo", "jgo", "jmc", "jv", "ka", "kab", "kaj", "kam", "kcg", "kde", "kea", "ken", "kgp", "khq", "ki", "kk", "kkj", "kl", "kln", "km", "kn", "kok", "kpe", "ks", "ksb", "ksf", "ksh", "ku", "kw", "kxv", "ky", "la", "lag", "lb", "lg", "lij", "lkt", "lmo", "ln", "lo", "lrc", "lu", "luo", "luy", "lv", "mai", "mas", "mdf", "mer", "mfe", "mg", "mgh", "mgo", "mi", "mic", "mk", "ml", "mn", "mni", "moh", "mr", "ms", "mt", "mua", "mus", "my", "myv", "mzn", "naq", "nd", "nds", "ne", "nl", "nmg", "nnh", "nqo", "nr", "nso", "nus", "nv", "ny", "nyn", "oc", "om", "or", "os", "osa", "pa", "pap", "pcm", "pis", "pl", "ps", "pt", "qu", "quc", "raj", "rhg", "rif", "rm", "rn", "ro", "rof", "ru", "rw", "rwk", "sa", "sah", "saq", "sat", "sbp", "sc", "scn", "sd", "sdh", "se", "seh", "ses", "sg", "shi", "shn", "si", "sid", "skr", "sl", "sma", "smj", "smn", "sms", "sn", "so", "sq", "sr", "ss", "ssy", "st", "su", "sv", "sw", "syr", "szl", "ta", "te", "teo", "tg", "th", "ti", "tig", "tk", "tn", "to", "tok", "tpi", "tr", "trv", "trw", "ts", "tt", "twq", "tyv", "tzm", "ug", "uk", "ur", "uz", "vai", "ve", "vec", "vi", "vmw", "vo", "vun", "wa", "wae", "wal", "wbp", "wo", "xh", "xnr", "xog", "yav", "yi", "yo", "yrl", "za", "zgh", "zu":
+		return func(m int, f string) string { return fmt(m, f) }
+	case "hr", "nb", "nn", "no", "sk":
+		return func(m int, f string) string { return fmt(m, f) + "." }
+	case "ja", "yue", "zh":
+		return func(m int, f string) string { return fmt(m, f) + "月" }
+	case "ko":
+		return func(m int, f string) string { return fmt(m, f) + "월" }
 	}
 }
 
@@ -230,6 +278,18 @@ func fmtYearPersian(locale language.Tag) func(string) string {
 	}
 }
 
+func fmtMonthPersian(_ language.Tag, digits digits) func(month int, format string) string {
+	fmt := func(m int, f string) string {
+		if f == "01" && m <= 9 {
+			return digits.Sprint("0" + strconv.Itoa(m))
+		}
+
+		return digits.Sprint(strconv.Itoa(m))
+	}
+
+	return fmt
+}
+
 func fmtDayPersian(_ language.Tag, digits digits) func(day int, format string) string {
 	fmt := func(d int, f string) string {
 		if f == "02" && d <= 9 {
@@ -243,10 +303,11 @@ func fmtDayPersian(_ language.Tag, digits digits) func(day int, format string) s
 }
 
 type gregorianDateTimeFormat struct {
-	time    time.Time
-	fmtYear func(format string) string
-	fmtDay  func(day int, format string) string
-	digits  digits
+	time     time.Time
+	fmtYear  func(format string) string
+	fmtMonth func(month int, format string) string
+	fmtDay   func(day int, format string) string
+	digits   digits
 }
 
 func (f *gregorianDateTimeFormat) SetTime(v time.Time) {
@@ -257,15 +318,20 @@ func (f *gregorianDateTimeFormat) Year(format string) string {
 	return f.fmtYear(f.digits.Sprint(f.time.Format(format)))
 }
 
+func (f *gregorianDateTimeFormat) Month(format string) string {
+	return f.fmtMonth(int(f.time.Month()), format)
+}
+
 func (f *gregorianDateTimeFormat) Day(format string) string {
 	return f.fmtDay(f.time.Day(), format)
 }
 
 type persianDateTimeFormat struct {
-	time    ptime.Time
-	fmtYear func(format string) string
-	fmtDay  func(day int, format string) string
-	digits  digits
+	time     ptime.Time
+	fmtYear  func(format string) string
+	fmtMonth func(month int, format string) string
+	fmtDay   func(day int, format string) string
+	digits   digits
 }
 
 func (f *persianDateTimeFormat) SetTime(v time.Time) {
@@ -290,15 +356,20 @@ func (f *persianDateTimeFormat) Year(format string) string {
 	return f.fmtYear(f.digits.Sprint(year))
 }
 
+func (f *persianDateTimeFormat) Month(format string) string {
+	return f.fmtMonth(int(f.time.Month()), format)
+}
+
 func (f *persianDateTimeFormat) Day(format string) string {
 	return f.fmtDay(f.time.Day(), format)
 }
 
 type buddhistDateTimeFormat struct {
-	time    time.Time
-	fmtYear func(format string) string
-	fmtDay  func(day int, format string) string
-	digits  digits
+	time     time.Time
+	fmtYear  func(format string) string
+	fmtMonth func(month int, format string) string
+	fmtDay   func(day int, format string) string
+	digits   digits
 }
 
 func (f *buddhistDateTimeFormat) SetTime(v time.Time) {
@@ -320,6 +391,10 @@ func (f *buddhistDateTimeFormat) Year(format string) string {
 	}
 
 	return f.fmtYear(f.digits.Sprint(year))
+}
+
+func (f *buddhistDateTimeFormat) Month(format string) string {
+	return f.fmtMonth(int(f.time.Month()), format)
 }
 
 func (f *buddhistDateTimeFormat) Day(format string) string {

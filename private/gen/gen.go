@@ -299,6 +299,7 @@ type CLDRDateFormatItem struct {
 	Count string
 }
 
+//nolint:gocognit
 func (g *Generator) addDateFormatItem(
 	dateTimeFormats CalendarDateTimeFormats,
 	dateFormatItem *CLDRDateFormatItem,
@@ -330,6 +331,29 @@ func (g *Generator) addDateFormatItem(
 		}
 
 		dateTimeFormats.Y.Fmt[sb.String()] = append(dateTimeFormats.Y.Fmt[sb.String()], locale)
+	case "M":
+		if dateFormatItem.CharData == dateTimeFormats.M.Default {
+			return
+		}
+
+		var sb strings.Builder
+
+		for i, v := range splitDatePattern(dateFormatItem.CharData) {
+			if i > 0 {
+				sb.WriteRune('+')
+			}
+
+			switch {
+			default:
+				sb.WriteString("fmt(m, f)")
+			case v.literal:
+				sb.WriteString(`"` + v.value + `"`)
+			case v.value == "MM":
+				sb.WriteString(`fmt(m, "01")`)
+			}
+		}
+
+		dateTimeFormats.M.Fmt[sb.String()] = append(dateTimeFormats.M.Fmt[sb.String()], locale)
 	case "d":
 		if dateFormatItem.CharData == dateTimeFormats.D.Default {
 			return
@@ -450,12 +474,14 @@ type DateTimeFormats map[string]CalendarDateTimeFormats
 
 type CalendarDateTimeFormats struct {
 	Y CalendarDateTimeFormat
+	M CalendarDateTimeFormat
 	D CalendarDateTimeFormat
 }
 
 func NewCalendarDateTimeFormats() CalendarDateTimeFormats {
 	return CalendarDateTimeFormats{
 		Y: NewCalendarDateTimeFormat(),
+		M: NewCalendarDateTimeFormat(),
 		D: NewCalendarDateTimeFormat(),
 	}
 }

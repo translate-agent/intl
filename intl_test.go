@@ -54,6 +54,15 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 				test.Options.Day = Day2Digit
 			}
 		}
+
+		if v, ok := o["month"].(string); ok {
+			switch v {
+			case "numeric":
+				test.Options.Month = MonthNumeric
+			case "2-digit":
+				test.Options.Month = Month2Digit
+			}
+		}
 	}
 
 	*t = test
@@ -73,20 +82,25 @@ func skipTest(locale language.Tag, options Options) bool {
 
 	_, ok := map[key]struct{}{
 		// CLDR stipulates arabext numbering. Why Node.js uses latn?
-		{"bgn-PK", Options{Year: Year2Digit}}:  {},
-		{"bgn-PK", Options{Year: YearNumeric}}: {},
-		{"bgn-PK", Options{Day: Day2Digit}}:    {},
-		{"bgn-PK", Options{Day: DayNumeric}}:   {},
+		{"bgn-PK", Options{Year: Year2Digit}}:    {},
+		{"bgn-PK", Options{Year: YearNumeric}}:   {},
+		{"bgn-PK", Options{Day: Day2Digit}}:      {},
+		{"bgn-PK", Options{Day: DayNumeric}}:     {},
+		{"bgn-PK", Options{Month: MonthNumeric}}: {},
+		{"bgn-PK", Options{Month: Month2Digit}}:  {},
 
 		// CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"hnj-Hmnp", Options{Year: Year2Digit}}:  {},
-		{"hnj-Hmnp", Options{Year: YearNumeric}}: {},
-		{"hnj-Hmnp", Options{Day: Day2Digit}}:    {},
-		{"hnj-Hmnp", Options{Day: DayNumeric}}:   {},
-		{"sdh-IR", Options{Year: Year2Digit}}:    {},
-		{"sdh-IR", Options{Year: YearNumeric}}:   {},
-		{"sdh-IR", Options{Day: Day2Digit}}:      {},
-		{"sdh-IR", Options{Day: DayNumeric}}:     {},
+		{"hnj-Hmnp", Options{Year: Year2Digit}}:    {},
+		{"hnj-Hmnp", Options{Year: YearNumeric}}:   {},
+		{"hnj-Hmnp", Options{Day: Day2Digit}}:      {},
+		{"hnj-Hmnp", Options{Day: DayNumeric}}:     {},
+		{"hnj-Hmnp", Options{Month: MonthNumeric}}: {},
+		{"hnj-Hmnp", Options{Month: Month2Digit}}:  {},
+
+		{"sdh-IR", Options{Year: Year2Digit}}:  {},
+		{"sdh-IR", Options{Year: YearNumeric}}: {},
+		{"sdh-IR", Options{Day: Day2Digit}}:    {},
+		{"sdh-IR", Options{Day: DayNumeric}}:   {},
 
 		// depends on localised era
 		{"th-TH", Options{Year: Year2Digit}}:  {},
