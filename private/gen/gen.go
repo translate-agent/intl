@@ -15,7 +15,7 @@ import (
 	"golang.org/x/text/unicode/cldr"
 )
 
-//go:embed cldr.tmpl
+//go:embed cldr.go.tmpl
 var datetimeTemplate string
 
 type Generator struct {

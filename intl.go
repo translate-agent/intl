@@ -1,3 +1,26 @@
+// Package intl provides internationalization and localization support for date and time formatting,
+// inspired by and reflecting the ECMAScript Intl API.
+//
+// This package offers a flexible and extensible way to format dates and times according to
+// various locales, calendar systems, and custom options, similar to the JavaScript Intl.DateTimeFormat
+// object. It supports multiple numeral systems and calendar types, including Gregorian, Persian,
+// and Buddhist calendars.
+//
+// Key features:
+//   - Locale-aware date and time formatting
+//   - Support for different calendar systems
+//   - Customizable date and time formatting options
+//   - Handling of various numeral systems
+//   - API design similar to ECMAScript Intl.DateTimeFormat
+//
+// The main types in this package are:
+//   - DateTimeFormat: Encapsulates formatting logic for dates and times, similar to Intl.DateTimeFormat
+//   - Options: Configures formatting options for date and time representations
+//
+// Usage:
+//
+//	formatter := intl.NewDateTimeFormat(locale, Options{Day: Day2Digit})
+//	now := formatter.Format(time.Now())
 package intl
 
 import (
