@@ -518,7 +518,9 @@ func splitDatePattern(pattern string) []datePatternElement {
 			return
 		}
 
-		elements = append(elements, datePatternElement{value: elem.String(), literal: literal})
+		if elem.Len() > 0 {
+			elements = append(elements, datePatternElement{value: elem.String(), literal: literal})
+		}
 
 		elem.Reset()
 		elem.WriteRune(r)
@@ -530,6 +532,12 @@ func splitDatePattern(pattern string) []datePatternElement {
 	for i, r := range pattern {
 		if i == 0 {
 			last = r
+
+			if r == '\'' && len(pattern) > 1 {
+				quoted = true
+				continue
+			}
+
 			elem.WriteRune(r)
 			literal = !('a' <= r && r <= 'z' || 'A' <= r && r <= 'Z')
 
