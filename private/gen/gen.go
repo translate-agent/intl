@@ -100,17 +100,30 @@ func (g *Generator) merge() {
 	}
 }
 
-func merge(dst, fallback *cldr.LDML) {
-	findCalendar := func(ldml *cldr.LDML, calendarType string) *cldr.Calendar {
-		for _, v := range ldml.Dates.Calendars.Calendar {
-			if v.Type == calendarType {
-				return v
-			}
+// findCalendar returns *cldr.Calendar by its type if found. Otherwise, returns nil.
+func findCalendar(ldml *cldr.LDML, calendarType string) *cldr.Calendar {
+	for _, v := range ldml.Dates.Calendars.Calendar {
+		if v.Type == calendarType {
+			return v
 		}
-
-		return nil
 	}
 
+	return nil
+}
+
+// containsDateFormatItem returns true if calendar contains dateFormatItem with given id.
+func containsDateFormatItem(calendar *cldr.Calendar, id string) bool {
+	for _, v := range calendar.DateTimeFormats.AvailableFormats[0].DateFormatItem {
+		if v.Id == id {
+			return true
+		}
+	}
+
+	return false
+}
+
+// merge copies particular fallback values to dst.
+func merge(dst, fallback *cldr.LDML) {
 	if dst.Dates == nil {
 		dst.Dates = deepCopy(fallback.Dates)
 	}
@@ -150,17 +163,7 @@ func merge(dst, fallback *cldr.LDML) {
 
 		for _, availableFormats := range parentCalendar.DateTimeFormats.AvailableFormats {
 			for _, dateFormatItem := range availableFormats.DateFormatItem {
-				found := func() bool {
-					for _, v := range calendar.DateTimeFormats.AvailableFormats[0].DateFormatItem {
-						if v.Id == dateFormatItem.Id {
-							return true
-						}
-					}
-
-					return false
-				}()
-
-				if found {
+				if containsDateFormatItem(calendar, dateFormatItem.Id) {
 					continue
 				}
 
@@ -235,8 +238,8 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 			if !ok {
 				formats = NewCalendarDateTimeFormats()
 
-				formats.Y.Default = g.dateFormatItem("root", calendar.Type, "y")
-				formats.D.Default = g.dateFormatItem("root", calendar.Type, "d")
+				formats.Y.Default = g.dateFormatItem(calendar.Type, "y")
+				formats.D.Default = g.dateFormatItem(calendar.Type, "d")
 
 				dateTimeFormats[calendar.Type] = formats
 			}
@@ -252,10 +255,10 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 	return dateTimeFormats
 }
 
-func (g *Generator) dateFormatItem(language string, calendarType string, id string) string {
-	calendars := g.cldr.RawLDML(language).Dates.Calendars.Calendar
+func (g *Generator) dateFormatItem(calendarType string, id string) string {
+	calendars := g.cldr.RawLDML("root").Dates.Calendars.Calendar
 
-	i := slices.IndexFunc(g.cldr.RawLDML(language).Dates.Calendars.Calendar, func(calendar *cldr.Calendar) bool {
+	i := slices.IndexFunc(g.cldr.RawLDML("root").Dates.Calendars.Calendar, func(calendar *cldr.Calendar) bool {
 		return calendar.Type == calendarType
 	})
 
@@ -264,9 +267,9 @@ func (g *Generator) dateFormatItem(language string, calendarType string, id stri
 	if calendar.DateTimeFormats.Alias != nil {
 		switch {
 		case strings.Contains(calendar.DateTimeFormats.Alias.Path, "gregorian"):
-			return g.dateFormatItem("root", "gregorian", id)
+			return g.dateFormatItem("gregorian", id)
 		case strings.Contains(calendar.DateTimeFormats.Alias.Path, "generic"):
-			return g.dateFormatItem("root", "generic", id)
+			return g.dateFormatItem("generic", id)
 		}
 	}
 
@@ -556,6 +559,7 @@ func splitDatePattern(pattern string) []datePatternElement {
 	return elements
 }
 
+//nolint:ireturn
 func deepCopy[T any](v T) T {
 	var r T
 

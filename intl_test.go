@@ -88,7 +88,7 @@ func skipTest(locale language.Tag, options Options) bool {
 		{"sdh-IR", Options{Day: Day2Digit}}:      {},
 		{"sdh-IR", Options{Day: DayNumeric}}:     {},
 
-		// requires buddhist calendar
+		// depends on localised era
 		{"th-TH", Options{Year: Year2Digit}}:  {},
 		{"th-TH", Options{Year: YearNumeric}}: {},
 	}[key{locale.String(), options}]
