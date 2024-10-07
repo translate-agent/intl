@@ -145,10 +145,14 @@ func fmtYearBuddhist(locale language.Tag) func(string) string {
 	switch lang.String() {
 	default:
 		return func(y string) string { return "AP " + y }
-	case "be", "hi":
-		return func(y string) string { return y + " " + y }
-	case "ja", "yue":
-		return func(y string) string { return y + y + "年" }
+	case "be":
+		return func(y string) string { return "G" + " " + y }
+	case "yue":
+		return func(y string) string { return "G" + y + "年" }
+	case "ja":
+		return func(y string) string { return "GGGG" + y + "年" }
+	case "hi":
+		return func(y string) string { return y + " " + "G" }
 	}
 }
 

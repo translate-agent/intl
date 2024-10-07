@@ -122,6 +122,8 @@ func containsDateFormatItem(calendar *cldr.Calendar, id string) bool {
 	return false
 }
 
+var calendarTypes = []string{"gregorian", "persian", "buddhist"}
+
 // merge copies particular fallback values to dst.
 func merge(dst, fallback *cldr.LDML) {
 	if dst.Dates == nil {
@@ -133,10 +135,10 @@ func merge(dst, fallback *cldr.LDML) {
 	}
 
 	if len(dst.Dates.Calendars.Calendar) == 0 {
-		dst.Dates.Calendars.Calendar = fallback.Dates.Calendars.Calendar
+		dst.Dates.Calendars.Calendar = deepCopy(fallback.Dates.Calendars.Calendar)
 	}
 
-	for _, calendarType := range []string{"gregorian", "persian", "buddhist"} {
+	for _, calendarType := range calendarTypes {
 		parentCalendar := findCalendar(fallback, calendarType)
 		// skip if parent calendar not found
 		if parentCalendar == nil {
@@ -230,7 +232,7 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 		}
 
 		for _, calendar := range ldml.Dates.Calendars.Calendar {
-			if !slices.Contains([]string{"gregorian", "persian", "buddhist"}, calendar.Type) || calendar.DateTimeFormats == nil {
+			if !slices.Contains(calendarTypes, calendar.Type) {
 				continue
 			}
 
@@ -238,8 +240,8 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 			if !ok {
 				formats = NewCalendarDateTimeFormats()
 
-				formats.Y.Default = g.dateFormatItem(calendar.Type, "y")
-				formats.D.Default = g.dateFormatItem(calendar.Type, "d")
+				formats.Y.Default = g.defaultDateFormatItem(calendar.Type, "y")
+				formats.D.Default = g.defaultDateFormatItem(calendar.Type, "d")
 
 				dateTimeFormats[calendar.Type] = formats
 			}
@@ -255,7 +257,7 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 	return dateTimeFormats
 }
 
-func (g *Generator) dateFormatItem(calendarType string, id string) string {
+func (g *Generator) defaultDateFormatItem(calendarType string, id string) string {
 	calendars := g.cldr.RawLDML("root").Dates.Calendars.Calendar
 
 	i := slices.IndexFunc(g.cldr.RawLDML("root").Dates.Calendars.Calendar, func(calendar *cldr.Calendar) bool {
@@ -267,9 +269,9 @@ func (g *Generator) dateFormatItem(calendarType string, id string) string {
 	if calendar.DateTimeFormats.Alias != nil {
 		switch {
 		case strings.Contains(calendar.DateTimeFormats.Alias.Path, "gregorian"):
-			return g.dateFormatItem("gregorian", id)
+			return g.defaultDateFormatItem("gregorian", id)
 		case strings.Contains(calendar.DateTimeFormats.Alias.Path, "generic"):
-			return g.dateFormatItem("generic", id)
+			return g.defaultDateFormatItem("generic", id)
 		}
 	}
 
@@ -319,9 +321,10 @@ func (g *Generator) addDateFormatItem(
 				sb.WriteRune('+')
 			}
 
-			if v.literal {
+			switch {
+			default:
 				sb.WriteString(`"` + v.value + `"`)
-			} else {
+			case v.value == "y":
 				sb.WriteString("y")
 			}
 		}
@@ -354,7 +357,7 @@ func (g *Generator) addDateFormatItem(
 }
 
 func (g *Generator) numberingSystems(defaultNumberingSystems DefaultNumberingSystems) []NumberingSystem {
-	numberingSystems := make([]NumberingSystem, 0, 20) //nolint:mnd
+	numberingSystems := make([]NumberingSystem, 0, 12) //nolint:mnd
 
 	ids := slices.Collect(maps.Keys(defaultNumberingSystems))
 
