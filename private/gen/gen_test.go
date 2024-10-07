@@ -67,6 +67,51 @@ func TestSplitDatePattern(t *testing.T) {
 				{value: "E", literal: false},
 			},
 		},
+		{
+			pattern: "G y. 'gada' d. MMM, E – G y. 'gada' d. MMM, E",
+			elements: []datePatternElement{
+				{value: "G", literal: false},
+				{value: " ", literal: true},
+				{value: "y", literal: false},
+				{value: ". gada ", literal: true},
+				{value: "d", literal: false},
+				{value: ". ", literal: true},
+				{value: "MMM", literal: false},
+				{value: ", ", literal: true},
+				{value: "E", literal: false},
+				{value: " – ", literal: true},
+				{value: "G", literal: false},
+				{value: " ", literal: true},
+				{value: "y", literal: false},
+				{value: ". gada ", literal: true},
+				{value: "d", literal: false},
+				{value: ". ", literal: true},
+				{value: "MMM", literal: false},
+				{value: ", ", literal: true},
+				{value: "E", literal: false},
+			},
+		},
+		{
+			pattern: "EEEE, 'ngày' dd MMMM 'năm' y G",
+			elements: []datePatternElement{
+				{value: "EEEE", literal: false},
+				{value: ", ngày ", literal: true},
+				{value: "dd", literal: false},
+				{value: " ", literal: true},
+				{value: "MMMM", literal: false},
+				{value: " năm ", literal: true},
+				{value: "y", literal: false},
+				{value: " ", literal: true},
+				{value: "G", literal: false},
+			},
+		},
+		{
+			pattern: "'Ngày' dd",
+			elements: []datePatternElement{
+				{value: "Ngày ", literal: true},
+				{value: "dd", literal: false},
+			},
+		},
 	}
 
 	for _, test := range cases {

@@ -6,16 +6,15 @@ CLDR v45.0 based date and number formatting in Golang.
 
 | Option                 | Supported |
 | ---------------------- | :-------: |
+| era                    |    ❌     |
 | year                   |    ✅︎    |
 | month                  |    ❌     |
-| day                    |    ❌     |
+| day                    |    ✅︎    |
 | hour                   |    ❌     |
 | minute                 |    ❌     |
 | second                 |    ❌     |
-| month                  |    ❌     |
-| era                    |    ❌     |
-| weekday                |    ❌     |
 | fractionalSecondDigits |    ❌     |
+| weekday                |    ❌     |
 | hourCycle              |    ❌     |
 | timeZoneName           |    ❌     |
 

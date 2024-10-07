@@ -72,30 +72,25 @@ func skipTest(locale language.Tag, options Options) bool {
 	}
 
 	_, ok := map[key]struct{}{
-		{"hnj-Hmnp", Options{Year: Year2Digit}}:  {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"hnj-Hmnp", Options{Year: YearNumeric}}: {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"hnj-Hmnp", Options{Day: Day2Digit}}:    {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"hnj-Hmnp", Options{Day: DayNumeric}}:   {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"lrc-IR", Options{Year: Year2Digit}}:    {}, // CLDR stipules no "AP " prefix. Why Node.js adds prefix?
-		{"lrc-IR", Options{Year: YearNumeric}}:   {}, // CLDR stipules no "AP " prefix. Why Node.js adds prefix?
-		{"mzn-IR", Options{Year: Year2Digit}}:    {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
-		{"mzn-IR", Options{Year: YearNumeric}}:   {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
-		{"mzn-IR", Options{Day: Day2Digit}}:      {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
-		{"mzn-IR", Options{Day: DayNumeric}}:     {}, // CLDR stipulates latn numbering. Why Node.js uses draft arabext?
-		{"nb", Options{Day: Day2Digit}}:          {}, // CLDR stipules d formating. Why Node.js adds . suffix?
-		{"nb", Options{Day: DayNumeric}}:         {}, // CLDR stipules d formating. Why Node.js adds . suffix?
-		{"nb-NO", Options{Day: Day2Digit}}:       {}, // CLDR stipules d formating. Why Node.js adds . suffix?
-		{"nb-NO", Options{Day: DayNumeric}}:      {}, // CLDR stipules d formating. Why Node.js adds . suffix?
-		{"nn-NO", Options{Day: Day2Digit}}:       {}, // CLDR stipules d formating. Why Node.js adds . suffix?
-		{"nn-NO", Options{Day: DayNumeric}}:      {}, // CLDR stipules d formating. Why Node.js adds . suffix?
-		{"ps-AF", Options{Year: Year2Digit}}:     {}, // CLDR stipules no "AP " prefix. Why Node.js adds prefix?
-		{"ps-AF", Options{Year: YearNumeric}}:    {}, // CLDR stipules no "AP " prefix. Why Node.js adds prefix?
-		{"sdh-IR", Options{Year: Year2Digit}}:    {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"sdh-IR", Options{Year: YearNumeric}}:   {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"sdh-IR", Options{Day: Day2Digit}}:      {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"sdh-IR", Options{Day: DayNumeric}}:     {}, // CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"th-TH", Options{Year: Year2Digit}}:     {}, // requires buddhist calendar
-		{"th-TH", Options{Year: YearNumeric}}:    {}, // requires buddhist calendar
+		// CLDR stipulates arabext numbering. Why Node.js uses latn?
+		{"bgn-PK", Options{Year: Year2Digit}}:  {},
+		{"bgn-PK", Options{Year: YearNumeric}}: {},
+		{"bgn-PK", Options{Day: Day2Digit}}:    {},
+		{"bgn-PK", Options{Day: DayNumeric}}:   {},
+
+		// CLDR stipulates hmnr numbering. Why Node.js uses latn?
+		{"hnj-Hmnp", Options{Year: Year2Digit}}:  {},
+		{"hnj-Hmnp", Options{Year: YearNumeric}}: {},
+		{"hnj-Hmnp", Options{Day: Day2Digit}}:    {},
+		{"hnj-Hmnp", Options{Day: DayNumeric}}:   {},
+		{"sdh-IR", Options{Year: Year2Digit}}:    {},
+		{"sdh-IR", Options{Year: YearNumeric}}:   {},
+		{"sdh-IR", Options{Day: Day2Digit}}:      {},
+		{"sdh-IR", Options{Day: DayNumeric}}:     {},
+
+		// depends on localised era
+		{"th-TH", Options{Year: Year2Digit}}:  {},
+		{"th-TH", Options{Year: YearNumeric}}: {},
 	}[key{locale.String(), options}]
 
 	return ok
@@ -143,31 +138,46 @@ func TestDateTime_Format(t *testing.T) {
 	}
 }
 
-func BenchmarkNewDateTime(b *testing.B) {
-	locale := language.MustParse("fa-IR")
+var locales = []string{
+	"fa-IR", // persian calendar, arabext numerals
+	"lv-LV", // gregorian calendar, latn numerals
+	"dz-BT", // gregorian calendar, tibt numerals
+}
 
+func BenchmarkNewDateTime(b *testing.B) {
 	var v *DateTimeFormat
 
-	for range b.N {
-		v = NewDateTimeFormat(locale, Options{})
+	for _, s := range locales {
+		locale := language.MustParse(s)
+
+		b.Run(s, func(b *testing.B) {
+			for range b.N {
+				v = NewDateTimeFormat(locale, Options{})
+			}
+		})
 	}
 
 	runtime.KeepAlive(v)
 }
 
 func BenchmarkDateTime_Format(b *testing.B) {
-	locale := language.MustParse("fa-IR")
-	f1 := NewDateTimeFormat(locale, Options{}).Format
-	f2 := NewDateTimeFormat(locale, Options{Year: YearNumeric}).Format
-	f3 := NewDateTimeFormat(locale, Options{Year: Year2Digit}).Format
-	f4 := NewDateTimeFormat(locale, Options{Day: DayNumeric}).Format
-	f5 := NewDateTimeFormat(locale, Options{Day: Day2Digit}).Format
-	now := time.Now()
-
 	var v1, v2, v3, v4, v5 string
 
-	for range b.N {
-		v1, v2, v3, v4, v5 = f1(now), f2(now), f3(now), f4(now), f5(now)
+	now := time.Now()
+
+	for _, s := range locales {
+		locale := language.MustParse(s)
+		f1 := NewDateTimeFormat(locale, Options{}).Format
+		f2 := NewDateTimeFormat(locale, Options{Year: YearNumeric}).Format
+		f3 := NewDateTimeFormat(locale, Options{Year: Year2Digit}).Format
+		f4 := NewDateTimeFormat(locale, Options{Day: DayNumeric}).Format
+		f5 := NewDateTimeFormat(locale, Options{Day: Day2Digit}).Format
+
+		b.Run(s, func(b *testing.B) {
+			for range b.N {
+				v1, v2, v3, v4, v5 = f1(now), f2(now), f3(now), f4(now), f5(now)
+			}
+		})
 	}
 
 	runtime.KeepAlive(v1)
