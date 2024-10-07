@@ -331,7 +331,7 @@ func (g *Generator) addDateFormatItem(
 		}
 
 		dateTimeFormats.Y.Fmt[sb.String()] = append(dateTimeFormats.Y.Fmt[sb.String()], locale)
-	case "M":
+	case "M", "L":
 		if dateFormatItem.CharData == dateTimeFormats.M.Default {
 			return
 		}
@@ -348,7 +348,7 @@ func (g *Generator) addDateFormatItem(
 				sb.WriteString("fmt(m, f)")
 			case v.literal:
 				sb.WriteString(`"` + v.value + `"`)
-			case v.value == "MM":
+			case v.value == "MM" || v.value == "LL":
 				sb.WriteString(`fmt(m, "01")`)
 			}
 		}
