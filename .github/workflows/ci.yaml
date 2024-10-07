@@ -19,7 +19,7 @@ jobs:
           earthly --ci +generate
           if ! git diff --quiet; then
             echo "Generated cldr.go file is not up to date"
-            git diff --stat
+            git diff
             exit 1
           fi
       - name: Lint
