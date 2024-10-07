@@ -171,7 +171,7 @@ func fmtDayBuddhist(locale language.Tag, digits digits) func(day int, format str
 	default:
 		return fmt
 	case "vi":
-		return func(d int, f string) string { return "'" + fmt(d, f) + fmt(d, f) + "à" + fmt(d, f) + " dd" }
+		return func(d int, f string) string { return "Ngày " + fmt(d, "02") }
 	}
 }
 
