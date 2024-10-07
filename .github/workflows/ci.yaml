@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Generate cldr.go
         run: |
-          earthly --ci +generate
+          earthly --strict +generate
           if ! git diff --quiet; then
             echo "Generated cldr.go file is not up to date"
             git diff --stat
