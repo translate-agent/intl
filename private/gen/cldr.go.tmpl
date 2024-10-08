@@ -19,98 +19,45 @@ var calendarMonthNames = [...]calendarMonths{
 {{- end }}
 }
 
-type monthNameIndexes struct {
-  // gregorian
-  gregorianWideFormat, gregorianNarrowFormat, gregorianAbbrFormat int16
-  gregorianWideStandAlone, gregorianNarrowStandAlone, gregorianAbbrStandAlone int16
-
-  // buddhist
-  buddhistWideFormat, buddhistNarrowFormat, buddhistAbbrFormat int16
-  buddhistWideStandAlone, buddhistNarrowStandAlone, buddhistAbbrStandAlone int16
-
-  // persian
-  persianWideFormat, persianNarrowFormat, persianAbbrFormat int16
-  persianWideStandAlone, persianNarrowStandAlone, persianAbbrStandAlone int16
-}
-
-var monthLookup = map[string]monthNameIndexes{
+var monthLookup = map[string][18]int{
 {{- range $locale, $indexes := .Months.Lookup }}
-  "{{ $locale }}": { gregorianWideFormat: {{ $indexes.GregorianWideFormat }}, gregorianNarrowFormat: {{ $indexes.GregorianNarrowFormat }}, gregorianAbbrFormat: {{ $indexes.GregorianAbbrFormat }}, gregorianWideStandAlone: {{ $indexes.GregorianWideStandAlone }}, gregorianNarrowStandAlone: {{ $indexes.GregorianNarrowStandAlone}}, gregorianAbbrStandAlone: {{ $indexes.GregorianAbbrStandAlone }}, buddhistWideFormat: {{ $indexes.BuddhistWideFormat }}, buddhistNarrowFormat: {{ $indexes.BuddhistNarrowFormat }}, buddhistAbbrFormat: {{ $indexes.BuddhistAbbrFormat }}, buddhistWideStandAlone: {{ $indexes.BuddhistWideStandAlone }}, buddhistNarrowStandAlone: {{ $indexes.BuddhistNarrowStandAlone }}, buddhistAbbrStandAlone: {{ $indexes.BuddhistAbbrStandAlone }}, persianWideFormat: {{ $indexes.PersianWideFormat }}, persianNarrowFormat: {{ $indexes.PersianNarrowFormat }}, persianAbbrFormat: {{ $indexes.PersianAbbrFormat }}, persianWideStandAlone: {{ $indexes.PersianWideStandAlone }}, persianNarrowStandAlone: {{ $indexes.PersianNarrowStandAlone }}, persianAbbrStandAlone: {{ $indexes.PersianAbbrStandAlone }}},
+  "{{ $locale }}": { {{ range $i, $v := $indexes }}{{ $v }},{{ end }} },
 {{- end }}
 }
 
 func fmtMonth(locale, calendar, context, width string) func(int, string) string {
   indexes := monthLookup[locale]
 
-  var i int16
+  var index, t, w, c int
 
   switch calendar {
   case "gregorian":
-    switch width {
-    case "abbreviated":
-      if context == "format" {
-        i = indexes.gregorianAbbrFormat
-      } else {
-        i = indexes.gregorianAbbrStandAlone
-      }
-    case "wide":
-      if context == "format" {
-        i = indexes.gregorianWideFormat
-      } else {
-        i = indexes.gregorianWideStandAlone
-      }
-    case "narrow":
-      if context == "format" {
-        i = indexes.gregorianNarrowFormat
-      } else {
-        i = indexes.gregorianNarrowStandAlone
-      }
-    }
-  case "persian":
-    switch width {
-    case "abbreviated":
-      if context == "format" {
-        i = indexes.persianAbbrFormat
-      } else {
-        i = indexes.persianAbbrStandAlone
-      }
-    case "wide":
-      if context == "format" {
-        i = indexes.persianWideFormat
-      } else {
-        i = indexes.persianWideStandAlone
-      }
-    case "narrow":
-      if context == "format" {
-        i = indexes.persianNarrowFormat
-      } else {
-        i = indexes.persianNarrowStandAlone
-      }
-    }
+    t = 0
   case "buddhist":
-    switch width {
-    case "abbreviated":
-      if context == "format" {
-        i = indexes.buddhistAbbrFormat
-      } else {
-        i = indexes.buddhistAbbrStandAlone
-      }
-    case "wide":
-      if context == "format" {
-        i = indexes.buddhistWideFormat
-      } else {
-        i = indexes.buddhistWideStandAlone
-      }
-    case "narrow":
-      if context == "format" {
-        i = indexes.buddhistNarrowFormat
-      } else {
-        i = indexes.buddhistNarrowStandAlone
-      }
-    }
+    t = 1
+  case "persian":
+    t = 2
   }
 
-  names := calendarMonthNames[int(i)]
+  switch width {
+  case "abbreviated":
+    w = 0
+  case "wide":
+    w = 1
+  case "narrow":
+    w = 2
+  }
+
+  switch context {
+  case "format":
+    c = 0
+  case "stand-alone":
+    c = 1
+  }
+
+  index = t * 3 * 2 + w * 2 + c
+
+  names := calendarMonthNames[indexes[index]]
 
   return func(m int, _ string) string {
     return names[m-1]

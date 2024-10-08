@@ -321,13 +321,12 @@ func (g *Generator) months() Months {
 
 	for _, locale := range g.cldr.Locales() {
 		ldml := g.cldr.RawLDML(locale)
+		loc := strings.ReplaceAll(locale, "_", "-")
 
 		for _, calendar := range ldml.Dates.Calendars.Calendar {
 			if calendarTypes.Skip(calendar.Type) {
 				continue
 			}
-
-			indexes := months.Lookup[strings.ReplaceAll(locale, "_", "-")]
 
 			for _, monthContext := range calendar.Months.MonthContext {
 				for _, monthWidth := range monthContext.MonthWidth {
@@ -371,85 +370,47 @@ func (g *Generator) months() Months {
 						i = len(months.List) - 1
 					}
 
+					widthsCount := 3
+					contextCount := 2
+
+					var t, w, c int
+
 					switch calendar.Type {
 					case "gregorian":
-						switch monthWidth.Type {
-						case "abbreviated":
-							if monthContext.Type == "format" {
-								indexes.GregorianAbbrFormat = int16(i)
-							} else {
-								indexes.GregorianAbbrStandAlone = int16(i)
-							}
-						case "narrow":
-							if monthContext.Type == "format" {
-								indexes.GregorianNarrowFormat = int16(i)
-							} else {
-								indexes.GregorianNarrowStandAlone = int16(i)
-							}
-						case "wide":
-							if monthContext.Type == "format" {
-								indexes.GregorianWideFormat = int16(i)
-							} else {
-								indexes.GregorianWideStandAlone = int16(i)
-							}
-						}
+						t = 0
 					case "buddhist":
-						switch monthWidth.Type {
-						case "abbreviated":
-							if monthContext.Type == "format" {
-								indexes.BuddhistAbbrFormat = int16(i)
-							} else {
-								indexes.BuddhistAbbrStandAlone = int16(i)
-							}
-						case "narrow":
-							if monthContext.Type == "format" {
-								indexes.BuddhistNarrowFormat = int16(i)
-							} else {
-								indexes.BuddhistNarrowStandAlone = int16(i)
-							}
-						case "wide":
-							if monthContext.Type == "format" {
-								indexes.BuddhistWideFormat = int16(i)
-							} else {
-								indexes.BuddhistWideStandAlone = int16(i)
-							}
-						}
+						t = 1
 					case "persian":
-						switch monthWidth.Type {
-						case "abbreviated":
-							if monthContext.Type == "format" {
-								indexes.PersianAbbrFormat = int16(i)
-							} else {
-								indexes.PersianAbbrStandAlone = int16(i)
-							}
-						case "narrow":
-							if monthContext.Type == "format" {
-								indexes.PersianNarrowFormat = int16(i)
-							} else {
-								indexes.PersianNarrowStandAlone = int16(i)
-							}
-						case "wide":
-							if monthContext.Type == "format" {
-								indexes.PersianWideFormat = int16(i)
-							} else {
-								indexes.PersianWideStandAlone = int16(i)
-							}
-						}
+						t = 2
 					}
+
+					switch monthWidth.Type {
+					case "abbreviated":
+						w = 0
+					case "wide":
+						w = 1
+					case "narrow":
+						w = 2
+					}
+
+					switch monthContext.Type {
+					case "format":
+						c = 0
+					case "stand-alone":
+						c = 1
+					}
+
+					index := t*widthsCount*contextCount + w*contextCount + c
+
+					indexes := months.Lookup[loc]
+					if monthContext.Type == "format" {
+						indexes[index+1] = i // NOTE: fallback "format" context when "stand-alone" not defined
+					}
+
+					indexes[index] = i
+					months.Lookup[loc] = indexes
 				}
 			}
-
-			indexes.GregorianAbbrStandAlone = max(indexes.GregorianAbbrFormat, indexes.GregorianAbbrStandAlone)
-			indexes.GregorianNarrowStandAlone = max(indexes.GregorianNarrowFormat, indexes.GregorianNarrowStandAlone)
-			indexes.GregorianWideStandAlone = max(indexes.GregorianWideFormat, indexes.GregorianWideStandAlone)
-			indexes.PersianAbbrStandAlone = max(indexes.PersianAbbrFormat, indexes.PersianAbbrStandAlone)
-			indexes.PersianNarrowStandAlone = max(indexes.PersianNarrowFormat, indexes.PersianNarrowStandAlone)
-			indexes.PersianWideStandAlone = max(indexes.PersianWideFormat, indexes.PersianWideStandAlone)
-			indexes.BuddhistAbbrStandAlone = max(indexes.BuddhistAbbrFormat, indexes.BuddhistAbbrStandAlone)
-			indexes.BuddhistNarrowStandAlone = max(indexes.BuddhistNarrowFormat, indexes.BuddhistNarrowStandAlone)
-			indexes.BuddhistWideStandAlone = max(indexes.BuddhistWideFormat, indexes.BuddhistWideStandAlone)
-
-			months.Lookup[strings.ReplaceAll(locale, "_", "-")] = indexes
 		}
 	}
 
@@ -660,13 +621,13 @@ type TemplateData struct {
 // value - locales.
 type Months struct {
 	List []MonthNames
-	// key is locale, MonthNameIndexes contains index is from [List].
-	Lookup map[string]MonthNameIndexes
+	// key is locale, value is 18 indexes from [List].
+	Lookup map[string][18]int
 }
 
 func NewMonths() Months {
 	return Months{
-		Lookup: make(map[string]MonthNameIndexes),
+		Lookup: make(map[string][18]int, 18), //nolint:mnd
 	}
 }
 
