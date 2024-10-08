@@ -11,6 +11,26 @@ import (
 	ptime "github.com/yaa110/go-persian-calendar"
 )
 
+type monthKey struct {
+  locale, calendarType, width, context string
+}
+
+type monthNames [12]string
+
+var names = [...]monthNames{
+{{- range $monthNames := .Months.List }}
+  {{ $monthNames }},
+{{- end }}
+}
+
+var monthLookup = map[monthKey]int{
+{{- range $i, $keys := .Months.Lookup }}
+  {{- range $key := $keys }}
+  monthKey{locale: "{{ $key.Locale }}", calendarType: "{{ $key.CalendarType }}", width: "{{ $key.Width}}", context: "{{ $key.Context }}"}: {{ $i }},
+  {{- end }}
+{{- end }}
+}
+
 type numberingSystem int
 
 const (

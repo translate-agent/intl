@@ -7,6 +7,7 @@ import (
 	"maps"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -122,7 +123,13 @@ func containsDateFormatItem(calendar *cldr.Calendar, id string) bool {
 	return false
 }
 
-var calendarTypes = []string{"gregorian", "persian", "buddhist"}
+type CalendarTypes []string
+
+func (t CalendarTypes) Skip(s string) bool {
+	return !slices.Contains(t, s)
+}
+
+var calendarTypes = CalendarTypes{"gregorian", "persian", "buddhist"}
 
 // merge copies particular fallback values to dst.
 func merge(dst, fallback *cldr.LDML) {
@@ -155,6 +162,8 @@ func merge(dst, fallback *cldr.LDML) {
 			calendar = deepCopy(parentCalendar)
 		}
 
+		// datetimeformat
+
 		if calendar.DateTimeFormats == nil {
 			calendar.DateTimeFormats = deepCopy(parentCalendar.DateTimeFormats)
 		}
@@ -173,6 +182,20 @@ func merge(dst, fallback *cldr.LDML) {
 					calendar.DateTimeFormats.AvailableFormats[0].DateFormatItem,
 					deepCopy(dateFormatItem))
 			}
+		}
+
+		// months
+
+		if calendar.Months == nil {
+			calendar.Months = deepCopy(parentCalendar.Months)
+		}
+
+		if len(calendar.Months.MonthContext) == 0 {
+			if len(parentCalendar.Months.MonthContext) == 0 {
+				continue
+			}
+
+			calendar.Months.MonthContext = deepCopy(parentCalendar.Months.MonthContext)
 		}
 	}
 }
@@ -232,7 +255,7 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 		}
 
 		for _, calendar := range ldml.Dates.Calendars.Calendar {
-			if !slices.Contains(calendarTypes, calendar.Type) {
+			if calendarTypes.Skip(calendar.Type) {
 				continue
 			}
 
@@ -260,6 +283,7 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 func (g *Generator) defaultDateFormatItem(calendarType string, id string) string {
 	calendars := g.cldr.RawLDML("root").Dates.Calendars.Calendar
 
+	// TODO(jhorsts): use findCalendar()
 	i := slices.IndexFunc(g.cldr.RawLDML("root").Dates.Calendars.Calendar, func(calendar *cldr.Calendar) bool {
 		return calendar.Type == calendarType
 	})
@@ -290,6 +314,74 @@ func (g *Generator) defaultDateFormatItem(calendarType string, id string) string
 	}
 
 	return ""
+}
+
+func (g *Generator) months() Months {
+	var months Months
+
+	for _, locale := range g.cldr.Locales() {
+		ldml := g.cldr.RawLDML(locale)
+
+		for _, calendar := range ldml.Dates.Calendars.Calendar {
+			if calendarTypes.Skip(calendar.Type) {
+				continue
+			}
+
+			for _, monthContext := range calendar.Months.MonthContext {
+				for _, monthWidth := range monthContext.MonthWidth {
+
+					var monthNames MonthNames
+
+					for _, month := range monthWidth.Month {
+						if !isContributedOrApproved(month.Draft) {
+							continue
+						}
+
+						i, err := strconv.Atoi(month.Type)
+						if err != nil {
+							panic(err)
+						}
+
+						i--
+
+						monthNames[i] = month.CharData
+					}
+
+					// skip empty names
+					if monthNames[0] == "" {
+						continue
+					}
+
+					i := slices.IndexFunc(months.List, func(names MonthNames) bool {
+						for i, v := range names {
+							if v != monthNames[i] {
+								return false
+							}
+						}
+
+						return true
+					})
+
+					key := MonthKey{
+						Locale:       locale,
+						CalendarType: calendar.Type,
+						Context:      monthContext.Type,
+						Width:        monthWidth.Type,
+					}
+
+					if i < 0 {
+						months.List = append(months.List, monthNames)
+						months.Lookup = append(months.Lookup, []MonthKey{key})
+					} else {
+						months.Lookup[i] = append(months.Lookup[i], key)
+					}
+				}
+			}
+
+		}
+	}
+
+	return months
 }
 
 // CLDRDateFormatItem is a copy of CLDR DateFormatItem.
@@ -433,6 +525,7 @@ func (g *Generator) Write() error {
 		NumberingSystems:        g.numberingSystems(defaultNumberingSystems),
 		NumberingSystemIota:     g.numberingSystemsIota(defaultNumberingSystems),
 		DefaultNumberingSystems: defaultNumberingSystems,
+		Months:                  g.months(),
 	}
 
 	if err := tpl.Execute(os.Stdout, data); err != nil {
@@ -467,6 +560,27 @@ type TemplateData struct {
 	CalendarPreferences     []CalendarPreference
 	DateTimeFormats         DateTimeFormats
 	NumberingSystems        []NumberingSystem
+	Months                  Months
+}
+
+// value - locales
+type Months struct {
+	List []MonthNames
+	// index is from [List].
+	Lookup [][]MonthKey
+}
+
+type MonthKey struct {
+	Locale       string
+	CalendarType string // gregorian, persian or buddhist
+	Width        string // wide, narrow, abbreviated
+	Context      string // format or stand-alone
+}
+
+type MonthNames [12]string
+
+func (n MonthNames) String() string {
+	return `{"` + strings.Join(n[:], `", "`) + `"}`
 }
 
 // key - calendar type.
