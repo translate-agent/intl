@@ -271,7 +271,7 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 
 			for _, availableFormats := range calendar.DateTimeFormats.AvailableFormats {
 				for _, dateFormatItem := range availableFormats.DateFormatItem {
-					g.addDateFormatItem(formats, (*CLDRDateFormatItem)(dateFormatItem), locale)
+					g.addDateFormatItem(calendar.Type, formats, (*CLDRDateFormatItem)(dateFormatItem), locale)
 				}
 			}
 		}
@@ -317,7 +317,7 @@ func (g *Generator) defaultDateFormatItem(calendarType string, id string) string
 }
 
 func (g *Generator) months() Months {
-	var months Months
+	months := NewMonths()
 
 	for _, locale := range g.cldr.Locales() {
 		ldml := g.cldr.RawLDML(locale)
@@ -326,6 +326,8 @@ func (g *Generator) months() Months {
 			if calendarTypes.Skip(calendar.Type) {
 				continue
 			}
+
+			indexes := months.Lookup[strings.ReplaceAll(locale, "_", "-")]
 
 			for _, monthContext := range calendar.Months.MonthContext {
 				for _, monthWidth := range monthContext.MonthWidth {
@@ -364,21 +366,90 @@ func (g *Generator) months() Months {
 						return true
 					})
 
-					key := MonthKey{
-						Locale:       strings.ReplaceAll(locale, "_", "-"),
-						CalendarType: calendar.Type,
-						Context:      monthContext.Type,
-						Width:        monthWidth.Type,
+					if i == -1 {
+						months.List = append(months.List, monthNames)
+						i = len(months.List) - 1
 					}
 
-					if i < 0 {
-						months.List = append(months.List, monthNames)
-						months.Lookup = append(months.Lookup, []MonthKey{key})
-					} else {
-						months.Lookup[i] = append(months.Lookup[i], key)
+					switch calendar.Type {
+					case "gregorian":
+						switch monthWidth.Type {
+						case "abbreviated":
+							if monthContext.Type == "format" {
+								indexes.GregorianAbbrFormat = int16(i)
+							} else {
+								indexes.GregorianAbbrStandAlone = int16(i)
+							}
+						case "narrow":
+							if monthContext.Type == "format" {
+								indexes.GregorianNarrowFormat = int16(i)
+							} else {
+								indexes.GregorianNarrowStandAlone = int16(i)
+							}
+						case "wide":
+							if monthContext.Type == "format" {
+								indexes.GregorianWideFormat = int16(i)
+							} else {
+								indexes.GregorianWideStandAlone = int16(i)
+							}
+						}
+					case "buddhist":
+						switch monthWidth.Type {
+						case "abbreviated":
+							if monthContext.Type == "format" {
+								indexes.BuddhistAbbrFormat = int16(i)
+							} else {
+								indexes.BuddhistAbbrStandAlone = int16(i)
+							}
+						case "narrow":
+							if monthContext.Type == "format" {
+								indexes.BuddhistNarrowFormat = int16(i)
+							} else {
+								indexes.BuddhistNarrowStandAlone = int16(i)
+							}
+						case "wide":
+							if monthContext.Type == "format" {
+								indexes.BuddhistWideFormat = int16(i)
+							} else {
+								indexes.BuddhistWideStandAlone = int16(i)
+							}
+						}
+					case "persian":
+						switch monthWidth.Type {
+						case "abbreviated":
+							if monthContext.Type == "format" {
+								indexes.PersianAbbrFormat = int16(i)
+							} else {
+								indexes.PersianAbbrStandAlone = int16(i)
+							}
+						case "narrow":
+							if monthContext.Type == "format" {
+								indexes.PersianNarrowFormat = int16(i)
+							} else {
+								indexes.PersianNarrowStandAlone = int16(i)
+							}
+						case "wide":
+							if monthContext.Type == "format" {
+								indexes.PersianWideFormat = int16(i)
+							} else {
+								indexes.PersianWideStandAlone = int16(i)
+							}
+						}
 					}
 				}
 			}
+
+			indexes.GregorianAbbrStandAlone = max(indexes.GregorianAbbrFormat, indexes.GregorianAbbrStandAlone)
+			indexes.GregorianNarrowStandAlone = max(indexes.GregorianNarrowFormat, indexes.GregorianNarrowStandAlone)
+			indexes.GregorianWideStandAlone = max(indexes.GregorianWideFormat, indexes.GregorianWideStandAlone)
+			indexes.PersianAbbrStandAlone = max(indexes.PersianAbbrFormat, indexes.PersianAbbrStandAlone)
+			indexes.PersianNarrowStandAlone = max(indexes.PersianNarrowFormat, indexes.PersianNarrowStandAlone)
+			indexes.PersianWideStandAlone = max(indexes.PersianWideFormat, indexes.PersianWideStandAlone)
+			indexes.BuddhistAbbrStandAlone = max(indexes.BuddhistAbbrFormat, indexes.BuddhistAbbrStandAlone)
+			indexes.BuddhistNarrowStandAlone = max(indexes.BuddhistNarrowFormat, indexes.BuddhistNarrowStandAlone)
+			indexes.BuddhistWideStandAlone = max(indexes.BuddhistWideFormat, indexes.BuddhistWideStandAlone)
+
+			months.Lookup[strings.ReplaceAll(locale, "_", "-")] = indexes
 		}
 	}
 
@@ -394,6 +465,7 @@ type CLDRDateFormatItem struct {
 
 //nolint:gocognit
 func (g *Generator) addDateFormatItem(
+	calendarType string,
 	dateTimeFormats CalendarDateTimeFormats,
 	dateFormatItem *CLDRDateFormatItem,
 	locale string,
@@ -447,17 +519,17 @@ func (g *Generator) addDateFormatItem(
 			case "LL", "MM":
 				sb.WriteString(`fmt(m, "01")`)
 			case "LLL":
-				sb.WriteString(`fmtMonth(locale.String(), "stand-alone", "abbreviated")`)
+				sb.WriteString(fmt.Sprintf(`fmtMonth(locale.String(), "%s", "stand-alone", "abbreviated")`, calendarType))
 			case "MMM":
-				sb.WriteString(`fmtMonth(locale.String(), "format", "abbreviated")`)
+				sb.WriteString(fmt.Sprintf(`fmtMonth(locale.String(), "%s", "format", "abbreviated")`, calendarType))
 			case "LLLL":
-				sb.WriteString(`fmtMonth(locale.String(), "stand-alone", "wide")`)
+				sb.WriteString(fmt.Sprintf(`fmtMonth(locale.String(), "%s", "stand-alone", "wide")`, calendarType))
 			case "MMMM":
-				sb.WriteString(`fmtMonth(locale.String(), "format", "wide")`)
+				sb.WriteString(fmt.Sprintf(`fmtMonth(locale.String(), "%s", "format", "wide")`, calendarType))
 			case "LLLLL":
-				sb.WriteString(`fmtMonth(locale.String(), "stand-alone", "narrow")`)
+				sb.WriteString(fmt.Sprintf(`fmtMonth(locale.String(), "%s", "stand-alone", "narrow")`, calendarType))
 			case "MMMMM":
-				sb.WriteString(`fmtMonth(locale.String(), "format", "narrow")`)
+				sb.WriteString(fmt.Sprintf(`fmtMonth(locale.String(), "%s", "format", "narrow")`, calendarType))
 			}
 		}
 
@@ -588,8 +660,14 @@ type TemplateData struct {
 // value - locales.
 type Months struct {
 	List []MonthNames
-	// index is from [List].
-	Lookup [][]MonthKey
+	// key is locale, MonthNameIndexes contains index is from [List].
+	Lookup map[string]MonthNameIndexes
+}
+
+func NewMonths() Months {
+	return Months{
+		Lookup: make(map[string]MonthNameIndexes),
+	}
 }
 
 type MonthKey struct {
@@ -750,4 +828,18 @@ func deepCopy[T any](v T) T {
 
 func isContributedOrApproved(s string) bool {
 	return s == "" || s == "contributed"
+}
+
+type MonthNameIndexes struct {
+	// gregorian
+	GregorianWideFormat, GregorianNarrowFormat, GregorianAbbrFormat             int16
+	GregorianWideStandAlone, GregorianNarrowStandAlone, GregorianAbbrStandAlone int16
+
+	// buddhist
+	BuddhistWideFormat, BuddhistNarrowFormat, BuddhistAbbrFormat             int16
+	BuddhistWideStandAlone, BuddhistNarrowStandAlone, BuddhistAbbrStandAlone int16
+
+	// persian
+	PersianWideFormat, PersianNarrowFormat, PersianAbbrFormat             int16
+	PersianWideStandAlone, PersianNarrowStandAlone, PersianAbbrStandAlone int16
 }
