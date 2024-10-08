@@ -363,7 +363,7 @@ func (g *Generator) months() Months {
 					})
 
 					key := MonthKey{
-						Locale:       locale,
+						Locale:       strings.ReplaceAll(locale, "_", "-"),
 						CalendarType: calendar.Type,
 						Context:      monthContext.Type,
 						Width:        monthWidth.Type,
@@ -435,13 +435,28 @@ func (g *Generator) addDateFormatItem(
 				sb.WriteRune('+')
 			}
 
-			switch {
+			if v.literal {
+				sb.WriteString(`"` + v.value + `"`)
+				continue
+			}
+
+			switch v.value {
 			default:
 				sb.WriteString("fmt(m, f)")
-			case v.literal:
-				sb.WriteString(`"` + v.value + `"`)
-			case v.value == "MM" || v.value == "LL":
+			case "LL", "MM":
 				sb.WriteString(`fmt(m, "01")`)
+			case "LLL":
+				sb.WriteString(`fmtMonth(locale.String(), "stand-alone", "abbreviated")(m, f)`)
+			case "MMM":
+				sb.WriteString(`fmtMonth(locale.String(), "format", "abbreviated")(m, f)`)
+			case "LLLL":
+				sb.WriteString(`fmtMonth(locale.String(), "stand-alone", "wide")(m, f)`)
+			case "MMMM":
+				sb.WriteString(`fmtMonth(locale.String(), "format", "wide")(m, f)`)
+			case "LLLLL":
+				sb.WriteString(`fmtMonth(locale.String(), "stand-alone", "narrow")(m, f)`)
+			case "MMMMM":
+				sb.WriteString(`fmtMonth(locale.String(), "format", "narrow")(m, f)`)
 			}
 		}
 

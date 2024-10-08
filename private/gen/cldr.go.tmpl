@@ -31,6 +31,21 @@ var monthLookup = map[monthKey]int{
 {{- end }}
 }
 
+func fmtMonth(locale, context, width string) func(int, string) string {
+  key := monthKey{locale: locale, calendarType: "gregorian", width: width, context: context}
+  i, ok := monthLookup[key]
+  if !ok && context == "stand-alone" {
+    key.context = "format"
+    i = monthLookup[key]
+  }
+
+  months := names[i]
+
+  return func(m int, _ string) string {
+    return months[m-1]
+  }
+}
+
 type numberingSystem int
 
 const (

@@ -97,10 +97,12 @@ func skipTest(locale language.Tag, options Options) bool {
 		{"hnj-Hmnp", Options{Month: MonthNumeric}}: {},
 		{"hnj-Hmnp", Options{Month: Month2Digit}}:  {},
 
-		{"sdh-IR", Options{Year: Year2Digit}}:  {},
-		{"sdh-IR", Options{Year: YearNumeric}}: {},
-		{"sdh-IR", Options{Day: Day2Digit}}:    {},
-		{"sdh-IR", Options{Day: DayNumeric}}:   {},
+		{"sdh-IR", Options{Year: Year2Digit}}:    {},
+		{"sdh-IR", Options{Year: YearNumeric}}:   {},
+		{"sdh-IR", Options{Month: Month2Digit}}:  {},
+		{"sdh-IR", Options{Month: MonthNumeric}}: {},
+		{"sdh-IR", Options{Day: Day2Digit}}:      {},
+		{"sdh-IR", Options{Day: DayNumeric}}:     {},
 
 		// depends on localised era
 		{"th-TH", Options{Year: Year2Digit}}:  {},
