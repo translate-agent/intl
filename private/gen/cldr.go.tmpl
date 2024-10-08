@@ -7,26 +7,26 @@ import (
   "strings"
   "time"
 
-  "golang.org/x/text/language"
 	ptime "github.com/yaa110/go-persian-calendar"
+  "golang.org/x/text/language"
 )
 
 type monthKey struct {
   locale, calendarType, width, context string
 }
 
-type monthNames [12]string
+type calendarMonths [12]string
 
-var names = [...]monthNames{
-{{- range $monthNames := .Months.List }}
-  {{ $monthNames }},
+var calendarMonthNames = [...]calendarMonths{
+{{- range $calendarMonths := .Months.List }}
+  {{ $calendarMonths }},
 {{- end }}
 }
 
 var monthLookup = map[monthKey]int{
 {{- range $i, $keys := .Months.Lookup }}
   {{- range $key := $keys }}
-  monthKey{locale: "{{ $key.Locale }}", calendarType: "{{ $key.CalendarType }}", width: "{{ $key.Width}}", context: "{{ $key.Context }}"}: {{ $i }},
+  {locale: "{{ $key.Locale }}", calendarType: "{{ $key.CalendarType }}", width: "{{ $key.Width}}", context: "{{ $key.Context }}"}: {{ $i }},
   {{- end }}
 {{- end }}
 }
@@ -39,10 +39,10 @@ func fmtMonth(locale, context, width string) func(int, string) string {
     i = monthLookup[key]
   }
 
-  months := names[i]
+  names := calendarMonthNames[i]
 
   return func(m int, _ string) string {
-    return months[m-1]
+    return names[m-1]
   }
 }
 
@@ -135,7 +135,7 @@ func fmtMonth{{ title $calendarType }}(_ language.Tag, digits digits) func(month
     return fmt
   {{- range $fmt, $languages := $formats.M.Fmt }}
   case "{{ join $languages "\", \"" }}":
-    return func(m int, f string) string { return {{ $fmt }} }
+    return {{ $fmt }}
   {{- end }}
   }
 {{ end }} {{/* $formats.M.Fmt > 1*/}}

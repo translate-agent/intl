@@ -329,12 +329,14 @@ func (g *Generator) months() Months {
 
 			for _, monthContext := range calendar.Months.MonthContext {
 				for _, monthWidth := range monthContext.MonthWidth {
-
 					var monthNames MonthNames
 
+				monthLoop:
 					for _, month := range monthWidth.Month {
-						if !isContributedOrApproved(month.Draft) {
-							continue
+						// skip draft and months with the same digits
+						if !isContributedOrApproved(month.Draft) ||
+							month.Type == month.CharData && month.CharData == "1" {
+							break monthLoop
 						}
 
 						i, err := strconv.Atoi(month.Type)
@@ -377,7 +379,6 @@ func (g *Generator) months() Months {
 					}
 				}
 			}
-
 		}
 	}
 
@@ -446,21 +447,27 @@ func (g *Generator) addDateFormatItem(
 			case "LL", "MM":
 				sb.WriteString(`fmt(m, "01")`)
 			case "LLL":
-				sb.WriteString(`fmtMonth(locale.String(), "stand-alone", "abbreviated")(m, f)`)
+				sb.WriteString(`fmtMonth(locale.String(), "stand-alone", "abbreviated")`)
 			case "MMM":
-				sb.WriteString(`fmtMonth(locale.String(), "format", "abbreviated")(m, f)`)
+				sb.WriteString(`fmtMonth(locale.String(), "format", "abbreviated")`)
 			case "LLLL":
-				sb.WriteString(`fmtMonth(locale.String(), "stand-alone", "wide")(m, f)`)
+				sb.WriteString(`fmtMonth(locale.String(), "stand-alone", "wide")`)
 			case "MMMM":
-				sb.WriteString(`fmtMonth(locale.String(), "format", "wide")(m, f)`)
+				sb.WriteString(`fmtMonth(locale.String(), "format", "wide")`)
 			case "LLLLL":
-				sb.WriteString(`fmtMonth(locale.String(), "stand-alone", "narrow")(m, f)`)
+				sb.WriteString(`fmtMonth(locale.String(), "stand-alone", "narrow")`)
 			case "MMMMM":
-				sb.WriteString(`fmtMonth(locale.String(), "format", "narrow")(m, f)`)
+				sb.WriteString(`fmtMonth(locale.String(), "format", "narrow")`)
 			}
 		}
 
-		dateTimeFormats.M.Fmt[sb.String()] = append(dateTimeFormats.M.Fmt[sb.String()], locale)
+		s := sb.String()
+
+		if !strings.Contains(s, "fmtMonth") {
+			s = `func(m int, f string) string { return ` + s + ` }`
+		}
+
+		dateTimeFormats.M.Fmt[s] = append(dateTimeFormats.M.Fmt[s], locale)
 	case "d":
 		if dateFormatItem.CharData == dateTimeFormats.D.Default {
 			return
@@ -578,7 +585,7 @@ type TemplateData struct {
 	Months                  Months
 }
 
-// value - locales
+// value - locales.
 type Months struct {
 	List []MonthNames
 	// index is from [List].
