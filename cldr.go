@@ -768,7 +768,9 @@ var calendarMonthNames = [...]calendarMonths{
 	{"Januwari", "Februwari", "Mashi", "Ephreli", "Meyi", "Juni", "Julayi", "Agasti", "Septhemba", "Okthoba", "Novemba", "Disemba"},
 }
 
-var monthLookup = map[string][18]int{
+type monthIndexes [18]int16
+
+var monthLookup = map[string]monthIndexes{
 	"af":             {2, 2, 3, 3, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	"af-NA":          {2, 2, 3, 3, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	"af-ZA":          {2, 2, 3, 3, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -1640,36 +1642,31 @@ var monthLookup = map[string][18]int{
 func fmtMonth(locale, calendar, context, width string) func(int, string) string {
 	indexes := monthLookup[locale]
 
-	var index, t, w, c int
+	var i int
 
 	switch calendar {
-	case "gregorian":
-		t = 0
+	case "gregorian": // noop
+		// "gregorian" calendar index is 0
 	case "buddhist":
-		t = 1
+		i = 6 // 1*3*2
 	case "persian":
-		t = 2
+		i = 12 // 2*3*2
 	}
 
+	// "abbreviated" width index is 0
 	switch width {
-	case "abbreviated":
-		w = 0
 	case "wide":
-		w = 1
+		i += 2 // 1*2
 	case "narrow":
-		w = 2
+		i += 4 // 2*2
 	}
 
-	switch context {
-	case "format":
-		c = 0
-	case "stand-alone":
-		c = 1
+	// "format" context index is 0
+	if context == "stand-alone" {
+		i++
 	}
 
-	index = t*3*2 + w*2 + c
-
-	names := calendarMonthNames[indexes[index]]
+	names := calendarMonthNames[int(indexes[i])]
 
 	return func(m int, _ string) string {
 		return names[m-1]
