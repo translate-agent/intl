@@ -13,6 +13,7 @@ import (
 
 type calendarMonths [12]string
 
+// size 144384
 var calendarMonthNames = [...]calendarMonths{
 {{- range $calendarMonths := .Months.List }}
   {{ $calendarMonths }},
