@@ -9,8 +9,8 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/private/gen",
-      "args": ["-dir=${workspaceFolder}/.cldr"]
+      "program": "${workspaceFolder}/internal/gen",
+      "args": ["-cldr-dir=${workspaceFolder}/.cldr", "-out=${workspaceFolder}"]
     }
   ]
 }

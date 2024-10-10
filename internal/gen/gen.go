@@ -308,6 +308,7 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 				formats = NewCalendarDateTimeFormats()
 
 				formats.Y.Default = g.defaultDateFormatItem(calendar.Type, "y")
+				formats.M.Default = g.defaultDateFormatItem(calendar.Type, "M")
 				formats.D.Default = g.defaultDateFormatItem(calendar.Type, "d")
 
 				dateTimeFormats[calendar.Type] = formats
@@ -371,13 +372,13 @@ func (g *Generator) months() Months { //nolint:gocognit
 		for calendar := range supportedCalendars(ldml.Dates.Calendars.Calendar) {
 			for _, monthContext := range calendar.Months.MonthContext {
 				for _, monthWidth := range monthContext.MonthWidth {
-					// skip draft and months with the same digits
 					if len(monthWidth.Month) == 0 {
 						continue
 					}
 
 					month := monthWidth.Month[0]
 
+					// skip draft and months with the same digits
 					if !isContributedOrApproved(month.Draft) ||
 						month.Type == month.CharData && month.CharData == "1" {
 						continue
@@ -474,7 +475,9 @@ func (g *Generator) addDateFormatItem(
 
 		dateTimeFormats.Y.Fmt[sb.String()] = append(dateTimeFormats.Y.Fmt[sb.String()], locale)
 	case "M", "L":
-		if dateFormatItem.CharData == dateTimeFormats.M.Default {
+		// "L" and "M" have the same meaning - numeric with minimum digits
+		if dateFormatItem.CharData == dateTimeFormats.M.Default ||
+			dateFormatItem.CharData == "M" {
 			return
 		}
 
