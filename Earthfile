@@ -35,7 +35,8 @@ generate:
   RUN \
     --mount=type=cache,id=go-mod,target=/go/pkg/mod \
     --mount=type=cache,id=go-build,target=/root/.cache/go-build \
-    go run -C private/gen . -dir /intl/cldr | gofumpt > cldr.go
+    go run -C private/gen . -cldr-dir /intl/cldr -out=/intl && \
+    gofumpt -w .
   SAVE ARTIFACT cldr.go AS LOCAL cldr.go
 
 # test runs unit tests

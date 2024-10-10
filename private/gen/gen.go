@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"maps"
 	"os"
+	"path"
 	"slices"
 	"strconv"
 	"strings"
@@ -23,6 +24,20 @@ type Generator struct {
 	cldr *cldr.CLDR
 }
 
+func Gen(cldrDir, out string) error {
+	g := Generator{}
+
+	if err := g.Load(cldrDir); err != nil {
+		return err
+	}
+
+	if err := g.Write(out); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (g *Generator) Load(dir string) error {
 	var (
 		d   cldr.Decoder
@@ -37,6 +52,44 @@ func (g *Generator) Load(dir string) error {
 	}
 
 	g.merge()
+
+	return nil
+}
+
+func (g *Generator) Write(out string) error {
+	tpl, err := template.New("datetime").Funcs(template.FuncMap{
+		"join":     strings.Join,
+		"contains": strings.Contains,
+		"title":    cases.Title(language.English).String,
+		"sub":      func(a, b int) int { return a - b },
+	}).Parse(datetimeTemplate)
+	if err != nil {
+		return fmt.Errorf("parse datetime template: %w", err)
+	}
+
+	defaultNumberingSystems := g.defaultNumberingSystems()
+
+	data := TemplateData{
+		CalendarPreferences:     g.calendarPreferences(),
+		DateTimeFormats:         g.dateTimeFormats(),
+		NumberingSystems:        g.numberingSystems(defaultNumberingSystems),
+		NumberingSystemIota:     g.numberingSystemsIota(defaultNumberingSystems),
+		DefaultNumberingSystems: defaultNumberingSystems,
+		Months:                  g.months(),
+	}
+
+	name := path.Join(out, "cldr.go")
+
+	f, err := os.Create(name)
+	if err != nil {
+		return fmt.Errorf("create %s: %w", name, err)
+	}
+
+	defer f.Close()
+
+	if err := tpl.Execute(f, data); err != nil {
+		return fmt.Errorf("execute datetime template: %w", err)
+	}
 
 	return nil
 }
@@ -190,11 +243,7 @@ func merge(dst, fallback *cldr.LDML) {
 			calendar.Months = deepCopy(parentCalendar.Months)
 		}
 
-		if len(calendar.Months.MonthContext) == 0 {
-			if len(parentCalendar.Months.MonthContext) == 0 {
-				continue
-			}
-
+		if len(calendar.Months.MonthContext) == 0 && len(parentCalendar.Months.MonthContext) > 0 {
 			calendar.Months.MonthContext = deepCopy(parentCalendar.Months.MonthContext)
 		}
 	}
@@ -561,49 +610,6 @@ func (g *Generator) numberingSystemsIota(defaultNumberingSystems DefaultNumberin
 	return slices.Compact(ids)
 }
 
-func (g *Generator) Write() error {
-	tpl, err := template.New("datetime").Funcs(template.FuncMap{
-		"join":     strings.Join,
-		"contains": strings.Contains,
-		"title":    cases.Title(language.English).String,
-		"sub":      func(a, b int) int { return a - b },
-	}).Parse(datetimeTemplate)
-	if err != nil {
-		return fmt.Errorf("parse datetime template: %w", err)
-	}
-
-	defaultNumberingSystems := g.defaultNumberingSystems()
-
-	data := TemplateData{
-		CalendarPreferences:     g.calendarPreferences(),
-		DateTimeFormats:         g.dateTimeFormats(),
-		NumberingSystems:        g.numberingSystems(defaultNumberingSystems),
-		NumberingSystemIota:     g.numberingSystemsIota(defaultNumberingSystems),
-		DefaultNumberingSystems: defaultNumberingSystems,
-		Months:                  g.months(),
-	}
-
-	if err := tpl.Execute(os.Stdout, data); err != nil {
-		return fmt.Errorf("execute datetime template: %w", err)
-	}
-
-	return nil
-}
-
-func Gen(dir string) error {
-	g := Generator{}
-
-	if err := g.Load(dir); err != nil {
-		return err
-	}
-
-	if err := g.Write(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 type NumberingSystem struct {
 	ID     string
 	Digits [10]rune
@@ -789,18 +795,4 @@ func deepCopy[T any](v T) T {
 
 func isContributedOrApproved(s string) bool {
 	return s == "" || s == "contributed"
-}
-
-type MonthNameIndexes struct {
-	// gregorian
-	GregorianWideFormat, GregorianNarrowFormat, GregorianAbbrFormat             int16
-	GregorianWideStandAlone, GregorianNarrowStandAlone, GregorianAbbrStandAlone int16
-
-	// buddhist
-	BuddhistWideFormat, BuddhistNarrowFormat, BuddhistAbbrFormat             int16
-	BuddhistWideStandAlone, BuddhistNarrowStandAlone, BuddhistAbbrStandAlone int16
-
-	// persian
-	PersianWideFormat, PersianNarrowFormat, PersianAbbrFormat             int16
-	PersianWideStandAlone, PersianNarrowStandAlone, PersianAbbrStandAlone int16
 }
