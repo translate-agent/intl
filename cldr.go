@@ -769,6 +769,8 @@ var calendarMonthNames = [...]calendarMonths{
 	{"Januwari", "Februwari", "Mashi", "Ephreli", "Meyi", "Juni", "Julayi", "Agasti", "Septhemba", "Okthoba", "Novemba", "Disemba"},
 }
 
+// monthIndexes contains indexes of months names, each calendar has 6 indexes
+// for all variations of "width" and "context".
 type monthIndexes [18]int16
 
 var monthLookup = map[string]monthIndexes{
@@ -1640,19 +1642,10 @@ var monthLookup = map[string]monthIndexes{
 	"zu-ZA":          {749, 749, 751, 751, 750, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 }
 
-func fmtMonth(locale, calendar, context, width string) func(int, string) string {
+func fmtMonth(locale string, calendar calendarType, context, width string) func(int, string) string {
 	indexes := monthLookup[locale]
 
-	var i int
-
-	switch calendar {
-	case "gregorian": // noop
-		// "gregorian" calendar index is 0
-	case "buddhist":
-		i = 6 // 1*3*2
-	case "persian":
-		i = 12 // 2*3*2
-	}
+	i := calendar * 6
 
 	// "abbreviated" width index is 0
 	switch width {
@@ -1789,16 +1782,16 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
 	}
 }
 
-func defaultCalendar(locale language.Tag) string {
+func defaultCalendar(locale language.Tag) calendarType {
 	switch v, _ := locale.Region(); v.String() {
 	default:
-		return "gregorian"
+		return calendarTypeGregorian
 	case "AF", "IR":
-		return "persian"
+		return calendarTypePersian
 	case "SA":
-		return "islamic-umalqura"
+		return calendarTypeIslamicUmalqura
 	case "TH":
-		return "buddhist"
+		return calendarTypeBuddhist
 	}
 }
 
@@ -1893,9 +1886,9 @@ func fmtMonthGregorian(locale language.Tag, digits digits) func(month int, forma
 	default:
 		return fmt
 	case "wae":
-		return fmtMonth(locale.String(), "gregorian", "stand-alone", "abbreviated")
+		return fmtMonth(locale.String(), calendarTypeGregorian, "stand-alone", "abbreviated")
 	case "mn":
-		return fmtMonth(locale.String(), "gregorian", "stand-alone", "narrow")
+		return fmtMonth(locale.String(), calendarTypeGregorian, "stand-alone", "narrow")
 	case "br", "fo", "ga", "lt", "uk", "uz":
 		return func(m int, f string) string { return fmt(m, "01") }
 	case "root", "aa", "ab", "af", "agq", "ak", "am", "an", "ann", "apc", "ar", "arn", "as", "asa", "ast", "az", "ba", "bal", "bas", "be", "bem", "bew", "bez", "bg", "bgc", "bgn", "bho", "blo", "blt", "bm", "bn", "bo", "brx", "bs", "bss", "byn", "ca", "cad", "cch", "ccp", "ce", "ceb", "cgg", "cho", "chr", "cic", "ckb", "co", "cs", "csw", "cu", "cv", "cy", "da", "dav", "de", "dje", "doi", "dsb", "dua", "dv", "dyo", "dz", "ebu", "ee", "el", "en", "eo", "es", "et", "eu", "ewo", "fa", "ff", "fi", "fil", "fr", "fur", "fy", "gaa", "gd", "gez", "gl", "gn", "gsw", "gu", "guz", "gv", "ha", "haw", "he", "hi", "hnj", "hsb", "hu", "hy", "ia", "id", "ie", "ig", "ii", "io", "is", "it", "iu", "jbo", "jgo", "jmc", "jv", "ka", "kab", "kaj", "kam", "kcg", "kde", "kea", "ken", "kgp", "khq", "ki", "kk", "kkj", "kl", "kln", "km", "kn", "kok", "kpe", "ks", "ksb", "ksf", "ksh", "ku", "kw", "kxv", "ky", "la", "lag", "lb", "lg", "lij", "lkt", "lmo", "ln", "lo", "lrc", "lu", "luo", "luy", "lv", "mai", "mas", "mdf", "mer", "mfe", "mg", "mgh", "mgo", "mi", "mic", "mk", "ml", "mni", "moh", "mr", "ms", "mt", "mua", "mus", "my", "myv", "mzn", "naq", "nd", "nds", "ne", "nl", "nmg", "nnh", "nqo", "nr", "nso", "nus", "nv", "ny", "nyn", "oc", "om", "or", "os", "osa", "pa", "pap", "pcm", "pis", "pl", "ps", "pt", "qu", "quc", "raj", "rhg", "rif", "rm", "rn", "ro", "rof", "ru", "rw", "rwk", "sa", "sah", "saq", "sat", "sbp", "sc", "scn", "sd", "sdh", "se", "seh", "ses", "sg", "shi", "shn", "si", "sid", "skr", "sl", "sma", "smj", "smn", "sms", "sn", "so", "sq", "sr", "ss", "ssy", "st", "su", "sv", "sw", "syr", "szl", "ta", "te", "teo", "tg", "th", "ti", "tig", "tk", "tn", "to", "tok", "tpi", "tr", "trv", "trw", "ts", "tt", "twq", "tyv", "tzm", "ug", "ur", "vai", "ve", "vec", "vi", "vmw", "vo", "vun", "wa", "wal", "wbp", "wo", "xh", "xnr", "xog", "yav", "yi", "yo", "yrl", "za", "zgh", "zu":

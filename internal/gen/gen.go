@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"iter"
 	"maps"
 	"os"
 	"path"
@@ -60,7 +61,7 @@ func (g *Generator) Write(out string) error {
 	tpl, err := template.New("datetime").Funcs(template.FuncMap{
 		"join":     strings.Join,
 		"contains": strings.Contains,
-		"title":    cases.Title(language.English).String,
+		"title":    title,
 		"sub":      func(a, b int) int { return a - b },
 	}).Parse(datetimeTemplate)
 	if err != nil {
@@ -176,13 +177,19 @@ func containsDateFormatItem(calendar *cldr.Calendar, id string) bool {
 	return false
 }
 
-type CalendarTypes []string
+var calendarTypes = []string{"gregorian", "persian", "buddhist"}
 
-func (t CalendarTypes) Skip(s string) bool {
-	return !slices.Contains(t, s)
+func supportedCalendars(calendars []*cldr.Calendar) iter.Seq[*cldr.Calendar] {
+	return func(yield func(*cldr.Calendar) bool) {
+		for _, v := range calendars {
+			if slices.Contains(calendarTypes, v.Type) {
+				if !yield(v) {
+					return
+				}
+			}
+		}
+	}
 }
-
-var calendarTypes = CalendarTypes{"gregorian", "persian", "buddhist"}
 
 // merge copies particular fallback values to dst.
 func merge(dst, fallback *cldr.LDML) {
@@ -303,11 +310,7 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 			continue
 		}
 
-		for _, calendar := range ldml.Dates.Calendars.Calendar {
-			if calendarTypes.Skip(calendar.Type) {
-				continue
-			}
-
+		for calendar := range supportedCalendars(ldml.Dates.Calendars.Calendar) {
 			formats, ok := dateTimeFormats[calendar.Type]
 			if !ok {
 				formats = NewCalendarDateTimeFormats()
@@ -365,30 +368,32 @@ func (g *Generator) defaultDateFormatItem(calendarType string, id string) string
 	return ""
 }
 
-func (g *Generator) months() Months {
+func (g *Generator) months() Months { //nolint:gocognit
 	months := NewMonths()
 
 	for _, locale := range g.cldr.Locales() {
 		ldml := g.cldr.RawLDML(locale)
-		loc := strings.ReplaceAll(locale, "_", "-")
 
-		for _, calendar := range ldml.Dates.Calendars.Calendar {
-			if calendarTypes.Skip(calendar.Type) {
-				continue
-			}
+		locale = strings.ReplaceAll(locale, "_", "-")
 
+		for calendar := range supportedCalendars(ldml.Dates.Calendars.Calendar) {
 			for _, monthContext := range calendar.Months.MonthContext {
 				for _, monthWidth := range monthContext.MonthWidth {
+					// skip draft and months with the same digits
+					if len(monthWidth.Month) == 0 {
+						continue
+					}
+
+					month := monthWidth.Month[0]
+
+					if !isContributedOrApproved(month.Draft) ||
+						month.Type == month.CharData && month.CharData == "1" {
+						continue
+					}
+
 					var monthNames MonthNames
 
-				monthLoop:
-					for _, month := range monthWidth.Month {
-						// skip draft and months with the same digits
-						if !isContributedOrApproved(month.Draft) ||
-							month.Type == month.CharData && month.CharData == "1" {
-							break monthLoop
-						}
-
+					for _, month = range monthWidth.Month {
 						i, err := strconv.Atoi(month.Type)
 						if err != nil {
 							panic(err)
@@ -419,45 +424,15 @@ func (g *Generator) months() Months {
 						i = len(months.List) - 1
 					}
 
-					widthsCount := 3
-					contextCount := 2
+					indexes := months.Lookup[locale]
+					indexes.Set(calendar.Type, monthWidth.Type, monthContext.Type, i)
 
-					var t, w, c int
-
-					switch calendar.Type {
-					case "gregorian":
-						t = 0
-					case "buddhist":
-						t = 1
-					case "persian":
-						t = 2
-					}
-
-					switch monthWidth.Type {
-					case "abbreviated":
-						w = 0
-					case "wide":
-						w = 1
-					case "narrow":
-						w = 2
-					}
-
-					switch monthContext.Type {
-					case "format":
-						c = 0
-					case "stand-alone":
-						c = 1
-					}
-
-					index := t*widthsCount*contextCount + w*contextCount + c
-
-					indexes := months.Lookup[loc]
+					// NOTE: fallback "format" context when "stand-alone" not defined
 					if monthContext.Type == "format" {
-						indexes[index+1] = i // NOTE: fallback "format" context when "stand-alone" not defined
+						indexes.Set(calendar.Type, monthWidth.Type, "stand-alone", i)
 					}
 
-					indexes[index] = i
-					months.Lookup[loc] = indexes
+					months.Lookup[locale] = indexes
 				}
 			}
 		}
@@ -523,23 +498,27 @@ func (g *Generator) addDateFormatItem(
 				continue
 			}
 
+			f := func(s string) string {
+				return fmt.Sprintf(s, title(calendarType))
+			}
+
 			switch v.value {
 			default:
 				sb.WriteString("fmt(m, f)")
 			case "LL", "MM":
 				sb.WriteString(`fmt(m, "01")`)
 			case "LLL":
-				sb.WriteString(fmt.Sprintf(`fmtMonth(locale.String(), "%s", "stand-alone", "abbreviated")`, calendarType))
+				sb.WriteString(f(`fmtMonth(locale.String(), calendarType%s, "stand-alone", "abbreviated")`))
 			case "MMM":
-				sb.WriteString(fmt.Sprintf(`fmtMonth(locale.String(), "%s", "format", "abbreviated")`, calendarType))
+				sb.WriteString(f(`fmtMonth(locale.String(), calendarType%s, "format", "abbreviated")`))
 			case "LLLL":
-				sb.WriteString(fmt.Sprintf(`fmtMonth(locale.String(), "%s", "stand-alone", "wide")`, calendarType))
+				sb.WriteString(f(`fmtMonth(locale.String(), calendarType%s, "stand-alone", "wide")`))
 			case "MMMM":
-				sb.WriteString(fmt.Sprintf(`fmtMonth(locale.String(), "%s", "format", "wide")`, calendarType))
+				sb.WriteString(f(`fmtMonth(locale.String(), calendarType%s, "format", "wide")`))
 			case "LLLLL":
-				sb.WriteString(fmt.Sprintf(`fmtMonth(locale.String(), "%s", "stand-alone", "narrow")`, calendarType))
+				sb.WriteString(f(`fmtMonth(locale.String(), calendarType%s, "stand-alone", "narrow")`))
 			case "MMMMM":
-				sb.WriteString(fmt.Sprintf(`fmtMonth(locale.String(), "%s", "format", "narrow")`, calendarType))
+				sb.WriteString(f(`fmtMonth(locale.String(), calendarType%s, "format", "narrow")`))
 			}
 		}
 
@@ -616,24 +595,24 @@ type NumberingSystem struct {
 }
 
 type TemplateData struct {
+	Months                  Months
 	DefaultNumberingSystems DefaultNumberingSystems
 	NumberingSystemIota     []string
 	CalendarPreferences     []CalendarPreference
 	DateTimeFormats         DateTimeFormats
 	NumberingSystems        []NumberingSystem
-	Months                  Months
 }
 
 // value - locales.
 type Months struct {
-	List []MonthNames
 	// key is locale, value is 18 indexes from [List].
-	Lookup map[string][18]int
+	Lookup map[string]MonthIndexes
+	List   []MonthNames
 }
 
 func NewMonths() Months {
 	return Months{
-		Lookup: make(map[string][18]int, 18), //nolint:mnd
+		Lookup: make(map[string]MonthIndexes),
 	}
 }
 
@@ -642,6 +621,45 @@ type MonthKey struct {
 	CalendarType string // gregorian, persian or buddhist
 	Width        string // wide, narrow, abbreviated
 	Context      string // format or stand-alone
+}
+
+type MonthIndexes [18]int
+
+func (m *MonthIndexes) Set(calendarType, width, context string, i int) {
+	widthsCount := 3
+	contextCount := 2
+
+	var t, w, c int
+
+	// the order MUST be the same as const of [intl.calendarType]
+	switch calendarType {
+	case "gregorian":
+		t = 0
+	case "buddhist":
+		t = 1
+	case "persian":
+		t = 2
+	}
+
+	switch width {
+	case "abbreviated":
+		w = 0
+	case "wide":
+		w = 1
+	case "narrow":
+		w = 2
+	}
+
+	switch context {
+	case "format":
+		c = 0
+	case "stand-alone":
+		c = 1
+	}
+
+	index := t*widthsCount*contextCount + w*contextCount + c
+
+	m[index] = i
 }
 
 type MonthNames [12]string
@@ -777,8 +795,7 @@ func splitDatePattern(pattern string) []datePatternElement {
 	return elements
 }
 
-//nolint:ireturn
-func deepCopy[T any](v T) T {
+func deepCopy[T any](v T) T { //nolint:ireturn
 	var r T
 
 	b, err := json.Marshal(v)
@@ -795,4 +812,14 @@ func deepCopy[T any](v T) T {
 
 func isContributedOrApproved(s string) bool {
 	return s == "" || s == "contributed"
+}
+
+func title(s string) string {
+	var r string
+
+	for _, v := range strings.Split(s, " ") {
+		r += cases.Title(language.English).String(v)
+	}
+
+	return strings.ReplaceAll(r, "-", "") // e.g. "islamic - umalqura"
 }
