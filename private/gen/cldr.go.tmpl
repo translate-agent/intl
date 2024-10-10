@@ -7,9 +7,60 @@ import (
   "strings"
   "time"
 
-  "golang.org/x/text/language"
 	ptime "github.com/yaa110/go-persian-calendar"
+  "golang.org/x/text/language"
 )
+
+type calendarMonths [12]string
+
+// size 144384
+var calendarMonthNames = [...]calendarMonths{
+{{- range $calendarMonths := .Months.List }}
+  {{ $calendarMonths }},
+{{- end }}
+}
+
+type monthIndexes [18]int16
+
+var monthLookup = map[string]monthIndexes{
+{{- range $locale, $indexes := .Months.Lookup }}
+  "{{ $locale }}": { {{ range $i, $v := $indexes }}{{ $v }},{{ end }} },
+{{- end }}
+}
+
+func fmtMonth(locale, calendar, context, width string) func(int, string) string {
+  indexes := monthLookup[locale]
+
+  var i int
+
+  switch calendar {
+  case "gregorian": // noop
+    // "gregorian" calendar index is 0
+  case "buddhist":
+    i = 6 // 1*3*2
+  case "persian":
+    i = 12 // 2*3*2
+  }
+
+  // "abbreviated" width index is 0
+  switch width {
+  case "wide":
+    i += 2 // 1*2
+  case "narrow":
+    i += 4 // 2*2
+  }
+
+  // "format" context index is 0
+  if context == "stand-alone" {
+    i++
+  }
+
+  names := calendarMonthNames[int(indexes[i])]
+
+  return func(m int, _ string) string {
+    return names[m-1]
+  }
+}
 
 type numberingSystem int
 
@@ -78,6 +129,34 @@ func fmtYear{{ title $calendarType }}(locale language.Tag) func(string) string {
   }
 }
 
+{{ if gt (len $formats.M.Fmt) 0 }}
+func fmtMonth{{ title $calendarType }}(locale language.Tag, digits digits) func(month int, format string) string {
+  lang, _ := locale.Base()
+{{ else }}
+func fmtMonth{{ title $calendarType }}(_ language.Tag, digits digits) func(month int, format string) string {
+{{ end }}
+  fmt := func(m int, f string) string {
+    if f == "01" && m <= 9 {
+      return digits.Sprint("0"+strconv.Itoa(m))
+    }
+
+    return digits.Sprint(strconv.Itoa(m))
+  }
+
+{{ if eq (len $formats.M.Fmt) 0 }}
+  return fmt
+{{ else }}
+  switch lang.String() {
+  default:
+    return fmt
+  {{- range $fmt, $languages := $formats.M.Fmt }}
+  case "{{ join $languages "\", \"" }}":
+    return {{ $fmt }}
+  {{- end }}
+  }
+{{ end }} {{/* $formats.M.Fmt > 1*/}}
+}
+
 {{ if gt (len $formats.D.Fmt) 0 }}
 func fmtDay{{ title $calendarType }}(locale language.Tag, digits digits) func(day int, format string) string {
   lang, _ := locale.Base()
@@ -109,10 +188,11 @@ func fmtDay{{ title $calendarType }}(_ language.Tag, digits digits) func(day int
 {{ end }} {{/* $calendarType, $formats */}}
 
 type gregorianDateTimeFormat struct {
-  time    time.Time
-  fmtYear func(format string) string
-  fmtDay  func(day int, format string) string
-  digits  digits
+  time     time.Time
+  fmtYear  func(format string) string
+  fmtMonth func(month int, format string) string
+  fmtDay   func(day int, format string) string
+  digits   digits
 }
 
 func (f *gregorianDateTimeFormat) SetTime(v time.Time) {
@@ -123,15 +203,20 @@ func (f *gregorianDateTimeFormat) Year(format string) string {
   return f.fmtYear(f.digits.Sprint(f.time.Format(format)))
 }
 
+func (f *gregorianDateTimeFormat) Month(format string) string {
+  return f.fmtMonth(int(f.time.Month()), format)
+}
+
 func (f *gregorianDateTimeFormat) Day(format string) string {
   return f.fmtDay(f.time.Day(), format)
 }
 
 type persianDateTimeFormat struct {
-  time    ptime.Time
-  fmtYear func(format string) string
-  fmtDay  func(day int, format string) string
-  digits  digits
+  time     ptime.Time
+  fmtYear  func(format string) string
+  fmtMonth func(month int, format string) string
+  fmtDay   func(day int, format string) string
+  digits   digits
 }
 
 func (f *persianDateTimeFormat) SetTime(v time.Time) {
@@ -156,15 +241,20 @@ func (f *persianDateTimeFormat) Year(format string) string {
   return f.fmtYear(f.digits.Sprint(year))
 }
 
+func (f *persianDateTimeFormat) Month(format string) string {
+  return f.fmtMonth(int(f.time.Month()), format)
+}
+
 func (f *persianDateTimeFormat) Day(format string) string {
   return f.fmtDay(f.time.Day(), format)
 }
 
 type buddhistDateTimeFormat struct {
-  time    time.Time
-  fmtYear func(format string) string
-  fmtDay  func(day int, format string) string
-  digits  digits
+  time     time.Time
+  fmtYear  func(format string) string
+  fmtMonth func(month int, format string) string
+  fmtDay   func(day int, format string) string
+  digits   digits
 }
 
 func (f *buddhistDateTimeFormat) SetTime(v time.Time) {
@@ -186,6 +276,10 @@ func (f *buddhistDateTimeFormat) Year(format string) string {
   }
 
   return f.fmtYear(f.digits.Sprint(year))
+}
+
+func (f *buddhistDateTimeFormat) Month(format string) string {
+  return f.fmtMonth(int(f.time.Month()), format)
 }
 
 func (f *buddhistDateTimeFormat) Day(format string) string {

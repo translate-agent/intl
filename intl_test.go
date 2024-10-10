@@ -54,6 +54,15 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 				test.Options.Day = Day2Digit
 			}
 		}
+
+		if v, ok := o["month"].(string); ok {
+			switch v {
+			case "numeric":
+				test.Options.Month = MonthNumeric
+			case "2-digit":
+				test.Options.Month = Month2Digit
+			}
+		}
 	}
 
 	*t = test
@@ -73,18 +82,25 @@ func skipTest(locale language.Tag, options Options) bool {
 
 	_, ok := map[key]struct{}{
 		// CLDR stipulates arabext numbering. Why Node.js uses latn?
-		{"bgn-PK", Options{Year: Year2Digit}}:  {},
-		{"bgn-PK", Options{Year: YearNumeric}}: {},
-		{"bgn-PK", Options{Day: Day2Digit}}:    {},
-		{"bgn-PK", Options{Day: DayNumeric}}:   {},
+		{"bgn-PK", Options{Year: Year2Digit}}:    {},
+		{"bgn-PK", Options{Year: YearNumeric}}:   {},
+		{"bgn-PK", Options{Day: Day2Digit}}:      {},
+		{"bgn-PK", Options{Day: DayNumeric}}:     {},
+		{"bgn-PK", Options{Month: MonthNumeric}}: {},
+		{"bgn-PK", Options{Month: Month2Digit}}:  {},
 
 		// CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"hnj-Hmnp", Options{Year: Year2Digit}}:  {},
-		{"hnj-Hmnp", Options{Year: YearNumeric}}: {},
-		{"hnj-Hmnp", Options{Day: Day2Digit}}:    {},
-		{"hnj-Hmnp", Options{Day: DayNumeric}}:   {},
+		{"hnj-Hmnp", Options{Year: Year2Digit}}:    {},
+		{"hnj-Hmnp", Options{Year: YearNumeric}}:   {},
+		{"hnj-Hmnp", Options{Day: Day2Digit}}:      {},
+		{"hnj-Hmnp", Options{Day: DayNumeric}}:     {},
+		{"hnj-Hmnp", Options{Month: MonthNumeric}}: {},
+		{"hnj-Hmnp", Options{Month: Month2Digit}}:  {},
+
 		{"sdh-IR", Options{Year: Year2Digit}}:    {},
 		{"sdh-IR", Options{Year: YearNumeric}}:   {},
+		{"sdh-IR", Options{Month: Month2Digit}}:  {},
+		{"sdh-IR", Options{Month: MonthNumeric}}: {},
 		{"sdh-IR", Options{Day: Day2Digit}}:      {},
 		{"sdh-IR", Options{Day: DayNumeric}}:     {},
 
@@ -161,7 +177,7 @@ func BenchmarkNewDateTime(b *testing.B) {
 }
 
 func BenchmarkDateTime_Format(b *testing.B) {
-	var v1, v2, v3, v4, v5 string
+	var v1, v2, v3, v4, v5, v6, v7 string
 
 	now := time.Now()
 
@@ -170,12 +186,14 @@ func BenchmarkDateTime_Format(b *testing.B) {
 		f1 := NewDateTimeFormat(locale, Options{}).Format
 		f2 := NewDateTimeFormat(locale, Options{Year: YearNumeric}).Format
 		f3 := NewDateTimeFormat(locale, Options{Year: Year2Digit}).Format
-		f4 := NewDateTimeFormat(locale, Options{Day: DayNumeric}).Format
-		f5 := NewDateTimeFormat(locale, Options{Day: Day2Digit}).Format
+		f4 := NewDateTimeFormat(locale, Options{Month: MonthNumeric}).Format
+		f5 := NewDateTimeFormat(locale, Options{Month: Month2Digit}).Format
+		f6 := NewDateTimeFormat(locale, Options{Day: DayNumeric}).Format
+		f7 := NewDateTimeFormat(locale, Options{Day: Day2Digit}).Format
 
 		b.Run(s, func(b *testing.B) {
 			for range b.N {
-				v1, v2, v3, v4, v5 = f1(now), f2(now), f3(now), f4(now), f5(now)
+				v1, v2, v3, v4, v5, v6, v7 = f1(now), f2(now), f3(now), f4(now), f5(now), f6(now), f7(now)
 			}
 		})
 	}
@@ -185,4 +203,6 @@ func BenchmarkDateTime_Format(b *testing.B) {
 	runtime.KeepAlive(v3)
 	runtime.KeepAlive(v4)
 	runtime.KeepAlive(v5)
+	runtime.KeepAlive(v6)
+	runtime.KeepAlive(v7)
 }

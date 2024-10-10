@@ -89,6 +89,85 @@ func MustParseYear(s string) Year {
 	return v
 }
 
+// Month represents the format for displaying months.
+type Month byte
+
+const (
+	MonthUnd Month = iota
+	MonthNumeric
+	Month2Digit
+	MonthLong
+	MonthShort
+	MonthNarrow
+)
+
+// String returns the string representation of the [Month].
+// It converts the [Month] constant to its corresponding string value.
+//
+// Returns:
+//   - "numeric" for [MonthNumeric]
+//   - "2-digit" for [Month2Digit]
+//   - "long" for [MonthLong]
+//   - "short" for [MonthShort]
+//   - "narrow" for [MonthNarrow]
+//   - "" for any other value (including [MonthUnd])
+func (m Month) String() string {
+	switch m {
+	default:
+		return ""
+	case MonthNumeric:
+		return "numeric"
+	case Month2Digit:
+		return "2-digit"
+	case MonthLong:
+		return "long"
+	case MonthShort:
+		return "short"
+	case MonthNarrow:
+		return "narrow"
+	}
+}
+
+// ParseMonth converts a string representation of a month format to the [Month] type.
+//
+// Parameters:
+//   - s: A string representing the month format. Valid values are "numeric", "2-digit",
+//     "long", "short", "narrow", or an empty string.
+//
+// Returns:
+//   - Month: The corresponding [Month] constant ([MonthNumeric], [Month2Digit],
+//     [MonthLong], [MonthShort], [MonthNarrow], or [MonthUnd]).
+//   - error: An error if the input string is not a valid month format.
+func ParseMonth(s string) (Month, error) {
+	switch s {
+	default:
+		return MonthUnd, fmt.Errorf(`bad month value "%s", want "numeric", "2-digit", "long", "short", "narrow" or ""`, s)
+	case "":
+		return MonthUnd, nil
+	case "numeric":
+		return MonthNumeric, nil
+	case "2-digit":
+		return Month2Digit, nil
+	case "long":
+		return MonthLong, nil
+	case "short":
+		return MonthShort, nil
+	case "narrow":
+		return MonthNarrow, nil
+	}
+}
+
+// MustParseMonth converts a string representation of a month format to the [Month] type.
+// It panics if the input string is not a valid month format.
+func MustParseMonth(s string) Month {
+	v, err := ParseMonth(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
+
 // Day represents the format for displaying days.
 type Day byte
 
@@ -151,8 +230,9 @@ func MustParseDay(s string) Day {
 // Options defines configuration parameters for [NewDateTimeFormat].
 // It allows customization of the date and time representations in formatted output.
 type Options struct {
-	Year Year
-	Day  Day
+	Year  Year
+	Month Month
+	Day   Day
 }
 
 // digits represents a set of numeral glyphs for a specific numeral system.
@@ -219,21 +299,24 @@ func NewDateTimeFormat(locale language.Tag, options Options) *DateTimeFormat {
 	switch defaultCalendar(locale) {
 	default:
 		fmt = &gregorianDateTimeFormat{
-			fmtYear: fmtYearGregorian(locale),
-			fmtDay:  fmtDayGregorian(locale, d),
-			digits:  d,
+			fmtYear:  fmtYearGregorian(locale),
+			fmtMonth: fmtMonthGregorian(locale, d),
+			fmtDay:   fmtDayGregorian(locale, d),
+			digits:   d,
 		}
 	case "persian":
 		fmt = &persianDateTimeFormat{
-			fmtYear: fmtYearPersian(locale),
-			fmtDay:  fmtDayPersian(locale, d),
-			digits:  d,
+			fmtYear:  fmtYearPersian(locale),
+			fmtMonth: fmtMonthPersian(locale, d),
+			fmtDay:   fmtDayPersian(locale, d),
+			digits:   d,
 		}
 	case "buddhist":
 		fmt = &buddhistDateTimeFormat{
-			fmtYear: fmtYearBuddhist(locale),
-			fmtDay:  fmtDayBuddhist(locale, d),
-			digits:  d,
+			fmtYear:  fmtYearBuddhist(locale),
+			fmtMonth: fmtMonthBuddhist(locale, d),
+			fmtDay:   fmtDayBuddhist(locale, d),
+			digits:   d,
 		}
 	}
 
@@ -262,6 +345,13 @@ func (f *DateTimeFormat) Format(v time.Time) string {
 		}
 
 		return f.fmt.Year(s)
+	case f.options.Month != MonthUnd:
+		s := "1"
+		if f.options.Month == Month2Digit {
+			s = "01"
+		}
+
+		return f.fmt.Month(s)
 	case f.options.Day != DayUnd:
 		s := "2"
 		if f.options.Day == Day2Digit {
@@ -276,5 +366,6 @@ func (f *DateTimeFormat) Format(v time.Time) string {
 type dateTimeFormatter interface {
 	SetTime(time.Time)
 	Year(format string) string
+	Month(format string) string
 	Day(format string) string
 }

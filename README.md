@@ -8,7 +8,7 @@ CLDR v45.0 based date and number formatting in Golang.
 | ---------------------- | :-------: |
 | era                    |    ❌     |
 | year                   |    ✅︎    |
-| month                  |    ❌     |
+| month                  |    ✅︎    |
 | day                    |    ✅︎    |
 | hour                   |    ❌     |
 | minute                 |    ❌     |
