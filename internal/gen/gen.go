@@ -177,12 +177,10 @@ func containsDateFormatItem(calendar *cldr.Calendar, id string) bool {
 	return false
 }
 
-var calendarTypes = []string{"gregorian", "persian", "buddhist"}
-
 func supportedCalendars(calendars []*cldr.Calendar) iter.Seq[*cldr.Calendar] {
 	return func(yield func(*cldr.Calendar) bool) {
 		for _, v := range calendars {
-			if slices.Contains(calendarTypes, v.Type) {
+			if slices.Contains([]string{"gregorian", "persian", "buddhist"}, v.Type) {
 				if !yield(v) {
 					return
 				}
@@ -205,19 +203,13 @@ func merge(dst, fallback *cldr.LDML) {
 		dst.Dates.Calendars.Calendar = deepCopy(fallback.Dates.Calendars.Calendar)
 	}
 
-	for _, calendarType := range calendarTypes {
-		parentCalendar := findCalendar(fallback, calendarType)
-		// skip if parent calendar not found
-		if parentCalendar == nil {
-			continue
-		}
-
+	for parentCalendar := range supportedCalendars(fallback.Dates.Calendars.Calendar) {
 		if parentCalendar.Alias != nil &&
 			parentCalendar.Alias.Path == "../../calendar[@type='generic']/dateTimeFormats" {
 			parentCalendar.DateTimeFormats = deepCopy(findCalendar(fallback, "generic").DateTimeFormats)
 		}
 
-		calendar := findCalendar(dst, calendarType)
+		calendar := findCalendar(dst, parentCalendar.Type)
 		if calendar == nil {
 			calendar = deepCopy(parentCalendar)
 		}
