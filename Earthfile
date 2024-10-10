@@ -31,11 +31,11 @@ generate:
   RUN go install mvdan.cc/gofumpt@latest
   COPY --dir +cldr/cldr .
   COPY go.mod go.sum .
-  COPY --dir private/gen private/
+  COPY --dir internal/gen internal/
   RUN \
     --mount=type=cache,id=go-mod,target=/go/pkg/mod \
     --mount=type=cache,id=go-build,target=/root/.cache/go-build \
-    go run -C private/gen . -dir /intl/cldr | gofumpt > cldr.go
+    go run -C internal/gen . -dir /intl/cldr | gofumpt > cldr.go
   SAVE ARTIFACT cldr.go AS LOCAL cldr.go
 
 # test runs unit tests
