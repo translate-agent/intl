@@ -30,6 +30,15 @@ import (
 	"golang.org/x/text/language"
 )
 
+type calendarType int
+
+const (
+	calendarTypeGregorian calendarType = iota
+	calendarTypeBuddhist
+	calendarTypePersian
+	calendarTypeIslamicUmalqura
+)
+
 // Year is year option for [Options].
 type Year byte
 
@@ -277,10 +286,8 @@ func (d digits) Sprint(s string) string {
 // DateTimeFormat encapsulates the configuration and functionality for
 // formatting dates and times according to specific locales and options.
 type DateTimeFormat struct {
-	fmt      dateTimeFormatter
-	locale   language.Tag
-	calendar string
-	options  Options
+	fmt     dateTimeFormatter
+	options Options
 }
 
 // NewDateTimeFormat creates a new [DateTimeFormat] instance for the specified locale and options.
@@ -304,14 +311,14 @@ func NewDateTimeFormat(locale language.Tag, options Options) *DateTimeFormat {
 			fmtDay:   fmtDayGregorian(locale, d),
 			digits:   d,
 		}
-	case "persian":
+	case calendarTypePersian:
 		fmt = &persianDateTimeFormat{
 			fmtYear:  fmtYearPersian(locale),
 			fmtMonth: fmtMonthPersian(locale, d),
 			fmtDay:   fmtDayPersian(locale, d),
 			digits:   d,
 		}
-	case "buddhist":
+	case calendarTypeBuddhist:
 		fmt = &buddhistDateTimeFormat{
 			fmtYear:  fmtYearBuddhist(locale),
 			fmtMonth: fmtMonthBuddhist(locale, d),
@@ -321,10 +328,8 @@ func NewDateTimeFormat(locale language.Tag, options Options) *DateTimeFormat {
 	}
 
 	return &DateTimeFormat{
-		locale:   locale,
-		options:  options,
-		calendar: defaultCalendar(locale),
-		fmt:      fmt,
+		options: options,
+		fmt:     fmt,
 	}
 }
 
