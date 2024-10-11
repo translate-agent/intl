@@ -499,9 +499,9 @@ func (g *Generator) addDateFormatItem(
 
 			switch v.value {
 			default:
-				sb.WriteString("fmtMonth(digits)(m, f)")
+				sb.WriteString("fmt(m, f)")
 			case "LL", "MM":
-				sb.WriteString(`fmtMonth(digits)(m, "01")`)
+				sb.WriteString(`fmt(m, "01")`)
 			case "LLL":
 				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "stand-alone", "abbreviated")`))
 			case "MMM":
@@ -519,8 +519,10 @@ func (g *Generator) addDateFormatItem(
 
 		s := sb.String()
 
-		if !strings.Contains(s, "fmtMonthName") {
-			s = `func(m int, f string) string { return ` + s + ` }`
+		if strings.Contains(s, "fmtMonthName") {
+			s = "return " + s
+		} else {
+			s = `fmt := fmtMonth(digits); return func(m int, f string) string { return ` + s + ` }`
 		}
 
 		dateTimeFormats.M.Fmt[s] = append(dateTimeFormats.M.Fmt[s], locale)

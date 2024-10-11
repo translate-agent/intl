@@ -179,7 +179,7 @@ func fmtMonth{{ title $calendarType }}(_ language.Tag, digits digits) func(month
     return fmtMonth(digits)
   {{- range $fmt, $languages := $formats.M.Fmt }}
   case "{{ join $languages "\", \"" }}":
-    return {{ $fmt }}
+    {{ $fmt }}
   {{- end }}
   }
 {{ end }} {{/* $formats.M.Fmt > 1*/}}

@@ -1862,9 +1862,11 @@ func fmtMonthBuddhist(locale language.Tag, digits digits) func(month int, format
 	default:
 		return fmtMonth(digits)
 	case "vi":
-		return func(m int, f string) string { return "tháng " + fmtMonth(digits)(m, f) }
+		fmt := fmtMonth(digits)
+		return func(m int, f string) string { return "tháng " + fmt(m, f) }
 	case "zh":
-		return func(m int, f string) string { return fmtMonth(digits)(m, f) + "月" }
+		fmt := fmtMonth(digits)
+		return func(m int, f string) string { return fmt(m, f) + "月" }
 	}
 }
 
@@ -1906,18 +1908,22 @@ func fmtMonthGregorian(locale language.Tag, digits digits) func(month int, forma
 	switch lang.String() {
 	default:
 		return fmtMonth(digits)
+	case "br", "fo", "ga", "lt", "uk", "uz":
+		fmt := fmtMonth(digits)
+		return func(m int, f string) string { return fmt(m, "01") }
+	case "hr", "nb", "nn", "no", "sk":
+		fmt := fmtMonth(digits)
+		return func(m int, f string) string { return fmt(m, f) + "." }
+	case "ja", "yue", "zh":
+		fmt := fmtMonth(digits)
+		return func(m int, f string) string { return fmt(m, f) + "月" }
+	case "ko":
+		fmt := fmtMonth(digits)
+		return func(m int, f string) string { return fmt(m, f) + "월" }
 	case "wae":
 		return fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "abbreviated")
 	case "mn":
 		return fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "narrow")
-	case "br", "fo", "ga", "lt", "uk", "uz":
-		return func(m int, f string) string { return fmtMonth(digits)(m, "01") }
-	case "hr", "nb", "nn", "no", "sk":
-		return func(m int, f string) string { return fmtMonth(digits)(m, f) + "." }
-	case "ja", "yue", "zh":
-		return func(m int, f string) string { return fmtMonth(digits)(m, f) + "月" }
-	case "ko":
-		return func(m int, f string) string { return fmtMonth(digits)(m, f) + "월" }
 	}
 }
 
