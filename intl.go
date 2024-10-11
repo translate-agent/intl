@@ -348,7 +348,7 @@ func fmtYear(digits digits) func(v int, opt Year) string {
 	}
 }
 
-// fmtMonth formats month as numeric. The assumption is that f is "1" or "01".
+// fmtMonth formats month as numeric.
 func fmtMonth(digits digits) func(v time.Month, opt Month) string {
 	return func(v time.Month, opt Month) string {
 		if opt == Month2Digit && v <= 9 {
@@ -398,7 +398,7 @@ func fmtMonthName(locale string, calendar calendarType, context, width string) f
 	}
 }
 
-// fmtDay formats day as numeric. The assumption is that f is "2" or "02".
+// fmtDay formats day as numeric.
 func fmtDay(digits digits) func(v int, opt Day) string {
 	return func(v int, opt Day) string {
 		if opt == Day2Digit && v <= 9 {
