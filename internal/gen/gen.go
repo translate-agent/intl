@@ -322,6 +322,12 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 		}
 	}
 
+	// TODO(jhorsts): requires rework after era is available. Post process default year formatting
+	for calendarType, formats := range dateTimeFormats {
+		formats.Y.Default = strings.NewReplacer("G ", `"AP "+`, "y", "v").Replace(formats.Y.Default)
+		dateTimeFormats[calendarType] = formats
+	}
+
 	return dateTimeFormats
 }
 
@@ -350,11 +356,7 @@ func (g *Generator) defaultDateFormatItem(calendarType string, id string) string
 				continue
 			}
 
-			if id != "y" && calendarType != "persian" {
-				return dateFormatItem.CharData
-			}
-
-			return strings.NewReplacer("G ", `"AP "+`, "y", "v").Replace(dateFormatItem.CharData)
+			return dateFormatItem.CharData
 		}
 	}
 
