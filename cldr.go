@@ -4,6 +4,7 @@ package intl
 
 import (
 	"strings"
+	"time"
 
 	"golang.org/x/text/language"
 )
@@ -1767,24 +1768,24 @@ func defaultCalendar(locale language.Tag) calendarType {
 	}
 }
 
-func fmtYearBuddhist(locale language.Tag) func(string) string {
+func fmtYearBuddhist(locale language.Tag) func(v string) string {
 	lang, _ := locale.Base()
 
 	switch lang.String() {
 	default:
-		return func(y string) string { return "AP " + y }
+		return func(v string) string { return "AP " + v }
 	case "be":
-		return func(y string) string { return "G" + " " + y }
+		return func(v string) string { return "G" + " " + v }
 	case "yue":
-		return func(y string) string { return "G" + y + "年" }
+		return func(v string) string { return "G" + v + "年" }
 	case "ja":
-		return func(y string) string { return "GGGG" + y + "年" }
+		return func(v string) string { return "GGGG" + v + "年" }
 	case "hi":
-		return func(y string) string { return y + " " + "G" }
+		return func(v string) string { return v + " " + "G" }
 	}
 }
 
-func fmtMonthBuddhist(locale language.Tag, digits digits) func(month int, format string) string {
+func fmtMonthBuddhist(locale language.Tag, digits digits) func(v time.Month, opt Month) string {
 	lang, _ := locale.Base()
 
 	switch lang.String() {
@@ -1792,14 +1793,14 @@ func fmtMonthBuddhist(locale language.Tag, digits digits) func(month int, format
 		return fmtMonth(digits)
 	case "vi":
 		fmt := fmtMonth(digits)
-		return func(m int, f string) string { return "tháng " + fmt(m, f) }
+		return func(v time.Month, opt Month) string { return "tháng " + fmt(v, opt) }
 	case "zh":
 		fmt := fmtMonth(digits)
-		return func(m int, f string) string { return fmt(m, f) + "月" }
+		return func(v time.Month, opt Month) string { return fmt(v, opt) + "月" }
 	}
 }
 
-func fmtDayBuddhist(locale language.Tag, digits digits) func(day int, format string) string {
+func fmtDayBuddhist(locale language.Tag, digits digits) func(v int, opt Day) string {
 	lang, _ := locale.Base()
 
 	fmt := fmtDay(digits)
@@ -1808,30 +1809,32 @@ func fmtDayBuddhist(locale language.Tag, digits digits) func(day int, format str
 	default:
 		return fmt
 	case "vi":
-		return func(d int, f string) string { return "Ngày " + fmt(d, "02") }
+		return func(v int, opt Day) string { return "Ngày " + fmt(v, Day2Digit) }
 	}
 }
 
-func fmtYearGregorian(locale language.Tag) func(string) string {
+func fmtYearGregorian(locale language.Tag) func(v string) string {
 	lang, _ := locale.Base()
 
 	switch lang.String() {
 	default:
-		return func(y string) string { return y }
+		return func(v string) string { return v }
+	case "root", "aa", "ab", "af", "agq", "ak", "am", "an", "ann", "apc", "ar", "arn", "as", "asa", "ast", "az", "ba", "bal", "bas", "be", "bem", "bew", "bez", "bgc", "bgn", "bho", "blo", "blt", "bm", "bn", "bo", "br", "brx", "bss", "byn", "ca", "cad", "cch", "ccp", "ce", "ceb", "cgg", "cho", "chr", "cic", "ckb", "co", "cs", "csw", "cu", "cv", "cy", "da", "dav", "de", "dje", "doi", "dsb", "dua", "dv", "dyo", "dz", "ebu", "ee", "el", "en", "eo", "es", "et", "eu", "ewo", "fa", "ff", "fi", "fil", "fo", "fr", "frr", "fur", "fy", "ga", "gaa", "gd", "gez", "gl", "gn", "gsw", "gu", "guz", "gv", "ha", "haw", "he", "hi", "hnj", "hsb", "hy", "ia", "id", "ie", "ig", "ii", "io", "is", "it", "iu", "jbo", "jgo", "jmc", "jv", "ka", "kab", "kaj", "kam", "kcg", "kde", "kea", "ken", "kgp", "khq", "ki", "kk", "kkj", "kl", "kln", "km", "kn", "kok", "kpe", "ks", "ksb", "ksf", "ksh", "ku", "kw", "kxv", "ky", "la", "lag", "lb", "lg", "lij", "lkt", "lmo", "ln", "lo", "lrc", "lt", "lu", "luo", "luy", "mai", "mas", "mdf", "mer", "mfe", "mg", "mgh", "mgo", "mi", "mic", "mk", "ml", "mn", "mni", "moh", "mr", "ms", "mt", "mua", "mus", "my", "myv", "mzn", "naq", "nb", "nd", "nds", "ne", "nl", "nmg", "nn", "nnh", "no", "nqo", "nr", "nso", "nus", "nv", "ny", "nyn", "oc", "om", "or", "os", "osa", "pa", "pap", "pcm", "pis", "pl", "ps", "pt", "qu", "quc", "raj", "rhg", "rif", "rm", "rn", "ro", "rof", "ru", "rw", "rwk", "sa", "sah", "saq", "sat", "sbp", "sc", "scn", "sd", "sdh", "se", "seh", "ses", "sg", "shi", "shn", "si", "sid", "sk", "skr", "sl", "sma", "smj", "smn", "sms", "sn", "so", "sq", "ss", "ssy", "st", "su", "sv", "sw", "syr", "szl", "ta", "te", "teo", "tg", "th", "ti", "tig", "tk", "tn", "to", "tok", "tpi", "tr", "trv", "trw", "ts", "tt", "twq", "tyv", "tzm", "ug", "uk", "ur", "uz", "vai", "ve", "vec", "vi", "vmw", "vo", "vun", "wa", "wae", "wal", "wbp", "wo", "xh", "xnr", "xog", "yav", "yi", "yo", "yrl", "za", "zgh", "zu":
+		return func(v string) string { return v }
 	case "lv":
-		return func(y string) string { return y + ". g." }
+		return func(v string) string { return v + ". g." }
 	case "bs", "hr", "hu", "sr":
-		return func(y string) string { return y + "." }
+		return func(v string) string { return v + "." }
 	case "bg":
-		return func(y string) string { return y + " г." }
+		return func(v string) string { return v + " г." }
 	case "ja", "yue", "zh":
-		return func(y string) string { return y + "年" }
+		return func(v string) string { return v + "年" }
 	case "ko":
-		return func(y string) string { return y + "년" }
+		return func(v string) string { return v + "년" }
 	}
 }
 
-func fmtMonthGregorian(locale language.Tag, digits digits) func(month int, format string) string {
+func fmtMonthGregorian(locale language.Tag, digits digits) func(v time.Month, opt Month) string {
 	lang, _ := locale.Base()
 
 	switch lang.String() {
@@ -1839,16 +1842,16 @@ func fmtMonthGregorian(locale language.Tag, digits digits) func(month int, forma
 		return fmtMonth(digits)
 	case "br", "fo", "ga", "lt", "uk", "uz":
 		fmt := fmtMonth(digits)
-		return func(m int, f string) string { return fmt(m, "01") }
+		return func(v time.Month, opt Month) string { return fmt(v, Month2Digit) }
 	case "hr", "nb", "nn", "no", "sk":
 		fmt := fmtMonth(digits)
-		return func(m int, f string) string { return fmt(m, f) + "." }
+		return func(v time.Month, opt Month) string { return fmt(v, opt) + "." }
 	case "ja", "yue", "zh":
 		fmt := fmtMonth(digits)
-		return func(m int, f string) string { return fmt(m, f) + "月" }
+		return func(v time.Month, opt Month) string { return fmt(v, opt) + "月" }
 	case "ko":
 		fmt := fmtMonth(digits)
-		return func(m int, f string) string { return fmt(m, f) + "월" }
+		return func(v time.Month, opt Month) string { return fmt(v, opt) + "월" }
 	case "wae":
 		return fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "abbreviated")
 	case "mn":
@@ -1856,7 +1859,7 @@ func fmtMonthGregorian(locale language.Tag, digits digits) func(month int, forma
 	}
 }
 
-func fmtDayGregorian(locale language.Tag, digits digits) func(day int, format string) string {
+func fmtDayGregorian(locale language.Tag, digits digits) func(v int, opt Day) string {
 	lang, _ := locale.Base()
 
 	fmt := fmtDay(digits)
@@ -1865,32 +1868,32 @@ func fmtDayGregorian(locale language.Tag, digits digits) func(day int, format st
 	default:
 		return fmt
 	case "lt":
-		return func(d int, f string) string { return fmt(d, "02") }
+		return func(v int, opt Day) string { return fmt(v, Day2Digit) }
 	case "bs", "cs", "da", "dsb", "fo", "hr", "hsb", "nb", "nn", "no", "sk", "sl":
-		return func(d int, f string) string { return fmt(d, f) + "." }
+		return func(v int, opt Day) string { return fmt(v, opt) + "." }
 	case "ja", "yue", "zh":
-		return func(d int, f string) string { return fmt(d, f) + "日" }
+		return func(v int, opt Day) string { return fmt(v, opt) + "日" }
 	case "ko":
-		return func(d int, f string) string { return fmt(d, f) + "일" }
+		return func(v int, opt Day) string { return fmt(v, opt) + "일" }
 	}
 }
 
-func fmtYearPersian(locale language.Tag) func(string) string {
+func fmtYearPersian(locale language.Tag) func(v string) string {
 	lang, _ := locale.Base()
 
 	switch lang.String() {
 	default:
-		return func(y string) string { return "AP " + y }
+		return func(v string) string { return "AP " + v }
 	case "fa":
-		return func(y string) string { return y }
+		return func(v string) string { return v }
 	}
 }
 
-func fmtMonthPersian(_ language.Tag, digits digits) func(month int, format string) string {
+func fmtMonthPersian(_ language.Tag, digits digits) func(v time.Month, opt Month) string {
 	return fmtMonth(digits)
 }
 
-func fmtDayPersian(_ language.Tag, digits digits) func(day int, format string) string {
+func fmtDayPersian(_ language.Tag, digits digits) func(v int, opt Day) string {
 	fmt := fmtDay(digits)
 
 	return fmt

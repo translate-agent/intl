@@ -4,6 +4,7 @@ package intl
 
 import (
   "strings"
+  "time"
 
   "golang.org/x/text/language"
 )
@@ -81,24 +82,24 @@ func defaultCalendar(locale language.Tag) calendarType {
 }
 
 {{ range $calendarType, $formats := .DateTimeFormats }}
-func fmtYear{{ title $calendarType }}(locale language.Tag) func(string) string {
+func fmtYear{{ title $calendarType }}(locale language.Tag) func(v string) string {
   lang, _ := locale.Base()
 
   switch lang.String() {
   default:
-    return func(y string) string { return {{ $formats.Y.Default }} }
+    return func(v string) string { return {{ $formats.Y.Default }} }
 {{- range $fmt, $languages := $formats.Y.Fmt }}
   case "{{ join $languages "\", \"" }}":
-    return func (y string) string { return {{ $fmt }} }
+    return func (v string) string { return {{ $fmt }} }
 {{- end }}
   }
 }
 
 {{ if gt (len $formats.M.Fmt) 0 }}
-func fmtMonth{{ title $calendarType }}(locale language.Tag, digits digits) func(month int, format string) string {
+func fmtMonth{{ title $calendarType }}(locale language.Tag, digits digits) func(v time.Month, opt Month) string {
   lang, _ := locale.Base()
 {{ else }}
-func fmtMonth{{ title $calendarType }}(_ language.Tag, digits digits) func(month int, format string) string {
+func fmtMonth{{ title $calendarType }}(_ language.Tag, digits digits) func(v time.Month, opt Month) string {
 {{ end }}
 {{ if eq (len $formats.M.Fmt) 0 }}
   return fmtMonth(digits)
@@ -115,10 +116,10 @@ func fmtMonth{{ title $calendarType }}(_ language.Tag, digits digits) func(month
 }
 
 {{ if gt (len $formats.D.Fmt) 0 }}
-func fmtDay{{ title $calendarType }}(locale language.Tag, digits digits) func(day int, format string) string {
+func fmtDay{{ title $calendarType }}(locale language.Tag, digits digits) func(v int, opt Day) string {
   lang, _ := locale.Base()
 {{ else }}
-func fmtDay{{ title $calendarType }}(_ language.Tag, digits digits) func(day int, format string) string {
+func fmtDay{{ title $calendarType }}(_ language.Tag, digits digits) func(v int, opt Day) string {
 {{ end }}
   fmt := fmtDay(digits)
 {{ if eq (len $formats.D.Fmt) 0 }}
@@ -129,7 +130,7 @@ func fmtDay{{ title $calendarType }}(_ language.Tag, digits digits) func(day int
     return fmt
   {{- range $fmt, $languages := $formats.D.Fmt }}
   case "{{ join $languages "\", \"" }}":
-    return func(d int, f string) string { return {{ $fmt }} }
+    return func(v int, opt Day) string { return {{ $fmt }} }
   {{- end }}
   }
 {{ end }} {{/* $formats.D.Fmt > 1*/}}

@@ -324,11 +324,11 @@ func (f DateTimeFormat) Format(v time.Time) string {
 type fmtFunc func(time.Time) string
 
 // fmtYear formats year as numeric.
-func fmtYear(digits digits) func(year int, f string) string {
-	return func(year int, f string) string {
-		s := strconv.Itoa(year)
+func fmtYear(digits digits) func(v int, opt Year) string {
+	return func(v int, opt Year) string {
+		s := strconv.Itoa(v)
 
-		if f == "06" {
+		if opt == Year2Digit {
 			switch n := len(s); n {
 			default:
 				s = s[n-2:]
@@ -343,18 +343,18 @@ func fmtYear(digits digits) func(year int, f string) string {
 }
 
 // fmtMonth formats month as numeric. The assumption is that f is "1" or "01".
-func fmtMonth(digits digits) func(m int, f string) string {
-	return func(m int, f string) string {
-		if f == "01" && m <= 9 {
-			return digits.Sprint("0" + strconv.Itoa(m))
+func fmtMonth(digits digits) func(v time.Month, opt Month) string {
+	return func(v time.Month, opt Month) string {
+		if opt == Month2Digit && v <= 9 {
+			return digits.Sprint("0" + strconv.Itoa(int(v)))
 		}
 
-		return digits.Sprint(strconv.Itoa(m))
+		return digits.Sprint(strconv.Itoa(int(v)))
 	}
 }
 
 // fmtMonthName formats month as name.
-func fmtMonthName(locale string, calendar calendarType, context, width string) func(int, string) string {
+func fmtMonthName(locale string, calendar calendarType, context, width string) func(v time.Month, opt Month) string {
 	indexes := monthLookup[locale]
 
 	// multiply by 6
@@ -375,19 +375,19 @@ func fmtMonthName(locale string, calendar calendarType, context, width string) f
 
 	names := calendarMonthNames[int(indexes[i])]
 
-	return func(m int, _ string) string {
-		return names[m-1]
+	return func(v time.Month, _ Month) string {
+		return names[v-1]
 	}
 }
 
 // fmtDay formats day as numeric. The assumption is that f is "2" or "02".
-func fmtDay(digits digits) func(d int, f string) string {
-	return func(d int, f string) string {
-		if f == "02" && d <= 9 {
-			return digits.Sprint("0" + strconv.Itoa(d))
+func fmtDay(digits digits) func(v int, opt Day) string {
+	return func(v int, opt Day) string {
+		if opt == Day2Digit && v <= 9 {
+			return digits.Sprint("0" + strconv.Itoa(v))
 		}
 
-		return digits.Sprint(strconv.Itoa(d))
+		return digits.Sprint(strconv.Itoa(v))
 	}
 }
 
@@ -398,38 +398,23 @@ func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) f
 			return ""
 		}
 	case opts.Year != YearUnd:
-		s := "06"
-		if opts.Year == YearNumeric {
-			s = "2006"
-		}
-
 		layout := fmtYearGregorian(locale)
 		fmt := fmtYear(digits)
 
 		return func(v time.Time) string {
-			return layout(fmt(v.Year(), s))
+			return layout(fmt(v.Year(), opts.Year))
 		}
 	case opts.Month != MonthUnd:
-		s := "1"
-		if opts.Month == Month2Digit {
-			s = "01"
-		}
-
 		layout := fmtMonthGregorian(locale, digits)
 
 		return func(v time.Time) string {
-			return layout(int(v.Month()), s)
+			return layout(v.Month(), opts.Month)
 		}
 	case opts.Day != DayUnd:
-		s := "2"
-		if opts.Day == Day2Digit {
-			s = "02"
-		}
-
 		layout := fmtDayGregorian(locale, digits)
 
 		return func(v time.Time) string {
-			return layout(v.Day(), s)
+			return layout(v.Day(), opts.Day)
 		}
 	}
 }
@@ -441,38 +426,23 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 			return ""
 		}
 	case opts.Year != YearUnd:
-		s := "06"
-		if opts.Year == YearNumeric {
-			s = "2006"
-		}
-
 		layout := fmtYearPersian(locale)
 		fmt := fmtYear(digits)
 
 		return func(v time.Time) string {
-			return layout(fmt(ptime.New(v).Year(), s))
+			return layout(fmt(ptime.New(v).Year(), opts.Year))
 		}
 	case opts.Month != MonthUnd:
-		s := "1"
-		if opts.Month == Month2Digit {
-			s = "01"
-		}
-
 		layout := fmtMonthPersian(locale, digits)
 
 		return func(v time.Time) string {
-			return layout(int(ptime.New(v).Month()), s)
+			return layout(time.Month(ptime.New(v).Month()), opts.Month)
 		}
 	case opts.Day != DayUnd:
-		s := "2"
-		if opts.Day == Day2Digit {
-			s = "02"
-		}
-
 		layout := fmtDayPersian(locale, digits)
 
 		return func(v time.Time) string {
-			return layout(ptime.New(v).Day(), s)
+			return layout(ptime.New(v).Day(), opts.Day)
 		}
 	}
 }
@@ -484,40 +454,25 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 			return ""
 		}
 	case opts.Year != YearUnd:
-		s := "06"
-		if opts.Year == YearNumeric {
-			s = "2006"
-		}
-
 		layout := fmtYearBuddhist(locale)
 		fmt := fmtYear(digits)
 
 		return func(v time.Time) string {
-			return layout(fmt(v.Year(), s))
+			return layout(fmt(v.Year(), opts.Year))
 		}
 	case opts.Month != MonthUnd:
-		s := "1"
-		if opts.Month == Month2Digit {
-			s = "01"
-		}
-
 		layout := fmtMonthBuddhist(locale, digits)
 
 		return func(v time.Time) string {
-			return layout(int(v.Month()), s)
+			return layout(v.Month(), opts.Month)
 		}
 	case opts.Day != DayUnd:
-		s := "2"
-		if opts.Day == Day2Digit {
-			s = "02"
-		}
-
 		layout := fmtDayBuddhist(locale, digits)
 
 		return func(v time.Time) string {
 			v = v.AddDate(543, 0, 0) //nolint:mnd
 
-			return layout(v.Day(), s)
+			return layout(v.Day(), opts.Day)
 		}
 	}
 }
