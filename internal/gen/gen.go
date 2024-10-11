@@ -503,24 +503,26 @@ func (g *Generator) addDateFormatItem(
 			case "LL", "MM":
 				sb.WriteString(`fmt(m, "01")`)
 			case "LLL":
-				sb.WriteString(f(`fmtMonth(locale.String(), calendarType%s, "stand-alone", "abbreviated")`))
+				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "stand-alone", "abbreviated")`))
 			case "MMM":
-				sb.WriteString(f(`fmtMonth(locale.String(), calendarType%s, "format", "abbreviated")`))
+				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "format", "abbreviated")`))
 			case "LLLL":
-				sb.WriteString(f(`fmtMonth(locale.String(), calendarType%s, "stand-alone", "wide")`))
+				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "stand-alone", "wide")`))
 			case "MMMM":
-				sb.WriteString(f(`fmtMonth(locale.String(), calendarType%s, "format", "wide")`))
+				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "format", "wide")`))
 			case "LLLLL":
-				sb.WriteString(f(`fmtMonth(locale.String(), calendarType%s, "stand-alone", "narrow")`))
+				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "stand-alone", "narrow")`))
 			case "MMMMM":
-				sb.WriteString(f(`fmtMonth(locale.String(), calendarType%s, "format", "narrow")`))
+				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "format", "narrow")`))
 			}
 		}
 
 		s := sb.String()
 
-		if !strings.Contains(s, "fmtMonth") {
-			s = `func(m int, f string) string { return ` + s + ` }`
+		if strings.Contains(s, "fmtMonthName") {
+			s = "return " + s
+		} else {
+			s = `fmt := fmtMonth(digits); return func(m int, f string) string { return ` + s + ` }`
 		}
 
 		dateTimeFormats.M.Fmt[s] = append(dateTimeFormats.M.Fmt[s], locale)
