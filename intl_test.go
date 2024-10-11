@@ -161,7 +161,7 @@ var locales = []string{
 }
 
 func BenchmarkNewDateTime(b *testing.B) {
-	var v *DateTimeFormat
+	var v DateTimeFormat
 
 	for _, s := range locales {
 		locale := language.MustParse(s)
