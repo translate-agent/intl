@@ -1647,7 +1647,6 @@ func fmtYear(digits digits) func(y int, f string) string {
 	return func(y int, f string) string {
 		year := strconv.Itoa(y)
 
-		// ptime.Time.Format is very slow. Make it fast!
 		if f == "06" {
 			switch n := len(year); n {
 			default:
