@@ -1649,9 +1649,9 @@ func fmtYear(digits digits) func(y int, f string) string {
 
 		// ptime.Time.Format is very slow. Make it fast!
 		if f == "06" {
-			switch len(year) {
+			switch n := len(year); n {
 			default:
-				year = year[len(year)-2:]
+				year = year[n-2:]
 			case 1:
 				year = "0" + year
 			case 0, 2: // noop, isSliceInBounds()
