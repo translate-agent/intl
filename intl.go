@@ -26,6 +26,7 @@ package intl
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	ptime "github.com/yaa110/go-persian-calendar"
@@ -273,16 +274,21 @@ func (d digits) Sprint(s string) string {
 		return s
 	}
 
-	var r string
+	var sb strings.Builder
+
+	const runeSize = 4
+
+	// very likely to have UTF, prealocate max size
+	sb.Grow(len(s) * runeSize)
 
 	// s contains only digits
 	for _, digit := range []byte(s) {
 		if i := int(digit - '0'); i >= 0 && i < len(d) { // isInBounds()
-			r += string(d[i])
+			sb.WriteRune(d[i])
 		}
 	}
 
-	return r
+	return sb.String()
 }
 
 // DateTimeFormat encapsulates the configuration and functionality for
@@ -358,7 +364,7 @@ func fmtMonthName(locale string, calendar calendarType, context, width string) f
 	indexes := monthLookup[locale]
 
 	// multiply by 6
-	i := calendar<<2 + calendar<<1 //nolint:mnd
+	i := int(calendar<<2 + calendar<<1)
 
 	// "abbreviated" width index is 0
 	switch width {
@@ -373,10 +379,22 @@ func fmtMonthName(locale string, calendar calendarType, context, width string) f
 		i++
 	}
 
-	names := calendarMonthNames[int(indexes[i])]
+	var names calendarMonths
+
+	if i >= 0 && i < len(indexes) { // isInBounds()
+		if v := int(indexes[i]); v > 0 && v < len(calendarMonthNames) { // isInBounds()
+			names = calendarMonthNames[v]
+		}
+	}
 
 	return func(v time.Month, _ Month) string {
-		return names[v-1]
+		v--
+
+		if v >= 0 && int(v) < len(names) { // isInBounds()
+			return names[v]
+		}
+
+		return ""
 	}
 }
 
