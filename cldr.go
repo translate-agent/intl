@@ -1642,7 +1642,39 @@ var monthLookup = map[string]monthIndexes{
 	"zu-ZA":          {749, 749, 751, 751, 750, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 }
 
-func fmtMonth(locale string, calendar calendarType, context, width string) func(int, string) string {
+// fmtYear formats year as numeric. The assumption is that f is "06" or "2006".
+func fmtYear(digits digits) func(y int, f string) string {
+	return func(y int, f string) string {
+		year := strconv.Itoa(y)
+
+		// ptime.Time.Format is very slow. Make it fast!
+		if f == "06" {
+			switch len(year) {
+			default:
+				year = year[len(year)-2:]
+			case 1:
+				year = "0" + year
+			case 0, 2: // noop, isSliceInBounds()
+			}
+		}
+
+		return digits.Sprint(year)
+	}
+}
+
+// fmtMonth formats month as numeric. The assumption is that f is "1" or "01".
+func fmtMonth(digits digits) func(m int, f string) string {
+	return func(m int, f string) string {
+		if f == "01" && m <= 9 {
+			return digits.Sprint("0" + strconv.Itoa(m))
+		}
+
+		return digits.Sprint(strconv.Itoa(m))
+	}
+}
+
+// fmtMonthName formats month as name.
+func fmtMonthName(locale string, calendar calendarType, context, width string) func(int, string) string {
 	indexes := monthLookup[locale]
 
 	i := calendar * 6
@@ -1815,21 +1847,13 @@ func fmtYearBuddhist(locale language.Tag) func(string) string {
 func fmtMonthBuddhist(locale language.Tag, digits digits) func(month int, format string) string {
 	lang, _ := locale.Base()
 
-	fmt := func(m int, f string) string {
-		if f == "01" && m <= 9 {
-			return digits.Sprint("0" + strconv.Itoa(m))
-		}
-
-		return digits.Sprint(strconv.Itoa(m))
-	}
-
 	switch lang.String() {
 	default:
-		return fmt
+		return fmtMonth(digits)
 	case "vi":
-		return func(m int, f string) string { return "tháng " + fmt(m, f) }
+		return func(m int, f string) string { return "tháng " + fmtMonth(digits)(m, f) }
 	case "zh":
-		return func(m int, f string) string { return fmt(m, f) + "月" }
+		return func(m int, f string) string { return fmtMonth(digits)(m, f) + "月" }
 	}
 }
 
@@ -1874,29 +1898,21 @@ func fmtYearGregorian(locale language.Tag) func(string) string {
 func fmtMonthGregorian(locale language.Tag, digits digits) func(month int, format string) string {
 	lang, _ := locale.Base()
 
-	fmt := func(m int, f string) string {
-		if f == "01" && m <= 9 {
-			return digits.Sprint("0" + strconv.Itoa(m))
-		}
-
-		return digits.Sprint(strconv.Itoa(m))
-	}
-
 	switch lang.String() {
 	default:
-		return fmt
+		return fmtMonth(digits)
 	case "wae":
-		return fmtMonth(locale.String(), calendarTypeGregorian, "stand-alone", "abbreviated")
+		return fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "abbreviated")
 	case "mn":
-		return fmtMonth(locale.String(), calendarTypeGregorian, "stand-alone", "narrow")
+		return fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "narrow")
 	case "br", "fo", "ga", "lt", "uk", "uz":
-		return func(m int, f string) string { return fmt(m, "01") }
+		return func(m int, f string) string { return fmtMonth(digits)(m, "01") }
 	case "hr", "nb", "nn", "no", "sk":
-		return func(m int, f string) string { return fmt(m, f) + "." }
+		return func(m int, f string) string { return fmtMonth(digits)(m, f) + "." }
 	case "ja", "yue", "zh":
-		return func(m int, f string) string { return fmt(m, f) + "月" }
+		return func(m int, f string) string { return fmtMonth(digits)(m, f) + "月" }
 	case "ko":
-		return func(m int, f string) string { return fmt(m, f) + "월" }
+		return func(m int, f string) string { return fmtMonth(digits)(m, f) + "월" }
 	}
 }
 
@@ -1937,15 +1953,7 @@ func fmtYearPersian(locale language.Tag) func(string) string {
 }
 
 func fmtMonthPersian(_ language.Tag, digits digits) func(month int, format string) string {
-	fmt := func(m int, f string) string {
-		if f == "01" && m <= 9 {
-			return digits.Sprint("0" + strconv.Itoa(m))
-		}
-
-		return digits.Sprint(strconv.Itoa(m))
-	}
-
-	return fmt
+	return fmtMonth(digits)
 }
 
 func fmtDayPersian(_ language.Tag, digits digits) func(day int, format string) string {
@@ -1973,7 +1981,7 @@ func (f *gregorianDateTimeFormat) SetTime(v time.Time) {
 }
 
 func (f *gregorianDateTimeFormat) Year(format string) string {
-	return f.fmtYear(f.digits.Sprint(f.time.Format(format)))
+	return f.fmtYear(fmtYear(f.digits)(f.time.Year(), format))
 }
 
 func (f *gregorianDateTimeFormat) Month(format string) string {
@@ -1998,20 +2006,7 @@ func (f *persianDateTimeFormat) SetTime(v time.Time) {
 
 // Year returns formatted year (only "06" and "2006" is supported).
 func (f *persianDateTimeFormat) Year(format string) string {
-	year := strconv.Itoa(f.time.Year())
-
-	// ptime.Time.Format is very slow. Make it fast!
-	if format == "06" {
-		switch len(year) {
-		default:
-			year = year[len(year)-2:]
-		case 1:
-			year = "0" + year
-		case 0, 2: // noop, isSliceInBounds()
-		}
-	}
-
-	return f.fmtYear(f.digits.Sprint(year))
+	return f.fmtYear(fmtYear(f.digits)(f.time.Year(), format))
 }
 
 func (f *persianDateTimeFormat) Month(format string) string {
@@ -2035,20 +2030,7 @@ func (f *buddhistDateTimeFormat) SetTime(v time.Time) {
 }
 
 func (f *buddhistDateTimeFormat) Year(format string) string {
-	year := strconv.Itoa(f.time.Year())
-
-	// ptime.Time.Format is very slow. Make it fast!
-	if format == "06" {
-		switch len(year) {
-		default:
-			year = year[len(year)-2:]
-		case 1:
-			year = "0" + year
-		case 0, 2: // noop, isSliceInBounds()
-		}
-	}
-
-	return f.fmtYear(f.digits.Sprint(year))
+	return f.fmtYear(fmtYear(f.digits)(f.time.Year(), format))
 }
 
 func (f *buddhistDateTimeFormat) Month(format string) string {
