@@ -394,7 +394,9 @@ func fmtDay(digits digits) func(d int, f string) string {
 func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
 	switch {
 	default:
-		panic(fmt.Errorf("gregorian calendar formatter: NOT IMPLEMENTED: %+v", opts))
+		return func(_ time.Time) string {
+			return ""
+		}
 	case opts.Year != YearUnd:
 		s := "06"
 		if opts.Year == YearNumeric {
@@ -435,7 +437,9 @@ func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) f
 func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
 	switch {
 	default:
-		panic(fmt.Errorf("persian calendar formatter: NOT IMPLEMENTED: %+v", opts))
+		return func(_ time.Time) string {
+			return ""
+		}
 	case opts.Year != YearUnd:
 		s := "06"
 		if opts.Year == YearNumeric {
@@ -476,7 +480,9 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
 	switch {
 	default:
-		panic(fmt.Errorf("buddhist calendar formatter: NOT IMPLEMENTED: %+v", opts))
+		return func(_ time.Time) string {
+			return ""
+		}
 	case opts.Year != YearUnd:
 		s := "06"
 		if opts.Year == YearNumeric {
