@@ -25,8 +25,11 @@ package intl
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
+	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
@@ -271,65 +274,47 @@ func (d digits) Sprint(s string) string {
 		return s
 	}
 
-	var r string
+	var sb strings.Builder
+
+	const runeSize = 4
+
+	// very likely to have UTF, prealocate max size
+	sb.Grow(len(s) * runeSize)
 
 	// s contains only digits
 	for _, digit := range []byte(s) {
 		if i := int(digit - '0'); i >= 0 && i < len(d) { // isInBounds()
-			r += string(d[i])
+			sb.WriteRune(d[i])
 		}
 	}
 
-	return r
+	return sb.String()
 }
 
 // DateTimeFormat encapsulates the configuration and functionality for
 // formatting dates and times according to specific locales and options.
 type DateTimeFormat struct {
-	fmt     dateTimeFormatter
-	options Options
+	fmt fmtFunc
 }
 
 // NewDateTimeFormat creates a new [DateTimeFormat] instance for the specified locale and options.
 //
 // This function initializes a [DateTimeFormat] with the default calendar based on the
 // given locale. It supports different calendar systems including Gregorian, Persian, and Buddhist calendars.
-func NewDateTimeFormat(locale language.Tag, options Options) *DateTimeFormat {
+func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
 	var d digits
 
 	if i := defaultNumberingSystem(locale); i > 0 && int(i) < len(numberingSystems) { // isInBounds()
 		d = numberingSystems[i]
 	}
 
-	var fmt dateTimeFormatter
-
 	switch defaultCalendar(locale) {
 	default:
-		fmt = &gregorianDateTimeFormat{
-			fmtYear:  fmtYearGregorian(locale),
-			fmtMonth: fmtMonthGregorian(locale, d),
-			fmtDay:   fmtDayGregorian(locale, d),
-			digits:   d,
-		}
+		return DateTimeFormat{fmt: gregorianDateTimeFormat(locale, d, options)}
 	case calendarTypePersian:
-		fmt = &persianDateTimeFormat{
-			fmtYear:  fmtYearPersian(locale),
-			fmtMonth: fmtMonthPersian(locale, d),
-			fmtDay:   fmtDayPersian(locale, d),
-			digits:   d,
-		}
+		return DateTimeFormat{fmt: persianDateTimeFormat(locale, d, options)}
 	case calendarTypeBuddhist:
-		fmt = &buddhistDateTimeFormat{
-			fmtYear:  fmtYearBuddhist(locale),
-			fmtMonth: fmtMonthBuddhist(locale, d),
-			fmtDay:   fmtDayBuddhist(locale, d),
-			digits:   d,
-		}
-	}
-
-	return &DateTimeFormat{
-		options: options,
-		fmt:     fmt,
+		return DateTimeFormat{fmt: buddhistDateTimeFormat(locale, d, options)}
 	}
 }
 
@@ -337,40 +322,175 @@ func NewDateTimeFormat(locale language.Tag, options Options) *DateTimeFormat {
 //
 // This method applies the formatting options specified in the [DateTimeFormat] instance
 // to the provided time value.
-func (f *DateTimeFormat) Format(v time.Time) string {
-	f.fmt.SetTime(v)
+func (f DateTimeFormat) Format(v time.Time) string {
+	return f.fmt(v)
+}
 
-	switch {
-	default:
-		return ""
-	case f.options.Year != YearUnd:
-		s := "06"
-		if f.options.Year == YearNumeric {
-			s = "2006"
+// fmtFunc is date time formatter for a particular calendar.
+type fmtFunc func(time.Time) string
+
+// fmtYear formats year as numeric.
+func fmtYear(digits digits) func(v int, opt Year) string {
+	return func(v int, opt Year) string {
+		s := strconv.Itoa(v)
+
+		if opt == Year2Digit {
+			switch n := len(s); n {
+			default:
+				s = s[n-2:]
+			case 1:
+				s = "0" + s
+			case 0, 2: //nolint:mnd // noop, isSliceInBounds()
+			}
 		}
 
-		return f.fmt.Year(s)
-	case f.options.Month != MonthUnd:
-		s := "1"
-		if f.options.Month == Month2Digit {
-			s = "01"
-		}
-
-		return f.fmt.Month(s)
-	case f.options.Day != DayUnd:
-		s := "2"
-		if f.options.Day == Day2Digit {
-			s = "02"
-		}
-
-		return f.fmt.Day(s)
+		return digits.Sprint(s)
 	}
 }
 
-// dateTimeFormatter is date time formatter for a calendar.
-type dateTimeFormatter interface {
-	SetTime(time.Time)
-	Year(format string) string
-	Month(format string) string
-	Day(format string) string
+// fmtMonth formats month as numeric.
+func fmtMonth(digits digits) func(v time.Month, opt Month) string {
+	return func(v time.Month, opt Month) string {
+		if opt == Month2Digit && v <= 9 {
+			return digits.Sprint("0" + strconv.Itoa(int(v)))
+		}
+
+		return digits.Sprint(strconv.Itoa(int(v)))
+	}
+}
+
+// fmtMonthName formats month as name.
+func fmtMonthName(locale string, calendar calendarType, context, width string) func(v time.Month, opt Month) string {
+	indexes := monthLookup[locale]
+
+	// multiply by 6
+	i := int(calendar<<2 + calendar<<1)
+
+	// "abbreviated" width index is 0
+	switch width {
+	case "wide":
+		i += 2 // 1*2
+	case "narrow":
+		i += 4 // 2*2
+	}
+
+	// "format" context index is 0
+	if context == "stand-alone" {
+		i++
+	}
+
+	var names calendarMonths
+
+	if i >= 0 && i < len(indexes) { // isInBounds()
+		if v := int(indexes[i]); v > 0 && v < len(calendarMonthNames) { // isInBounds()
+			names = calendarMonthNames[v]
+		}
+	}
+
+	return func(v time.Month, _ Month) string {
+		v--
+
+		if v >= 0 && int(v) < len(names) { // isInBounds()
+			return names[v]
+		}
+
+		return ""
+	}
+}
+
+// fmtDay formats day as numeric.
+func fmtDay(digits digits) func(v int, opt Day) string {
+	return func(v int, opt Day) string {
+		if opt == Day2Digit && v <= 9 {
+			return digits.Sprint("0" + strconv.Itoa(v))
+		}
+
+		return digits.Sprint(strconv.Itoa(v))
+	}
+}
+
+func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
+	switch {
+	default:
+		return func(_ time.Time) string {
+			return ""
+		}
+	case opts.Year != YearUnd:
+		layout := fmtYearGregorian(locale)
+		fmt := fmtYear(digits)
+
+		return func(v time.Time) string {
+			return layout(fmt(v.Year(), opts.Year))
+		}
+	case opts.Month != MonthUnd:
+		layout := fmtMonthGregorian(locale, digits)
+
+		return func(v time.Time) string {
+			return layout(v.Month(), opts.Month)
+		}
+	case opts.Day != DayUnd:
+		layout := fmtDayGregorian(locale, digits)
+
+		return func(v time.Time) string {
+			return layout(v.Day(), opts.Day)
+		}
+	}
+}
+
+func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
+	switch {
+	default:
+		return func(_ time.Time) string {
+			return ""
+		}
+	case opts.Year != YearUnd:
+		layout := fmtYearPersian(locale)
+		fmt := fmtYear(digits)
+
+		return func(v time.Time) string {
+			return layout(fmt(ptime.New(v).Year(), opts.Year))
+		}
+	case opts.Month != MonthUnd:
+		layout := fmtMonthPersian(locale, digits)
+
+		return func(v time.Time) string {
+			return layout(time.Month(ptime.New(v).Month()), opts.Month)
+		}
+	case opts.Day != DayUnd:
+		layout := fmtDayPersian(locale, digits)
+
+		return func(v time.Time) string {
+			return layout(ptime.New(v).Day(), opts.Day)
+		}
+	}
+}
+
+func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
+	switch {
+	default:
+		return func(_ time.Time) string {
+			return ""
+		}
+	case opts.Year != YearUnd:
+		layout := fmtYearBuddhist(locale)
+		fmt := fmtYear(digits)
+
+		return func(v time.Time) string {
+			return layout(fmt(v.Year(), opts.Year))
+		}
+	case opts.Month != MonthUnd:
+		layout := fmtMonthBuddhist(locale, digits)
+
+		return func(v time.Time) string {
+			return layout(v.Month(), opts.Month)
+		}
+	case opts.Day != DayUnd:
+		layout := fmtDayBuddhist(locale, digits)
+
+		return func(v time.Time) string {
+			v = v.AddDate(543, 0, 0) //nolint:mnd
+
+			return layout(v.Day(), opts.Day)
+		}
+	}
 }

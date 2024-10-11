@@ -322,6 +322,12 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 		}
 	}
 
+	// TODO(jhorsts): requires rework after era is available. Post process default year formatting
+	for calendarType, formats := range dateTimeFormats {
+		formats.Y.Default = strings.NewReplacer("G ", `"AP "+`, "y", "v").Replace(formats.Y.Default)
+		dateTimeFormats[calendarType] = formats
+	}
+
 	return dateTimeFormats
 }
 
@@ -350,11 +356,7 @@ func (g *Generator) defaultDateFormatItem(calendarType string, id string) string
 				continue
 			}
 
-			if id != "y" && calendarType != "persian" {
-				return dateFormatItem.CharData
-			}
-
-			return strings.Replace(dateFormatItem.CharData, "G ", `"AP "+`, 1)
+			return dateFormatItem.CharData
 		}
 	}
 
@@ -469,7 +471,7 @@ func (g *Generator) addDateFormatItem(
 			default:
 				sb.WriteString(`"` + v.value + `"`)
 			case v.value == "y":
-				sb.WriteString("y")
+				sb.WriteString("v")
 			}
 		}
 
@@ -499,9 +501,9 @@ func (g *Generator) addDateFormatItem(
 
 			switch v.value {
 			default:
-				sb.WriteString("fmt(m, f)")
+				sb.WriteString("fmt(v, opt)")
 			case "LL", "MM":
-				sb.WriteString(`fmt(m, "01")`)
+				sb.WriteString(`fmt(v, Month2Digit)`)
 			case "LLL":
 				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "stand-alone", "abbreviated")`))
 			case "MMM":
@@ -522,7 +524,7 @@ func (g *Generator) addDateFormatItem(
 		if strings.Contains(s, "fmtMonthName") {
 			s = "return " + s
 		} else {
-			s = `fmt := fmtMonth(digits); return func(m int, f string) string { return ` + s + ` }`
+			s = `fmt := fmtMonth(digits); return func(v time.Month, opt Month) string { return ` + s + ` }`
 		}
 
 		dateTimeFormats.M.Fmt[s] = append(dateTimeFormats.M.Fmt[s], locale)
@@ -540,11 +542,11 @@ func (g *Generator) addDateFormatItem(
 
 			switch {
 			default:
-				sb.WriteString("fmt(d, f)")
+				sb.WriteString("fmt(v, opt)")
 			case v.literal:
 				sb.WriteString(`"` + v.value + `"`)
 			case v.value == "dd":
-				sb.WriteString(`fmt(d, "02")`)
+				sb.WriteString(`fmt(v, Day2Digit)`)
 			}
 		}
 
