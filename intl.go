@@ -288,7 +288,7 @@ func (d digits) Sprint(s string) string {
 // DateTimeFormat encapsulates the configuration and functionality for
 // formatting dates and times according to specific locales and options.
 type DateTimeFormat struct {
-	format fmtFunc
+	fmt fmtFunc
 }
 
 // NewDateTimeFormat creates a new [DateTimeFormat] instance for the specified locale and options.
@@ -304,11 +304,11 @@ func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
 
 	switch defaultCalendar(locale) {
 	default:
-		return DateTimeFormat{format: gregorianDateTimeFormat(locale, d, options)}
+		return DateTimeFormat{fmt: gregorianDateTimeFormat(locale, d, options)}
 	case calendarTypePersian:
-		return DateTimeFormat{format: persianDateTimeFormat(locale, d, options)}
+		return DateTimeFormat{fmt: persianDateTimeFormat(locale, d, options)}
 	case calendarTypeBuddhist:
-		return DateTimeFormat{format: buddhistDateTimeFormat(locale, d, options)}
+		return DateTimeFormat{fmt: buddhistDateTimeFormat(locale, d, options)}
 	}
 }
 
@@ -317,7 +317,7 @@ func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
 // This method applies the formatting options specified in the [DateTimeFormat] instance
 // to the provided time value.
 func (f DateTimeFormat) Format(v time.Time) string {
-	return f.format(v)
+	return f.fmt(v)
 }
 
 // fmtFunc is date time formatter for a particular calendar.
