@@ -1699,6 +1699,17 @@ func fmtMonthName(locale string, calendar calendarType, context, width string) f
 	}
 }
 
+// fmtDay formats day as numeric. The assumption is that f is "2" or "02".
+func fmtDay(digits digits) func(d int, f string) string {
+	return func(d int, f string) string {
+		if f == "02" && d <= 9 {
+			return digits.Sprint("0" + strconv.Itoa(d))
+		}
+
+		return digits.Sprint(strconv.Itoa(d))
+	}
+}
+
 type numberingSystem int
 
 const (
@@ -1860,13 +1871,7 @@ func fmtMonthBuddhist(locale language.Tag, digits digits) func(month int, format
 func fmtDayBuddhist(locale language.Tag, digits digits) func(day int, format string) string {
 	lang, _ := locale.Base()
 
-	fmt := func(d int, f string) string {
-		if f == "02" && d <= 9 {
-			return digits.Sprint("0" + strconv.Itoa(d))
-		}
-
-		return digits.Sprint(strconv.Itoa(d))
-	}
+	fmt := fmtDay(digits)
 
 	switch lang.String() {
 	default:
@@ -1919,13 +1924,7 @@ func fmtMonthGregorian(locale language.Tag, digits digits) func(month int, forma
 func fmtDayGregorian(locale language.Tag, digits digits) func(day int, format string) string {
 	lang, _ := locale.Base()
 
-	fmt := func(d int, f string) string {
-		if f == "02" && d <= 9 {
-			return digits.Sprint("0" + strconv.Itoa(d))
-		}
-
-		return digits.Sprint(strconv.Itoa(d))
-	}
+	fmt := fmtDay(digits)
 
 	switch lang.String() {
 	default:
@@ -1957,13 +1956,7 @@ func fmtMonthPersian(_ language.Tag, digits digits) func(month int, format strin
 }
 
 func fmtDayPersian(_ language.Tag, digits digits) func(day int, format string) string {
-	fmt := func(d int, f string) string {
-		if f == "02" && d <= 9 {
-			return digits.Sprint("0" + strconv.Itoa(d))
-		}
-
-		return digits.Sprint(strconv.Itoa(d))
-	}
+	fmt := fmtDay(digits)
 
 	return fmt
 }
