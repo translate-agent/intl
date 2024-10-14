@@ -415,6 +415,15 @@ func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) f
 		return func(_ time.Time) string {
 			return ""
 		}
+	case opts.Year != YearUnd && opts.Month != MonthUnd:
+		layout := fmtYearMonthGregorian(locale, digits, opts)
+
+		return func(v time.Time) string {
+			y := v.Year()
+			m := v.Month()
+
+			return layout(y, m)
+		}
 	case opts.Year != YearUnd:
 		layout := fmtYearGregorian(locale)
 		fmt := fmtYear(digits)

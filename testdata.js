@@ -63,26 +63,21 @@ const date = new Date("2024-01-02 03:04:05");
 const tests = locales.reduce((r, locale) => {
   const result = [];
 
-  ["numeric", "2-digit"].forEach((year) => {
-    const options = { year };
+  [undefined, "numeric", "2-digit"].forEach((year) => {
+    [undefined, "numeric", "2-digit"].forEach((month) => {
+      if (year === undefined && month === undefined) {
+        return;
+      }
 
-    result.push([
-      options,
-      new Intl.DateTimeFormat(locale, options).format(date),
-    ]);
+      const options = { year, month };
 
-    r[locale] = result;
-  });
+      result.push([
+        options,
+        new Intl.DateTimeFormat(locale, options).format(date),
+      ]);
 
-  ["numeric", "2-digit"].forEach((month) => {
-    const options = { month };
-
-    result.push([
-      options,
-      new Intl.DateTimeFormat(locale, options).format(date),
-    ]);
-
-    r[locale] = result;
+      r[locale] = result;
+    });
   });
 
   ["numeric", "2-digit"].forEach((day) => {

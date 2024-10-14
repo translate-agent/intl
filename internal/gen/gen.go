@@ -308,6 +308,7 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 				formats = NewCalendarDateTimeFormats()
 
 				formats.Y.Default = g.defaultDateFormatItem(calendar.Type, "y")
+				formats.YM.Default = g.defaultDateFormatItem(calendar.Type, "yM")
 				formats.M.Default = g.defaultDateFormatItem(calendar.Type, "M")
 				formats.D.Default = g.defaultDateFormatItem(calendar.Type, "d")
 
@@ -325,6 +326,8 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 	// TODO(jhorsts): requires rework after era is available. Post process default year formatting
 	for calendarType, formats := range dateTimeFormats {
 		formats.Y.Default = strings.NewReplacer("G ", `"AP "+`, "y", "v").Replace(formats.Y.Default)
+
+		formats.YM.Default = buildFmtYm(formats.YM.Default)
 		dateTimeFormats[calendarType] = formats
 	}
 
@@ -476,6 +479,14 @@ func (g *Generator) addDateFormatItem(
 		}
 
 		dateTimeFormats.Y.Fmt[sb.String()] = append(dateTimeFormats.Y.Fmt[sb.String()], locale)
+	case "yM":
+		if dateFormatItem.CharData == dateTimeFormats.YM.Default {
+			return
+		}
+
+		s := buildFmtYm(dateFormatItem.CharData)
+
+		dateTimeFormats.YM.Fmt[s] = append(dateTimeFormats.YM.Fmt[s], locale)
 	case "M", "L":
 		// "L" and "M" have the same meaning - numeric with minimum digits
 		if dateFormatItem.CharData == dateTimeFormats.M.Default ||
@@ -671,16 +682,15 @@ func (n MonthNames) String() string {
 type DateTimeFormats map[string]CalendarDateTimeFormats
 
 type CalendarDateTimeFormats struct {
-	Y CalendarDateTimeFormat
-	M CalendarDateTimeFormat
-	D CalendarDateTimeFormat
+	Y, YM, M, D CalendarDateTimeFormat
 }
 
 func NewCalendarDateTimeFormats() CalendarDateTimeFormats {
 	return CalendarDateTimeFormats{
-		Y: NewCalendarDateTimeFormat(),
-		M: NewCalendarDateTimeFormat(),
-		D: NewCalendarDateTimeFormat(),
+		Y:  NewCalendarDateTimeFormat(),
+		YM: NewCalendarDateTimeFormat(),
+		M:  NewCalendarDateTimeFormat(),
+		D:  NewCalendarDateTimeFormat(),
 	}
 }
 
@@ -821,4 +831,29 @@ func title(s string) string {
 	}
 
 	return strings.ReplaceAll(r, "-", "") // e.g. "islamic - umalqura"
+}
+
+func buildFmtYm(s string) string {
+	var sb strings.Builder
+
+	for i, v := range splitDatePattern(s) {
+		if i > 0 {
+			sb.WriteRune('+')
+		}
+
+		switch v.value {
+		default:
+			sb.WriteString(`"` + v.value + `"`)
+		case "L", "M":
+			sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))`)
+		case "LL", "MM":
+			sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, Month2Digit))`)
+		case "y":
+			sb.WriteString("fmtYear(y, cmp.Or(opts.Year, YearNumeric))")
+			// case "LL", "MM":
+			// 	sb.WriteString(`fmt(v, Month2Digit)`)
+		}
+	}
+
+	return sb.String()
 }
