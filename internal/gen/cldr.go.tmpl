@@ -96,14 +96,12 @@ func fmtYear{{ title $calendarType }}(locale language.Tag) func(v string) string
   }
 }
 
+{{ if gt (len $formats.YM.Fmt) 0 }}
 func fmtYearMonth{{ title $calendarType}}(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
-  language, _ := locale.Base()
-
   fmtYear := fmtYear(digits)
   fmtMonth := fmtMonth(digits)
 
-{{ if gt (len $formats.YM.Fmt) 0 }}
-  switch language.String() {
+  switch language, _ := locale.Base(); language.String() {
   default:
     return func(y int, m time.Month) string { return {{ $formats.YM.Default }} }
 {{- range $fmt, $languages := $formats.YM.Fmt }}
@@ -112,6 +110,10 @@ func fmtYearMonth{{ title $calendarType}}(locale language.Tag, digits digits, op
 {{- end }}
   }
 {{ else }}
+func fmtYearMonth{{ title $calendarType}}(_ language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
+  fmtYear := fmtYear(digits)
+  fmtMonth := fmtMonth(digits)
+
   return func(y int, m time.Month) string { return {{ $formats.YM.Default }} }
 {{ end }}
 }

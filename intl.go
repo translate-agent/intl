@@ -452,6 +452,15 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 		return func(_ time.Time) string {
 			return ""
 		}
+	case opts.Year != YearUnd && opts.Month != MonthUnd:
+		layout := fmtYearMonthPersian(locale, digits, opts)
+
+		return func(v time.Time) string {
+			y := v.Year()
+			m := v.Month()
+
+			return layout(y, m)
+		}
 	case opts.Year != YearUnd:
 		layout := fmtYearPersian(locale)
 		fmt := fmtYear(digits)

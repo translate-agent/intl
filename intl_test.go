@@ -129,6 +129,8 @@ func TestDateTime_Format(t *testing.T) {
 		t.Run(locale.String(), func(t *testing.T) {
 			t.Parallel()
 
+			t.Log(cases)
+
 			for _, test := range cases {
 				t.Run(fmt.Sprintf("%+v: %s", test.Options, test.Output), func(t *testing.T) {
 					t.Parallel()
@@ -147,6 +149,7 @@ func TestDateTime_Format(t *testing.T) {
 					if test.Output != got {
 						t.Errorf("want '%s', got '%s'", test.Output, got)
 						t.Logf("\n%v\n%v", []rune(test.Output), []rune(got))
+						t.Logf("\n%v\n%v", []byte(test.Output), []byte(got))
 					}
 				})
 			}
