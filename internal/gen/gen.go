@@ -58,6 +58,7 @@ func (g *Generator) Load(dir string) error {
 		return fmt.Errorf(`decode CLDR at path "%s": %w`, dir, err)
 	}
 
+	g.filterApproved()
 	g.merge()
 
 	return nil
@@ -122,6 +123,71 @@ func (g *Generator) saveMerged(out string) error {
 	}
 
 	return nil
+}
+
+func (g *Generator) filterApproved() {
+	for _, locale := range g.cldr.Locales() {
+		ldml := g.cldr.RawLDML(locale)
+
+		if ldml.Numbers != nil {
+			var defaultNumberingSystem []*cldr.Common
+
+			for _, v := range ldml.Numbers.DefaultNumberingSystem {
+				if isContributedOrApproved(v.Draft) {
+					defaultNumberingSystem = append(defaultNumberingSystem, v)
+				}
+			}
+
+			ldml.Numbers.DefaultNumberingSystem = defaultNumberingSystem
+		}
+
+		if ldml.Dates != nil && ldml.Dates.Calendars != nil {
+			for _, calendar := range ldml.Dates.Calendars.Calendar {
+				if calendar.Months == nil {
+					continue
+				}
+
+				// calendar.Months.MonthContext.MonthWidth.Month
+				for _, monthContext := range calendar.Months.MonthContext {
+					for _, monthWidth := range monthContext.MonthWidth {
+						var months []*struct {
+							cldr.Common
+							Yeartype string `xml:"yeartype,attr"`
+						}
+
+						for _, month := range monthWidth.Month {
+							if isContributedOrApproved(month.Draft) {
+								months = append(months, month)
+							}
+						}
+
+						monthWidth.Month = months
+					}
+				}
+
+				// calendar.DateTimeFormats.AvailableFormats
+				if calendar.DateTimeFormats == nil {
+					continue
+				}
+
+				for _, dateTimeFormat := range calendar.DateTimeFormats.AvailableFormats {
+					var dateFormatItems []*struct {
+						cldr.Common
+						Id    string `xml:"id,attr"` //nolint:revive,stylecheck
+						Count string `xml:"count,attr"`
+					}
+
+					for _, dateFormatItem := range dateTimeFormat.DateFormatItem {
+						if isContributedOrApproved(dateFormatItem.Draft) {
+							dateFormatItems = append(dateFormatItems, dateFormatItem)
+						}
+					}
+
+					dateTimeFormat.DateFormatItem = dateFormatItems
+				}
+			}
+		}
+	}
 }
 
 func (g *Generator) merge() {
@@ -303,7 +369,7 @@ func (g *Generator) defaultNumberingSystems() DefaultNumberingSystems {
 		}
 
 		for _, v := range ldml.Numbers.DefaultNumberingSystem {
-			if v.Alt != "" || !isContributedOrApproved(v.Draft) {
+			if v.Alt != "" {
 				continue
 			}
 
@@ -340,7 +406,7 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 				formats.YM.Default = cmp.Or(
 					g.findDateFormatItem("root", calendar.Type, "yM"),
 					g.findDateFormatItem("root", calendar.Type, "yMM"),
-					"MM/y",
+					g.findDateFormatItem("root", calendar.Type, "yyyyM"),
 				)
 				formats.M.Default = g.findDateFormatItem("root", calendar.Type, "M")
 				formats.D.Default = g.findDateFormatItem("root", calendar.Type, "d")
@@ -356,11 +422,9 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 		}
 	}
 
-	// TODO(jhorsts): requires rework after era is available. Post process default year formatting
 	for calendarType, formats := range dateTimeFormats {
 		formats.Y.Default = strings.NewReplacer("G ", `"AP "+`, "y", "v").Replace(formats.Y.Default)
-
-		formats.YM.Default = buildFmtYm(formats.YM.Default, "")
+		formats.YM.Default = buildFmtYm(formats.YM.Default, "", "")
 		dateTimeFormats[calendarType] = formats
 	}
 
@@ -417,8 +481,7 @@ func (g *Generator) months() Months { //nolint:gocognit
 					month := monthWidth.Month[0]
 
 					// skip draft and months with the same digits
-					if !isContributedOrApproved(month.Draft) ||
-						month.Type == month.CharData && month.CharData == "1" {
+					if month.Type == month.CharData && month.CharData == "1" {
 						continue
 					}
 
@@ -479,17 +542,13 @@ type CLDRDateFormatItem struct {
 	Count string
 }
 
-//nolint:gocognit
+//nolint:gocognit,cyclop
 func (g *Generator) addDateFormatItem(
 	calendarType string,
 	dateTimeFormats CalendarDateTimeFormats,
 	dateFormatItem *CLDRDateFormatItem,
 	locale string,
 ) {
-	if !isContributedOrApproved(dateFormatItem.Draft) {
-		return
-	}
-
 	switch dateFormatItem.Id {
 	case "y":
 		if dateFormatItem.CharData == dateTimeFormats.Y.Default {
@@ -512,12 +571,17 @@ func (g *Generator) addDateFormatItem(
 		}
 
 		dateTimeFormats.Y.Fmt[sb.String()] = append(dateTimeFormats.Y.Fmt[sb.String()], locale)
-	case "yM":
-		if dateFormatItem.CharData == dateTimeFormats.YM.Default {
+	case "yM", "yyyyM":
+		yMM := g.findDateFormatItem(locale, calendarType, "yMM")
+		yyyyM := g.findDateFormatItem(locale, calendarType, "yyyyM")
+
+		if dateFormatItem.CharData == dateTimeFormats.YM.Default &&
+			(yMM == "" || yMM == dateTimeFormats.YM.Default) &&
+			(yyyyM == "" || yyyyM == dateTimeFormats.YM.Default) {
 			return
 		}
 
-		s := buildFmtYm(dateFormatItem.CharData, g.findDateFormatItem(locale, calendarType, "yMM"))
+		s := buildFmtYm(dateFormatItem.CharData, yMM, yyyyM)
 
 		dateTimeFormats.YM.Fmt[s] = append(dateTimeFormats.YM.Fmt[s], locale)
 	case "M", "L":
@@ -604,7 +668,6 @@ func (g *Generator) numberingSystems(defaultNumberingSystems DefaultNumberingSys
 	ids := slices.Collect(maps.Keys(defaultNumberingSystems))
 
 	for _, v := range g.cldr.Supplemental().NumberingSystems.NumberingSystem {
-		// only use default numbering systems
 		if v.Type != "numeric" || !slices.Contains(ids, v.Id) {
 			continue
 		}
@@ -763,13 +826,30 @@ type datePatternElement struct {
 	literal bool
 }
 
-func splitDatePattern(pattern string) []datePatternElement {
-	var last rune
+type datePatternElements []datePatternElement
 
-	elements := make([]datePatternElement, 0)
-	elem := new(strings.Builder)
-	literal := false
-	quoted := false
+func (e datePatternElements) Month() string {
+	for _, v := range e {
+		if v.literal {
+			continue
+		}
+
+		// all patterns starting with 'M' or 'L' are months
+		if v.value[0] == 'M' || v.value[0] == 'L' {
+			return v.value
+		}
+	}
+
+	return ""
+}
+
+func splitDatePattern(pattern string) datePatternElements {
+	var (
+		last            rune
+		literal, quoted bool
+		elem            strings.Builder
+		elements        = make(datePatternElements, 0, 1)
+	)
 
 	write := func(r rune, asLiteral bool) {
 		if literal && asLiteral {
@@ -852,8 +932,8 @@ func deepCopy[T any](v T) T { //nolint:ireturn
 	return r
 }
 
-func isContributedOrApproved(s string) bool {
-	return s == "" || s == "contributed"
+func isContributedOrApproved(draft string) bool {
+	return draft == "" || draft == "contributed"
 }
 
 func title(s string) string {
@@ -866,46 +946,72 @@ func title(s string) string {
 	return strings.ReplaceAll(r, "-", "") // e.g. "islamic - umalqura"
 }
 
-func buildFmtYm(yM, yMM string) string {
+func buildFmtYm(yM, yMM, yyyyM string) string {
 	var sb strings.Builder
 
 	yMPattern := splitDatePattern(yM)
-	yMMPattern := splitDatePattern(cmp.Or(yMM, yM))
+	yMMPattern := splitDatePattern(cmp.Or(yyyyM, yMM, yM))
 
-	if yMPattern[1] != yMMPattern[1] {
+	switch {
+	default: // yM == yMM
+		for i, v := range yMPattern {
+			if i > 0 {
+				sb.WriteRune('+')
+			}
+
+			switch v.value {
+			default:
+				sb.WriteString(`"` + v.value + `"`)
+			case "L", "M":
+				if yMMmonth := yMMPattern.Month(); yMM != "" && (yMMmonth == "M" || yMMmonth == "L") {
+					sb.WriteString(`fmtMonth(m, MonthNumeric)`)
+				} else {
+					sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))`)
+				}
+			case "LL", "MM":
+				if yMMPattern.Month() == v.value {
+					sb.WriteString(`fmtMonth(m, Month2Digit)`)
+				} else {
+					sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, Month2Digit))`)
+				}
+			case "MMMMM":
+				sb.WriteString(`fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "narrow")(m, opts.Month)`)
+			case "y", "Y":
+				// "Y" is not defined by CLDR https://cldr.unicode.org/translation/date-time/date-time-symbols
+				// However, "Y" is used by "ksh-DE" and others.
+				sb.WriteString("fmtYear(y, cmp.Or(opts.Year, YearNumeric))")
+			}
+		}
+
+		return sb.String()
+	case yM == "y/M" && yMM == "y年M月":
+		return `func() string {
+	ys := fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+	ms := fmtMonth(m, MonthNumeric)
+	if opts.Month == MonthNumeric {
+		return ys+"/"+ms
+	}
+	return ys+"年"+ms+"月"
+}()`
+	case yM == "y-MM" && yMM == "MM/y":
+		return `func() string {
+	ys := fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+	ms := fmtMonth(m, Month2Digit)
+	if opts.Month == MonthNumeric {
+		return ys+"-"+ms
+	}
+	return ms+"/"+ys
+}()`
+	case yMPattern[1] != yMMPattern[1]:
 		return fmt.Sprintf(
-			`func() string { if (opts.Month == MonthNumeric) { return %s } else { return %s } }()`,
-			buildFmtYm(yM, ""), buildFmtYm(yMM, ""))
+			`func() string { if (opts.Month == MonthNumeric) { return %s }; return %s }()`,
+			buildFmtYm(yM, "", ""), buildFmtYm(yMM, "", ""))
+	case yMPattern[0].value == "MM" && yMMPattern[0].value == "M":
+		return `func() string {
+	if opts.Month == MonthNumeric {
+		return fmtMonth(m, Month2Digit)+"/"+fmtYear(y, cmp.Or(opts.Year, YearNumeric))
 	}
-
-	if yMPattern[0].value == "MM" && yMMPattern[0].value == "M" {
-		return `func() string { if (opts.Month == MonthNumeric) { return fmtMonth(m, Month2Digit)+"/"+fmtYear(y, cmp.Or(opts.Year, YearNumeric)) } else { return fmtMonth(m, MonthNumeric)+"/"+fmtYear(y, cmp.Or(opts.Year, YearNumeric)) } }()`
+	return fmtMonth(m, MonthNumeric)+"/"+fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+}()`
 	}
-
-	for i, v := range yMPattern {
-		if i > 0 {
-			sb.WriteRune('+')
-		}
-
-		switch v.value {
-		default:
-			sb.WriteString(`"` + v.value + `"`)
-		case "L", "M":
-			if yMM != "" && !strings.Contains(yMM, "MM") {
-				sb.WriteString(`fmtMonth(m, MonthNumeric)`)
-			} else {
-				sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))`)
-			}
-		case "LL", "MM":
-			if yMM == "" {
-				sb.WriteString(`fmtMonth(m, Month2Digit)`)
-			} else {
-				sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, Month2Digit))`)
-			}
-		case "y":
-			sb.WriteString("fmtYear(y, cmp.Or(opts.Year, YearNumeric))")
-		}
-	}
-
-	return sb.String()
 }

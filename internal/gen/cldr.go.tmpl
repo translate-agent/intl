@@ -96,7 +96,6 @@ func fmtYear{{ title $calendarType }}(locale language.Tag) func(v string) string
   }
 }
 
-{{ if gt (len $formats.YM.Fmt) 0 }}
 func fmtYearMonth{{ title $calendarType}}(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
   fmtYear := fmtYear(digits)
   fmtMonth := fmtMonth(digits)
@@ -109,13 +108,6 @@ func fmtYearMonth{{ title $calendarType}}(locale language.Tag, digits digits, op
     return func(y int, m time.Month) string { return {{ $fmt }} }
 {{- end }}
   }
-{{ else }}
-func fmtYearMonth{{ title $calendarType}}(_ language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
-  fmtYear := fmtYear(digits)
-  fmtMonth := fmtMonth(digits)
-
-  return func(y int, m time.Month) string { return {{ $formats.YM.Default }} }
-{{ end }}
 }
 
 {{ if gt (len $formats.M.Fmt) 0 }}
