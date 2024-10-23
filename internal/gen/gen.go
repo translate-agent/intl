@@ -125,6 +125,7 @@ func (g *Generator) saveMerged(out string) error {
 	return nil
 }
 
+//nolint:gocognit
 func (g *Generator) filterApproved() {
 	for _, locale := range g.cldr.Locales() {
 		ldml := g.cldr.RawLDML(locale)
