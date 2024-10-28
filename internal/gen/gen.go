@@ -27,18 +27,26 @@ type Generator struct {
 	cldr *cldr.CLDR
 }
 
-func Gen(cldrDir, out string) error {
+type Conf struct {
+	cldrDir    string
+	out        string
+	saveMerged bool
+}
+
+func Gen(conf Conf) error {
 	g := Generator{}
 
-	if err := g.Load(cldrDir); err != nil {
+	if err := g.Load(conf.cldrDir); err != nil {
 		return err
 	}
 
-	if err := g.saveMerged(out); err != nil {
-		return err
+	if conf.saveMerged {
+		if err := g.saveMerged(conf.out); err != nil {
+			return err
+		}
 	}
 
-	if err := g.Write(out); err != nil {
+	if err := g.Write(conf.out); err != nil {
 		return err
 	}
 

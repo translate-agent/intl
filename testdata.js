@@ -114,7 +114,7 @@ function generateTests(locales) {
 
     [undefined, "numeric", "2-digit"].forEach((year) => {
       [undefined, "numeric", "2-digit"].forEach((month) => {
-        // TODO(jhorsts): skip default formatting for now. It can be resolved when formatting is fully implenented.
+        // TODO(jhorsts): skip default formatting for now. It can be resolved when formatting is fully implemented.
         if (year === undefined && month === undefined) {
           return;
         }
