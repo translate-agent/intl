@@ -949,13 +949,15 @@ func title(s string) string {
 }
 
 func buildFmtYm(yM, yMM, yyyyM string) string {
-	var sb strings.Builder
-
 	yMPattern := splitDatePattern(yM)
 	yMMPattern := splitDatePattern(cmp.Or(yyyyM, yMM, yM))
 
 	switch {
 	default: // yM == yMM
+		var sb strings.Builder
+
+		sb.WriteString("return ")
+
 		for i, v := range yMPattern {
 			if i > 0 {
 				sb.WriteRune('+')
@@ -985,33 +987,30 @@ func buildFmtYm(yM, yMM, yyyyM string) string {
 
 		return sb.String()
 	case yM == "y/M" && yMM == "y年M月":
-		return `func() string {
+		return `
 	ys := fmtYear(y, cmp.Or(opts.Year, YearNumeric))
 	ms := fmtMonth(m, MonthNumeric)
 	if opts.Month == MonthNumeric {
 		return ys+"/"+ms
 	}
-	return ys+"年"+ms+"月"
-}()`
+	return ys+"年"+ms+"月"`
 	case yM == "y-MM" && yMM == "MM/y":
-		return `func() string {
+		return `
 	ys := fmtYear(y, cmp.Or(opts.Year, YearNumeric))
 	ms := fmtMonth(m, Month2Digit)
 	if opts.Month == MonthNumeric {
 		return ys+"-"+ms
 	}
-	return ms+"/"+ys
-}()`
+	return ms+"/"+ys`
 	case yMPattern[1] != yMMPattern[1]:
 		return fmt.Sprintf(
-			`func() string { if (opts.Month == MonthNumeric) { return %s }; return %s }()`,
+			`if (opts.Month == MonthNumeric) { %s }; %s`,
 			buildFmtYm(yM, "", ""), buildFmtYm(yMM, "", ""))
 	case yMPattern[0].value == "MM" && yMMPattern[0].value == "M":
-		return `func() string {
+		return `
 	if opts.Month == MonthNumeric {
 		return fmtMonth(m, Month2Digit)+"/"+fmtYear(y, cmp.Or(opts.Year, YearNumeric))
 	}
-	return fmtMonth(m, MonthNumeric)+"/"+fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-}()`
+	return fmtMonth(m, MonthNumeric)+"/"+fmtYear(y, cmp.Or(opts.Year, YearNumeric))`
 	}
 }

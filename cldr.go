@@ -1880,6 +1880,73 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		return func(y int, m time.Month) string {
 			return fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "-" + fmtMonth(m, Month2Digit)
 		}
+	case "bs":
+		return func(y int, m time.Month) string {
+			if opts.Month == MonthNumeric {
+				return fmtMonth(m, Month2Digit) + "/" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+			}
+			return fmtMonth(m, MonthNumeric) + "/" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+		}
+	case "om", "yi":
+		return func(y int, m time.Month) string {
+			ys := fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+			ms := fmtMonth(m, Month2Digit)
+			if opts.Month == MonthNumeric {
+				return ys + "-" + ms
+			}
+			return ms + "/" + ys
+		}
+	case "zh":
+		return func(y int, m time.Month) string {
+			ys := fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+			ms := fmtMonth(m, MonthNumeric)
+			if opts.Month == MonthNumeric {
+				return ys + "/" + ms
+			}
+			return ys + "年" + ms + "月"
+		}
+	case "tr":
+		return func(y int, m time.Month) string {
+			if opts.Month == MonthNumeric {
+				return fmtMonth(m, Month2Digit) + "/" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+			}
+			return fmtMonth(m, Month2Digit) + "." + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+		}
+	case "sr":
+		return func(y int, m time.Month) string {
+			if opts.Month == MonthNumeric {
+				return fmtMonth(m, cmp.Or(opts.Month, MonthNumeric)) + ". " + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "."
+			}
+			return fmtMonth(m, Month2Digit) + "." + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "."
+		}
+	case "vi":
+		return func(y int, m time.Month) string {
+			if opts.Month == MonthNumeric {
+				return fmtMonth(m, cmp.Or(opts.Month, MonthNumeric)) + "/" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+			}
+			return "tháng " + fmtMonth(m, Month2Digit) + ", " + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+		}
+	case "bn", "ccp", "gu", "kn", "mr", "or", "ta", "te", "to":
+		return func(y int, m time.Month) string {
+			if opts.Month == MonthNumeric {
+				return fmtMonth(m, cmp.Or(opts.Month, MonthNumeric)) + "/" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+			}
+			return fmtMonth(m, Month2Digit) + "-" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+		}
+	case "de":
+		return func(y int, m time.Month) string {
+			if opts.Month == MonthNumeric {
+				return fmtMonth(m, cmp.Or(opts.Month, MonthNumeric)) + "/" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+			}
+			return fmtMonth(m, Month2Digit) + "." + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+		}
+	case "gsw":
+		return func(y int, m time.Month) string {
+			if opts.Month == MonthNumeric {
+				return fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "-" + fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))
+			}
+			return fmtMonth(m, Month2Digit) + "." + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+		}
 	case "kkj":
 		return func(y int, m time.Month) string {
 			return fmtMonth(m, Month2Digit) + " " + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
@@ -1959,91 +2026,6 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 	case "eu", "fa", "ja", "yue":
 		return func(y int, m time.Month) string {
 			return fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "/" + fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))
-		}
-	case "bs":
-		return func(y int, m time.Month) string {
-			return func() string {
-				if opts.Month == MonthNumeric {
-					return fmtMonth(m, Month2Digit) + "/" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-				}
-				return fmtMonth(m, MonthNumeric) + "/" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-			}()
-		}
-	case "om", "yi":
-		return func(y int, m time.Month) string {
-			return func() string {
-				ys := fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-				ms := fmtMonth(m, Month2Digit)
-				if opts.Month == MonthNumeric {
-					return ys + "-" + ms
-				}
-				return ms + "/" + ys
-			}()
-		}
-	case "zh":
-		return func(y int, m time.Month) string {
-			return func() string {
-				ys := fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-				ms := fmtMonth(m, MonthNumeric)
-				if opts.Month == MonthNumeric {
-					return ys + "/" + ms
-				}
-				return ys + "年" + ms + "月"
-			}()
-		}
-	case "tr":
-		return func(y int, m time.Month) string {
-			return func() string {
-				if opts.Month == MonthNumeric {
-					return fmtMonth(m, Month2Digit) + "/" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-				}
-				return fmtMonth(m, Month2Digit) + "." + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-			}()
-		}
-	case "sr":
-		return func(y int, m time.Month) string {
-			return func() string {
-				if opts.Month == MonthNumeric {
-					return fmtMonth(m, cmp.Or(opts.Month, MonthNumeric)) + ". " + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "."
-				}
-				return fmtMonth(m, Month2Digit) + "." + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "."
-			}()
-		}
-	case "vi":
-		return func(y int, m time.Month) string {
-			return func() string {
-				if opts.Month == MonthNumeric {
-					return fmtMonth(m, cmp.Or(opts.Month, MonthNumeric)) + "/" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-				}
-				return "tháng " + fmtMonth(m, Month2Digit) + ", " + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-			}()
-		}
-	case "bn", "ccp", "gu", "kn", "mr", "or", "ta", "te", "to":
-		return func(y int, m time.Month) string {
-			return func() string {
-				if opts.Month == MonthNumeric {
-					return fmtMonth(m, cmp.Or(opts.Month, MonthNumeric)) + "/" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-				}
-				return fmtMonth(m, Month2Digit) + "-" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-			}()
-		}
-	case "de":
-		return func(y int, m time.Month) string {
-			return func() string {
-				if opts.Month == MonthNumeric {
-					return fmtMonth(m, cmp.Or(opts.Month, MonthNumeric)) + "/" + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-				}
-				return fmtMonth(m, Month2Digit) + "." + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-			}()
-		}
-	case "gsw":
-		return func(y int, m time.Month) string {
-			return func() string {
-				if opts.Month == MonthNumeric {
-					return fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "-" + fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))
-				}
-				return fmtMonth(m, Month2Digit) + "." + fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-			}()
 		}
 	}
 }

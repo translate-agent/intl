@@ -102,10 +102,10 @@ func fmtYearMonth{{ title $calendarType}}(locale language.Tag, digits digits, op
 
   switch language, _ := locale.Base(); language.String() {
   default:
-    return func(y int, m time.Month) string { return {{ $formats.YM.Default }} }
+    return func(y int, m time.Month) string { {{ $formats.YM.Default }} }
 {{- range $fmt, $languages := $formats.YM.Fmt }}
   case "{{ join $languages "\", \"" }}":
-    return func(y int, m time.Month) string { return {{ $fmt }} }
+    return func(y int, m time.Month) string { {{ $fmt }} }
 {{- end }}
   }
 }
