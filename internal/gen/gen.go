@@ -441,14 +441,7 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 }
 
 func (g *Generator) findDateFormatItem(locale, calendarType string, id string) string {
-	calendars := g.cldr.RawLDML(locale).Dates.Calendars.Calendar
-
-	// TODO(jhorsts): use findCalendar()
-	i := slices.IndexFunc(g.cldr.RawLDML(locale).Dates.Calendars.Calendar, func(calendar *cldr.Calendar) bool {
-		return calendar.Type == calendarType
-	})
-
-	calendar := calendars[i]
+	calendar := findCalendar(g.cldr.RawLDML(locale), calendarType)
 
 	if calendar.DateTimeFormats.Alias != nil {
 		switch {
@@ -489,7 +482,7 @@ func (g *Generator) months() Months { //nolint:gocognit
 
 					month := monthWidth.Month[0]
 
-					// skip draft and months with the same digits
+					// skip months with the same digits
 					if month.Type == month.CharData && month.CharData == "1" {
 						continue
 					}
@@ -986,8 +979,6 @@ func buildFmtYm(yM, yMM, yyyyM string) string {
 			case "MMMMM":
 				sb.WriteString(`fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "narrow")(m, opts.Month)`)
 			case "y", "Y":
-				// "Y" is not defined by CLDR https://cldr.unicode.org/translation/date-time/date-time-symbols
-				// However, "Y" is used by "ksh-DE" and others.
 				sb.WriteString("fmtYear(y, cmp.Or(opts.Year, YearNumeric))")
 			}
 		}
