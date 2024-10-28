@@ -42,6 +42,7 @@ const (
 	calendarTypeIslamicUmalqura
 )
 
+// String implements [fmt.Stringer] interface.
 func (t calendarType) String() string {
 	switch t {
 	default:
@@ -432,10 +433,7 @@ func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) f
 		layout := fmtYearMonthGregorian(locale, digits, opts)
 
 		return func(v time.Time) string {
-			y := v.Year()
-			m := v.Month()
-
-			return layout(y, m)
+			return layout(v.Year(), v.Month())
 		}
 	case opts.Year != YearUnd:
 		layout := fmtYearGregorian(locale)
@@ -470,10 +468,8 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 
 		return func(v time.Time) string {
 			t := ptime.New(v)
-			y := t.Year()
-			m := time.Month(t.Month())
 
-			return layout(y, m)
+			return layout(t.Year(), time.Month(t.Month()))
 		}
 	case opts.Year != YearUnd:
 		layout := fmtYearPersian(locale)
