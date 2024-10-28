@@ -42,6 +42,20 @@ const (
 	calendarTypeIslamicUmalqura
 )
 
+// String implements [fmt.Stringer] interface.
+func (t calendarType) String() string {
+	switch t {
+	default:
+		return "gregorian"
+	case calendarTypeBuddhist:
+		return "buddhist"
+	case calendarTypePersian:
+		return "persian"
+	case calendarTypeIslamicUmalqura:
+		return "islamic-umalqura"
+	}
+}
+
 // Year is year option for [Options].
 type Year byte
 
@@ -415,6 +429,12 @@ func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) f
 		return func(_ time.Time) string {
 			return ""
 		}
+	case opts.Year != YearUnd && opts.Month != MonthUnd:
+		layout := fmtYearMonthGregorian(locale, digits, opts)
+
+		return func(v time.Time) string {
+			return layout(v.Year(), v.Month())
+		}
 	case opts.Year != YearUnd:
 		layout := fmtYearGregorian(locale)
 		fmt := fmtYear(digits)
@@ -443,6 +463,14 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 		return func(_ time.Time) string {
 			return ""
 		}
+	case opts.Year != YearUnd && opts.Month != MonthUnd:
+		layout := fmtYearMonthPersian(locale, digits, opts)
+
+		return func(v time.Time) string {
+			t := ptime.New(v)
+
+			return layout(t.Year(), time.Month(t.Month()))
+		}
 	case opts.Year != YearUnd:
 		layout := fmtYearPersian(locale)
 		fmt := fmtYear(digits)
@@ -470,6 +498,14 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 	default:
 		return func(_ time.Time) string {
 			return ""
+		}
+	case opts.Year != YearUnd && opts.Month != MonthUnd:
+		layout := fmtYearMonthBuddhist(locale, digits, opts)
+
+		return func(v time.Time) string {
+			t := v.AddDate(543, 0, 0) //nolint:mnd
+
+			return layout(t.Year(), t.Month())
 		}
 	case opts.Year != YearUnd:
 		layout := fmtYearBuddhist(locale)

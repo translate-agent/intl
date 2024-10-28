@@ -81,32 +81,21 @@ func skipTest(locale language.Tag, options Options) bool {
 	}
 
 	_, ok := map[key]struct{}{
-		// CLDR stipulates arabext numbering. Why Node.js uses latn?
-		{"bgn-PK", Options{Year: Year2Digit}}:    {},
-		{"bgn-PK", Options{Year: YearNumeric}}:   {},
-		{"bgn-PK", Options{Day: Day2Digit}}:      {},
-		{"bgn-PK", Options{Day: DayNumeric}}:     {},
-		{"bgn-PK", Options{Month: MonthNumeric}}: {},
-		{"bgn-PK", Options{Month: Month2Digit}}:  {},
-
-		// CLDR stipulates hmnr numbering. Why Node.js uses latn?
-		{"hnj-Hmnp", Options{Year: Year2Digit}}:    {},
-		{"hnj-Hmnp", Options{Year: YearNumeric}}:   {},
-		{"hnj-Hmnp", Options{Day: Day2Digit}}:      {},
-		{"hnj-Hmnp", Options{Day: DayNumeric}}:     {},
-		{"hnj-Hmnp", Options{Month: MonthNumeric}}: {},
-		{"hnj-Hmnp", Options{Month: Month2Digit}}:  {},
-
-		{"sdh-IR", Options{Year: Year2Digit}}:    {},
-		{"sdh-IR", Options{Year: YearNumeric}}:   {},
-		{"sdh-IR", Options{Month: Month2Digit}}:  {},
-		{"sdh-IR", Options{Month: MonthNumeric}}: {},
-		{"sdh-IR", Options{Day: Day2Digit}}:      {},
-		{"sdh-IR", Options{Day: DayNumeric}}:     {},
-
 		// depends on localised era
-		{"th-TH", Options{Year: Year2Digit}}:  {},
-		{"th-TH", Options{Year: YearNumeric}}: {},
+		{"th-TH", Options{Year: Year2Digit}}:                        {},
+		{"th-TH", Options{Year: YearNumeric}}:                       {},
+		{"lrc-IR", Options{Year: YearNumeric, Month: MonthNumeric}}: {},
+		{"lrc-IR", Options{Year: YearNumeric, Month: Month2Digit}}:  {},
+		{"lrc-IR", Options{Year: Year2Digit, Month: MonthNumeric}}:  {},
+		{"lrc-IR", Options{Year: Year2Digit, Month: Month2Digit}}:   {},
+		{"mzn-IR", Options{Year: YearNumeric, Month: MonthNumeric}}: {},
+		{"mzn-IR", Options{Year: YearNumeric, Month: Month2Digit}}:  {},
+		{"mzn-IR", Options{Year: Year2Digit, Month: MonthNumeric}}:  {},
+		{"mzn-IR", Options{Year: Year2Digit, Month: Month2Digit}}:   {},
+		{"ps-AF", Options{Year: YearNumeric, Month: MonthNumeric}}:  {},
+		{"ps-AF", Options{Year: YearNumeric, Month: Month2Digit}}:   {},
+		{"ps-AF", Options{Year: Year2Digit, Month: MonthNumeric}}:   {},
+		{"ps-AF", Options{Year: Year2Digit, Month: Month2Digit}}:    {},
 	}[key{locale.String(), options}]
 
 	return ok
@@ -129,6 +118,9 @@ func TestDateTime_Format(t *testing.T) {
 		t.Run(locale.String(), func(t *testing.T) {
 			t.Parallel()
 
+			t.Logf("calendar type: %s", defaultCalendar(locale))
+			t.Logf("cases: %+v", cases)
+
 			for _, test := range cases {
 				t.Run(fmt.Sprintf("%+v: %s", test.Options, test.Output), func(t *testing.T) {
 					t.Parallel()
@@ -146,7 +138,7 @@ func TestDateTime_Format(t *testing.T) {
 
 					if test.Output != got {
 						t.Errorf("want '%s', got '%s'", test.Output, got)
-						t.Logf("\n%v\n%v", []rune(test.Output), []rune(got))
+						t.Logf("\n%v\n%v\n", []rune(test.Output), []rune(got))
 					}
 				})
 			}
