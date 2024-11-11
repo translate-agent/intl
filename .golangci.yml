@@ -4,7 +4,6 @@ linters:
     - depguard
     - dupl
     - err113
-    - execinquery
     - exhaustruct
     - exportloopref # deprecated
     - forbidigo
@@ -19,7 +18,6 @@ linters:
     - gofmt
     - goheader
     - goimports
-    - gomnd
     - gomodguard
     - gosmopolitan
     - grouper
