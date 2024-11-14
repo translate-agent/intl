@@ -130,6 +130,22 @@ func fmtMonth{{ title $calendarType }}(_ language.Tag, digits digits) func(v tim
 {{ end }} {{/* $formats.M.Fmt > 1*/}}
 }
 
+func fmtMonthDay{{ title $calendarType}}(locale language.Tag, digits digits, opts Options) func (m time.Month, d int) string {
+  lang, _ := locale.Base()
+
+  fmtMonth := fmtMonth(digits)
+  fmtDay := fmtDay(digits)
+
+  switch lang.String() {
+  default:
+    return func(m time.Month, d int) string { {{ $formats.MD.Default }} }
+  {{- range $fmt, $languages := $formats.MD.Fmt }}
+  case "{{ join $languages "\", \"" }}":
+    return func(m time.Month, d int) string { {{ $fmt }} }
+  {{- end }}
+  }
+}
+
 {{ if gt (len $formats.D.Fmt) 0 }}
 func fmtDay{{ title $calendarType }}(locale language.Tag, digits digits) func(v int, opt Day) string {
   lang, _ := locale.Base()

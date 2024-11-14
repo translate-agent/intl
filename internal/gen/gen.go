@@ -7,6 +7,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"iter"
+	"log/slog"
 	"maps"
 	"os"
 	"path"
@@ -34,9 +35,11 @@ type Conf struct {
 }
 
 func Gen(conf Conf) error {
-	g := Generator{}
+	var g Generator
 
-	if err := g.Load(conf.cldrDir); err != nil {
+	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
+
+	if err := g.Load(conf.cldrDir, log); err != nil {
 		return err
 	}
 
@@ -46,14 +49,14 @@ func Gen(conf Conf) error {
 		}
 	}
 
-	if err := g.Write(conf.out); err != nil {
+	if err := g.Write(conf.out, log); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (g *Generator) Load(dir string) error {
+func (g *Generator) Load(dir string, log *slog.Logger) error {
 	var (
 		d   cldr.Decoder
 		err error
@@ -67,12 +70,12 @@ func (g *Generator) Load(dir string) error {
 	}
 
 	g.filterApproved()
-	g.merge()
+	g.merge(log)
 
 	return nil
 }
 
-func (g *Generator) Write(out string) error {
+func (g *Generator) Write(out string, log *slog.Logger) error {
 	tpl, err := template.New("datetime").Funcs(template.FuncMap{
 		"join":     strings.Join,
 		"contains": strings.Contains,
@@ -84,10 +87,11 @@ func (g *Generator) Write(out string) error {
 	}
 
 	defaultNumberingSystems := g.defaultNumberingSystems()
+	calendarPreferences := g.calendarPreferences()
 
 	data := TemplateData{
-		CalendarPreferences:     g.calendarPreferences(),
-		DateTimeFormats:         g.dateTimeFormats(),
+		CalendarPreferences:     calendarPreferences,
+		DateTimeFormats:         g.dateTimeFormats(calendarPreferences, log),
 		NumberingSystems:        g.numberingSystems(defaultNumberingSystems),
 		NumberingSystemIota:     g.numberingSystemsIota(defaultNumberingSystems),
 		DefaultNumberingSystems: defaultNumberingSystems,
@@ -199,7 +203,10 @@ func (g *Generator) filterApproved() {
 	}
 }
 
-func (g *Generator) merge() {
+func (g *Generator) merge(log *slog.Logger) {
+	g.mergeAliases()
+	g.mergeLocal(log)
+
 	root := g.cldr.RawLDML("root")
 
 	// merge parent to child
@@ -217,7 +224,7 @@ func (g *Generator) merge() {
 		parent := g.cldr.RawLDML(parentLocale.Parent)
 
 		// merge root to parent
-		merge(parent, root)
+		merge(parent, root, log)
 
 		for _, locale := range strings.Split(parentLocale.Locales, " ") {
 			child := g.cldr.RawLDML(locale)
@@ -226,7 +233,7 @@ func (g *Generator) merge() {
 				continue
 			}
 
-			merge(child, parent)
+			merge(child, parent, log)
 		}
 	}
 
@@ -239,7 +246,7 @@ func (g *Generator) merge() {
 
 		ldml := g.cldr.RawLDML(locale)
 
-		merge(ldml, root)
+		merge(ldml, root, log)
 	}
 
 	// merge language to territory
@@ -255,7 +262,64 @@ func (g *Generator) merge() {
 
 		fallback := g.cldr.RawLDML(strings.Join(parts, "_"))
 
-		merge(ldml, fallback)
+		merge(ldml, fallback, log)
+	}
+}
+
+func (g *Generator) mergeAliases() {
+	for _, locale := range g.cldr.Locales() {
+		ldml := g.cldr.RawLDML(locale)
+
+		if ldml.Dates == nil || ldml.Dates.Calendars == nil {
+			continue
+		}
+
+		for i, calendar := range ldml.Dates.Calendars.Calendar {
+			if calendar.Alias != nil {
+				calendarType := strings.Split(calendar.Alias.Path, "'")[1]
+				calendar = findCalendar(ldml, calendarType)
+				ldml.Dates.Calendars.Calendar[i] = calendar
+
+				continue
+			}
+
+			if calendar.DateTimeFormats == nil || calendar.DateTimeFormats.Alias == nil {
+				continue
+			}
+
+			// example: ../../calendar[@type='generic']/dateTimeFormats
+			calendarType := strings.Split(calendar.DateTimeFormats.Alias.Path, "'")[1]
+
+			calendar.DateTimeFormats = findCalendar(ldml, calendarType).DateTimeFormats
+		}
+	}
+}
+
+func (g *Generator) mergeLocal(log *slog.Logger) {
+	for _, locale := range g.cldr.Locales() {
+		ldml := g.cldr.RawLDML(locale)
+
+		if ldml.Identity.Language.Type == "root" || ldml.Dates == nil || ldml.Dates.Calendars == nil {
+			continue
+		}
+
+		generic := findCalendar(ldml, "generic")
+
+		if generic == nil || generic.DateTimeFormats == nil {
+			continue
+		}
+
+		for _, calendar := range ldml.Dates.Calendars.Calendar {
+			if !slices.Contains([]string{"persian", "buddhist"}, calendar.Type) {
+				continue
+			}
+
+			if calendar.DateTimeFormats == nil {
+				calendar.DateTimeFormats = deepCopy(generic.DateTimeFormats)
+			}
+
+			mergeCalendar(calendar, generic, log.With("locale", locale))
+		}
 	}
 }
 
@@ -281,10 +345,12 @@ func containsDateFormatItem(calendar *cldr.Calendar, id string) bool {
 	return false
 }
 
+var supportedCalendarTypes = []string{"gregorian", "persian", "buddhist"}
+
 func supportedCalendars(calendars []*cldr.Calendar) iter.Seq[*cldr.Calendar] {
 	return func(yield func(*cldr.Calendar) bool) {
 		for _, v := range calendars {
-			if slices.Contains([]string{"gregorian", "persian", "buddhist"}, v.Type) {
+			if slices.Contains(supportedCalendarTypes, v.Type) {
 				if !yield(v) {
 					return
 				}
@@ -293,62 +359,73 @@ func supportedCalendars(calendars []*cldr.Calendar) iter.Seq[*cldr.Calendar] {
 	}
 }
 
-// merge copies particular fallback values to dst.
-func merge(dst, fallback *cldr.LDML) {
+// merge copies particular src values to dst.
+func merge(dst, src *cldr.LDML, log *slog.Logger) {
+	if src.Dates == nil || src.Dates.Calendars == nil {
+		return
+	}
+
 	if dst.Dates == nil {
-		dst.Dates = deepCopy(fallback.Dates)
+		dst.Dates = deepCopy(src.Dates)
 	}
 
 	if dst.Dates.Calendars == nil {
-		dst.Dates.Calendars = deepCopy(fallback.Dates.Calendars)
+		dst.Dates.Calendars = deepCopy(src.Dates.Calendars)
 	}
 
 	if len(dst.Dates.Calendars.Calendar) == 0 {
-		dst.Dates.Calendars.Calendar = deepCopy(fallback.Dates.Calendars.Calendar)
+		dst.Dates.Calendars.Calendar = deepCopy(src.Dates.Calendars.Calendar)
 	}
 
-	for parentCalendar := range supportedCalendars(fallback.Dates.Calendars.Calendar) {
-		if parentCalendar.Alias != nil &&
-			parentCalendar.Alias.Path == "../../calendar[@type='generic']/dateTimeFormats" {
-			parentCalendar.DateTimeFormats = deepCopy(findCalendar(fallback, "generic").DateTimeFormats)
-		}
-
+	for parentCalendar := range supportedCalendars(src.Dates.Calendars.Calendar) {
 		calendar := findCalendar(dst, parentCalendar.Type)
 		if calendar == nil {
 			calendar = deepCopy(parentCalendar)
+			dst.Dates.Calendars.Calendar = append(dst.Dates.Calendars.Calendar, calendar)
+
+			continue
 		}
 
-		// datetimeformat
+		mergeCalendar(calendar, parentCalendar, log)
+	}
+}
 
-		if calendar.DateTimeFormats == nil {
-			calendar.DateTimeFormats = deepCopy(parentCalendar.DateTimeFormats)
-		}
+func mergeCalendar(dst, src *cldr.Calendar, log *slog.Logger) {
+	log.Debug("merge calendars", "dst", dst.Type, "src", src.Type)
 
-		if calendar.DateTimeFormats.AvailableFormats == nil {
-			calendar.DateTimeFormats.AvailableFormats = deepCopy(parentCalendar.DateTimeFormats.AvailableFormats)
-		}
+	if dst.DateTimeFormats == nil {
+		dst.DateTimeFormats = deepCopy(src.DateTimeFormats)
+	}
 
-		for _, availableFormats := range parentCalendar.DateTimeFormats.AvailableFormats {
+	if dst.DateTimeFormats.AvailableFormats == nil && src.DateTimeFormats != nil {
+		dst.DateTimeFormats.AvailableFormats = deepCopy(src.DateTimeFormats.AvailableFormats)
+	}
+
+	if src.DateTimeFormats != nil {
+		for _, availableFormats := range src.DateTimeFormats.AvailableFormats {
 			for _, dateFormatItem := range availableFormats.DateFormatItem {
-				if containsDateFormatItem(calendar, dateFormatItem.Id) {
+				if containsDateFormatItem(dst, dateFormatItem.Id) {
 					continue
 				}
 
-				calendar.DateTimeFormats.AvailableFormats[0].DateFormatItem = append(
-					calendar.DateTimeFormats.AvailableFormats[0].DateFormatItem,
+				dst.DateTimeFormats.AvailableFormats[0].DateFormatItem = append(
+					dst.DateTimeFormats.AvailableFormats[0].DateFormatItem,
 					deepCopy(dateFormatItem))
 			}
 		}
+	}
 
-		// months
+	// months
+	if src.Months == nil {
+		return
+	}
 
-		if calendar.Months == nil {
-			calendar.Months = deepCopy(parentCalendar.Months)
-		}
+	if dst.Months == nil {
+		dst.Months = deepCopy(src.Months)
+	}
 
-		if len(calendar.Months.MonthContext) == 0 && len(parentCalendar.Months.MonthContext) > 0 {
-			calendar.Months.MonthContext = deepCopy(parentCalendar.Months.MonthContext)
-		}
+	if dst.Months != nil && len(dst.Months.MonthContext) == 0 && len(src.Months.MonthContext) > 0 {
+		dst.Months.MonthContext = deepCopy(src.Months.MonthContext)
 	}
 }
 
@@ -390,13 +467,35 @@ func (g *Generator) defaultNumberingSystems() DefaultNumberingSystems {
 	return defaultNumberingSystems
 }
 
-func (g *Generator) dateTimeFormats() DateTimeFormats {
-	dateTimeFormats := make(DateTimeFormats)
+func (g *Generator) dateTimeFormats(calendarPreferences []CalendarPreference, log *slog.Logger) DateTimeFormats {
+	dateTimeFormats := make(DateTimeFormats, len(supportedCalendarTypes))
+
+	for _, calendarType := range supportedCalendarTypes {
+		formats := NewCalendarDateTimeFormats()
+
+		formats.Y.Default = g.findRootDateFormatItem(calendarType, "y")
+		formats.YM.Default = cmp.Or(
+			g.findRootDateFormatItem(calendarType, "yM"),
+			g.findRootDateFormatItem(calendarType, "yMM"),
+			g.findRootDateFormatItem(calendarType, "yyyyM"),
+		)
+		formats.M.Default = g.findRootDateFormatItem(calendarType, "M")
+		formats.MD.Default = BuildFmtMD(
+			g.findRootDateFormatItem(calendarType, "Md"),
+			g.findRootDateFormatItem(calendarType, "MMd"),
+			g.findRootDateFormatItem(calendarType, "Mdd"),
+			g.findRootDateFormatItem(calendarType, "MMd"),
+			log,
+		)
+		formats.D.Default = g.findRootDateFormatItem(calendarType, "d")
+
+		dateTimeFormats[calendarType] = formats
+	}
 
 	for _, locale := range g.cldr.Locales() {
 		// Ignore duplicate formatting for "y".
 		// Locales containing "_" have the same "y" formatting, skip them for now.
-		if strings.Contains(locale, "_") {
+		if strings.Contains(locale, "_") || locale == "root" {
 			continue
 		}
 
@@ -406,52 +505,232 @@ func (g *Generator) dateTimeFormats() DateTimeFormats {
 			continue
 		}
 
-		for calendar := range supportedCalendars(ldml.Dates.Calendars.Calendar) {
-			formats, ok := dateTimeFormats[calendar.Type]
-			if !ok {
-				formats = NewCalendarDateTimeFormats()
+		region, _ := language.MustParse(locale).Region()
 
-				formats.Y.Default = g.findDateFormatItem("root", calendar.Type, "y")
-				formats.YM.Default = cmp.Or(
-					g.findDateFormatItem("root", calendar.Type, "yM"),
-					g.findDateFormatItem("root", calendar.Type, "yMM"),
-					g.findDateFormatItem("root", calendar.Type, "yyyyM"),
-				)
-				formats.M.Default = g.findDateFormatItem("root", calendar.Type, "M")
-				formats.D.Default = g.findDateFormatItem("root", calendar.Type, "d")
+		i := slices.IndexFunc(calendarPreferences, func(v CalendarPreference) bool {
+			return slices.Contains(v.Regions, region.String())
+		})
 
-				dateTimeFormats[calendar.Type] = formats
-			}
-
-			for _, availableFormats := range calendar.DateTimeFormats.AvailableFormats {
-				for _, dateFormatItem := range availableFormats.DateFormatItem {
-					g.addDateFormatItem(calendar.Type, formats, (*CLDRDateFormatItem)(dateFormatItem), locale)
-				}
-			}
+		preferedCalendar := "gregorian"
+		if i >= 0 {
+			preferedCalendar = calendarPreferences[i].Calendars[0]
 		}
+
+		calendar := findCalendar(ldml, preferedCalendar)
+		if calendar == nil {
+			continue
+		}
+
+		formats := dateTimeFormats[calendar.Type]
+
+		if calendar.DateTimeFormats == nil {
+			continue
+		}
+
+		localeLog := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug})).
+			With("locale", locale)
+
+		g.addFormatY(locale, calendar, formats, localeLog)
+		g.addFormatYM(locale, calendar, formats, localeLog)
+		g.addFormatM(locale, calendar, formats, localeLog)
+		g.addFormatMD(locale, calendar, formats, localeLog)
+		g.addFormatD(locale, calendar, formats, localeLog)
 	}
 
 	for calendarType, formats := range dateTimeFormats {
 		formats.Y.Default = strings.NewReplacer("G ", `"AP "+`, "y", "v").Replace(formats.Y.Default)
-		formats.YM.Default = buildFmtYm(formats.YM.Default, "", "")
+		formats.YM.Default = g.buildFmtYM(formats.YM.Default, "", "", log)
 		dateTimeFormats[calendarType] = formats
 	}
 
 	return dateTimeFormats
 }
 
-func (g *Generator) findDateFormatItem(locale, calendarType string, id string) string {
-	calendar := findCalendar(g.cldr.RawLDML(locale), calendarType)
+func (g *Generator) addFormatY(
+	locale string,
+	calendar *cldr.Calendar,
+	formats CalendarDateTimeFormats,
+	log *slog.Logger,
+) {
+	y := findDateFormatItem(calendar, "y")
 
-	if calendar.DateTimeFormats.Alias != nil {
+	log.Debug("add Y format", "y", y)
+
+	if y == "" {
+		return
+	}
+
+	var sb strings.Builder
+
+	for i, v := range parseDatePattern(y) {
+		if i > 0 {
+			sb.WriteRune('+')
+		}
+
 		switch {
-		case strings.Contains(calendar.DateTimeFormats.Alias.Path, "gregorian"):
-			return g.findDateFormatItem("root", "gregorian", id)
-		case strings.Contains(calendar.DateTimeFormats.Alias.Path, "generic"):
-			return g.findDateFormatItem("root", "generic", id)
+		default:
+			sb.WriteString(`"` + v.Value + `"`)
+		case v.Value == "y":
+			sb.WriteString("v")
 		}
 	}
 
+	formats.Y.Fmt[sb.String()] = append(formats.Y.Fmt[sb.String()], locale)
+}
+
+func (g *Generator) addFormatYM(
+	locale string,
+	calendar *cldr.Calendar,
+	formats CalendarDateTimeFormats,
+	log *slog.Logger,
+) {
+	yM := findDateFormatItem(calendar, "yM")
+	yMM := findDateFormatItem(calendar, "yMM")
+	yyyyM := findDateFormatItem(calendar, "yyyyM")
+
+	log.Debug("add YM format", "yM", yM, "yMM", yMM, "yyyyM", yyyyM)
+
+	if yM == formats.YM.Default &&
+		(yMM == "" || yMM == formats.YM.Default) &&
+		(yyyyM == "" || yyyyM == formats.YM.Default) ||
+		yM == "" && yMM == "" && yyyyM == "" {
+		return
+	}
+
+	s := g.buildFmtYM(yM, yMM, yyyyM, log)
+
+	formats.YM.Fmt[s] = append(formats.YM.Fmt[s], locale)
+}
+
+func (g *Generator) addFormatM(
+	locale string,
+	calendar *cldr.Calendar,
+	formats CalendarDateTimeFormats,
+	log *slog.Logger,
+) {
+	// "L" and "M" have the same meaning - numeric with minimum digits
+	m := cmp.Or(findDateFormatItem(calendar, "L"), findDateFormatItem(calendar, "M"))
+
+	log.Debug("add M format", "M", m)
+
+	if m == "" || m == formats.M.Default || m == "M" {
+		return
+	}
+
+	var sb strings.Builder
+
+	for i, v := range parseDatePattern(m) {
+		if i > 0 {
+			sb.WriteRune('+')
+		}
+
+		if v.Literal {
+			sb.WriteString(`"` + v.Value + `"`)
+			continue
+		}
+
+		f := func(s string) string {
+			return fmt.Sprintf(s, title(calendar.Type))
+		}
+
+		switch v.Value {
+		default:
+			sb.WriteString("fmt(v, opt)")
+		case "LL", "MM":
+			sb.WriteString(`fmt(v, Month2Digit)`)
+		case "LLL":
+			sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "stand-alone", "abbreviated")`))
+		case "MMM":
+			sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "format", "abbreviated")`))
+		case "LLLL":
+			sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "stand-alone", "wide")`))
+		case "MMMM":
+			sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "format", "wide")`))
+		case "LLLLL":
+			sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "stand-alone", "narrow")`))
+		case "MMMMM":
+			sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "format", "narrow")`))
+		}
+	}
+
+	s := sb.String()
+
+	if strings.Contains(s, "fmtMonthName") {
+		s = "return " + s
+	} else {
+		s = `fmt := fmtMonth(digits); return func(v time.Month, opt Month) string { return ` + s + ` }`
+	}
+
+	formats.M.Fmt[s] = append(formats.M.Fmt[s], locale)
+}
+
+func (g *Generator) addFormatMD(
+	locale string,
+	calendar *cldr.Calendar,
+	formats CalendarDateTimeFormats,
+	log *slog.Logger,
+) {
+	md := findDateFormatItem(calendar, "Md")
+	mmd := findDateFormatItem(calendar, "MMd")
+	mdd := findDateFormatItem(calendar, "Mdd")
+	mmdd := findDateFormatItem(calendar, "MMdd")
+
+	log.Debug("add MD format", "Md", md, "MMd", mmd, "Mdd", mdd, "MMdd", mmdd)
+
+	if md == "" && mmd == "" && mdd == "" && mmdd == "" {
+		return
+	}
+
+	s := BuildFmtMD(md, mmd, mdd, mmdd, log)
+
+	if s == formats.MD.Default {
+		return
+	}
+
+	formats.MD.Fmt[s] = append(formats.MD.Fmt[s], locale)
+}
+
+func (g *Generator) addFormatD(
+	locale string,
+	calendar *cldr.Calendar,
+	formats CalendarDateTimeFormats,
+	log *slog.Logger,
+) {
+	d := findDateFormatItem(calendar, "d")
+
+	log.Debug("add D format", "d", d)
+
+	if d == "" || d == formats.D.Default {
+		return
+	}
+
+	var sb strings.Builder
+
+	for i, v := range parseDatePattern(d) {
+		if i > 0 {
+			sb.WriteRune('+')
+		}
+
+		switch {
+		default:
+			sb.WriteString("fmt(v, opt)")
+		case v.Literal:
+			sb.WriteString(`"` + v.Value + `"`)
+		case v.Value == "dd":
+			sb.WriteString(`fmt(v, Day2Digit)`)
+		}
+	}
+
+	formats.D.Fmt[sb.String()] = append(formats.D.Fmt[sb.String()], locale)
+}
+
+func (g *Generator) findRootDateFormatItem(locale, id string) string {
+	calendar := findCalendar(g.cldr.RawLDML(locale), "root")
+
+	return findDateFormatItem(calendar, id)
+}
+
+func findDateFormatItem(calendar *cldr.Calendar, id string) string {
 	for _, availableFormats := range calendar.DateTimeFormats.AvailableFormats {
 		for _, dateFormatItem := range availableFormats.DateFormatItem {
 			if dateFormatItem.Id != id {
@@ -473,7 +752,15 @@ func (g *Generator) months() Months { //nolint:gocognit
 
 		locale = strings.ReplaceAll(locale, "_", "-")
 
+		if ldml.Dates == nil || ldml.Dates.Calendars == nil {
+			continue
+		}
+
 		for calendar := range supportedCalendars(ldml.Dates.Calendars.Calendar) {
+			if calendar.Months == nil {
+				continue
+			}
+
 			for _, monthContext := range calendar.Months.MonthContext {
 				for _, monthWidth := range monthContext.MonthWidth {
 					if len(monthWidth.Month) == 0 {
@@ -542,126 +829,6 @@ type CLDRDateFormatItem struct {
 	cldr.Common
 	Id    string //nolint:revive,stylecheck
 	Count string
-}
-
-//nolint:gocognit,cyclop
-func (g *Generator) addDateFormatItem(
-	calendarType string,
-	dateTimeFormats CalendarDateTimeFormats,
-	dateFormatItem *CLDRDateFormatItem,
-	locale string,
-) {
-	switch dateFormatItem.Id {
-	case "y":
-		if dateFormatItem.CharData == dateTimeFormats.Y.Default {
-			return
-		}
-
-		var sb strings.Builder
-
-		for i, v := range splitDatePattern(dateFormatItem.CharData) {
-			if i > 0 {
-				sb.WriteRune('+')
-			}
-
-			switch {
-			default:
-				sb.WriteString(`"` + v.value + `"`)
-			case v.value == "y":
-				sb.WriteString("v")
-			}
-		}
-
-		dateTimeFormats.Y.Fmt[sb.String()] = append(dateTimeFormats.Y.Fmt[sb.String()], locale)
-	case "yM", "yyyyM":
-		yMM := g.findDateFormatItem(locale, calendarType, "yMM")
-		yyyyM := g.findDateFormatItem(locale, calendarType, "yyyyM")
-
-		if dateFormatItem.CharData == dateTimeFormats.YM.Default &&
-			(yMM == "" || yMM == dateTimeFormats.YM.Default) &&
-			(yyyyM == "" || yyyyM == dateTimeFormats.YM.Default) {
-			return
-		}
-
-		s := buildFmtYm(dateFormatItem.CharData, yMM, yyyyM)
-
-		dateTimeFormats.YM.Fmt[s] = append(dateTimeFormats.YM.Fmt[s], locale)
-	case "M", "L":
-		// "L" and "M" have the same meaning - numeric with minimum digits
-		if dateFormatItem.CharData == dateTimeFormats.M.Default ||
-			dateFormatItem.CharData == "M" {
-			return
-		}
-
-		var sb strings.Builder
-
-		for i, v := range splitDatePattern(dateFormatItem.CharData) {
-			if i > 0 {
-				sb.WriteRune('+')
-			}
-
-			if v.literal {
-				sb.WriteString(`"` + v.value + `"`)
-				continue
-			}
-
-			f := func(s string) string {
-				return fmt.Sprintf(s, title(calendarType))
-			}
-
-			switch v.value {
-			default:
-				sb.WriteString("fmt(v, opt)")
-			case "LL", "MM":
-				sb.WriteString(`fmt(v, Month2Digit)`)
-			case "LLL":
-				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "stand-alone", "abbreviated")`))
-			case "MMM":
-				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "format", "abbreviated")`))
-			case "LLLL":
-				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "stand-alone", "wide")`))
-			case "MMMM":
-				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "format", "wide")`))
-			case "LLLLL":
-				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "stand-alone", "narrow")`))
-			case "MMMMM":
-				sb.WriteString(f(`fmtMonthName(locale.String(), calendarType%s, "format", "narrow")`))
-			}
-		}
-
-		s := sb.String()
-
-		if strings.Contains(s, "fmtMonthName") {
-			s = "return " + s
-		} else {
-			s = `fmt := fmtMonth(digits); return func(v time.Month, opt Month) string { return ` + s + ` }`
-		}
-
-		dateTimeFormats.M.Fmt[s] = append(dateTimeFormats.M.Fmt[s], locale)
-	case "d":
-		if dateFormatItem.CharData == dateTimeFormats.D.Default {
-			return
-		}
-
-		var sb strings.Builder
-
-		for i, v := range splitDatePattern(dateFormatItem.CharData) {
-			if i > 0 {
-				sb.WriteRune('+')
-			}
-
-			switch {
-			default:
-				sb.WriteString("fmt(v, opt)")
-			case v.literal:
-				sb.WriteString(`"` + v.value + `"`)
-			case v.value == "dd":
-				sb.WriteString(`fmt(v, Day2Digit)`)
-			}
-		}
-
-		dateTimeFormats.D.Fmt[sb.String()] = append(dateTimeFormats.D.Fmt[sb.String()], locale)
-	}
 }
 
 func (g *Generator) numberingSystems(defaultNumberingSystems DefaultNumberingSystems) []NumberingSystem {
@@ -780,7 +947,7 @@ func (n MonthNames) String() string {
 type DateTimeFormats map[string]CalendarDateTimeFormats
 
 type CalendarDateTimeFormats struct {
-	Y, YM, M, D CalendarDateTimeFormat
+	Y, YM, M, MD, D CalendarDateTimeFormat
 }
 
 func NewCalendarDateTimeFormats() CalendarDateTimeFormats {
@@ -788,6 +955,7 @@ func NewCalendarDateTimeFormats() CalendarDateTimeFormats {
 		Y:  NewCalendarDateTimeFormat(),
 		YM: NewCalendarDateTimeFormat(),
 		M:  NewCalendarDateTimeFormat(),
+		MD: NewCalendarDateTimeFormat(),
 		D:  NewCalendarDateTimeFormat(),
 	}
 }
@@ -823,102 +991,6 @@ func Locale(ldml *cldr.LDML) string {
 
 type DefaultNumberingSystems map[string][]string // key - numbering system, value - locales
 
-type datePatternElement struct {
-	value   string
-	literal bool
-}
-
-type datePatternElements []datePatternElement
-
-func (e datePatternElements) Month() string {
-	for _, v := range e {
-		if v.literal {
-			continue
-		}
-
-		// all patterns starting with 'M' or 'L' are months
-		if v.value[0] == 'M' || v.value[0] == 'L' {
-			return v.value
-		}
-	}
-
-	return ""
-}
-
-func splitDatePattern(pattern string) datePatternElements {
-	var (
-		last            rune
-		literal, quoted bool
-		elem            strings.Builder
-		elements        = make(datePatternElements, 0, 1)
-	)
-
-	write := func(r rune, asLiteral bool) {
-		if literal && asLiteral {
-			elem.WriteRune(r)
-			last = r
-
-			return
-		}
-
-		if !asLiteral && r == last {
-			elem.WriteRune(r)
-
-			return
-		}
-
-		if elem.Len() > 0 {
-			elements = append(elements, datePatternElement{value: elem.String(), literal: literal})
-		}
-
-		elem.Reset()
-		elem.WriteRune(r)
-
-		last = r
-		literal = asLiteral
-	}
-
-	for i, r := range pattern {
-		if i == 0 {
-			last = r
-
-			if r == '\'' && len(pattern) > 1 {
-				quoted = true
-				continue
-			}
-
-			elem.WriteRune(r)
-			literal = !('a' <= r && r <= 'z' || 'A' <= r && r <= 'Z')
-
-			continue
-		}
-
-		switch {
-		default:
-			write(r, true)
-		case r == '\'':
-			quoted = !quoted
-
-			if last != r {
-				last = r
-				continue
-			}
-
-			write(r, true)
-
-			last = 0
-		case !quoted && ('a' <= r && r <= 'z' || 'A' <= r && r <= 'Z'):
-			write(r, false)
-		}
-	}
-
-	if elem.Len() > 0 {
-		elements = append(elements, datePatternElement{value: elem.String(), literal: literal})
-	}
-
-	return elements
-}
-
 func deepCopy[T any](v T) T { //nolint:ireturn
 	var r T
 
@@ -948,9 +1020,10 @@ func title(s string) string {
 	return strings.ReplaceAll(r, "-", "") // e.g. "islamic - umalqura"
 }
 
-func buildFmtYm(yM, yMM, yyyyM string) string {
-	yMPattern := splitDatePattern(yM)
-	yMMPattern := splitDatePattern(cmp.Or(yyyyM, yMM, yM))
+func (g *Generator) buildFmtYM(yM, yMM, yyyyM string, log *slog.Logger) string {
+	yMPattern, yMMPattern, _ := yearMonthPatterns(yM, yMM, yyyyM)
+
+	log.Debug("infer YM patterns", "yM", yMPattern.String(), "yMM", yMMPattern.String())
 
 	switch {
 	default: // yM == yMM
@@ -963,17 +1036,17 @@ func buildFmtYm(yM, yMM, yyyyM string) string {
 				sb.WriteRune('+')
 			}
 
-			switch v.value {
+			switch v.Value {
 			default:
-				sb.WriteString(`"` + v.value + `"`)
+				sb.WriteString(`"` + v.Value + `"`)
 			case "L", "M":
-				if yMMmonth := yMMPattern.Month(); yMM != "" && (yMMmonth == "M" || yMMmonth == "L") {
+				if yMMmonth := yMMPattern.Month(); yMM != "" && (yMMmonth == "M" || yMMmonth == "L") { // TODO: use len() instead
 					sb.WriteString(`fmtMonth(m, MonthNumeric)`)
 				} else {
 					sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))`)
 				}
 			case "LL", "MM":
-				if yMMPattern.Month() == v.value {
+				if yMMPattern.Month() == v.Value {
 					sb.WriteString(`fmtMonth(m, Month2Digit)`)
 				} else {
 					sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, Month2Digit))`)
@@ -1002,11 +1075,11 @@ func buildFmtYm(yM, yMM, yyyyM string) string {
 		return ys+"-"+ms
 	}
 	return ms+"/"+ys`
-	case yMPattern[1] != yMMPattern[1]:
+	case len(yMPattern) > 0 && len(yMMPattern) > 0 && yMPattern[1] != yMMPattern[1]:
 		return fmt.Sprintf(
 			`if (opts.Month == MonthNumeric) { %s }; %s`,
-			buildFmtYm(yM, "", ""), buildFmtYm(yMM, "", ""))
-	case yMPattern[0].value == "MM" && yMMPattern[0].value == "M":
+			g.buildFmtYM(yM, "", "", log), g.buildFmtYM(yMM, "", "", log))
+	case len(yMPattern) > 0 && yMPattern[0].Value == "MM" && yMMPattern[0].Value == "M":
 		return `
 	if opts.Month == MonthNumeric {
 		return fmtMonth(m, Month2Digit)+"/"+fmtYear(y, cmp.Or(opts.Year, YearNumeric))

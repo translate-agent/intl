@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 )
 
 func main() {
@@ -24,4 +25,6 @@ func main() {
 	if err := Gen(conf); err != nil {
 		panic(err)
 	}
+
+	fmt.Println("done")
 }

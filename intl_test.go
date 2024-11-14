@@ -17,9 +17,56 @@ type Test struct {
 	Options Options
 }
 
-type Tests struct {
-	Date  time.Time               `json:"date"`
-	Tests map[language.Tag][]Test `json:"tests"`
+func (t *Test) String() string {
+	var sb strings.Builder
+
+	if t.Options.Year != YearUnd {
+		sb.WriteString("year=")
+		sb.WriteString(t.Options.Year.String())
+	}
+
+	if t.Options.Month != MonthUnd {
+		if sb.Len() > 0 {
+			sb.WriteRune(',')
+		}
+
+		sb.WriteString("month=")
+		sb.WriteString(t.Options.Month.String())
+	}
+
+	if t.Options.Day != DayUnd {
+		if sb.Len() > 0 {
+			sb.WriteRune(',')
+		}
+
+		sb.WriteString("day=")
+		sb.WriteString(t.Options.Day.String())
+	}
+
+	if sb.Len() > 0 {
+		sb.WriteRune(',')
+	}
+
+	sb.WriteString("out=" + t.Output)
+
+	return sb.String()
+}
+
+type Tests []Test
+
+func (t Tests) String() string {
+	var sb strings.Builder
+
+	for _, test := range t {
+		sb.WriteString(test.String() + "\n")
+	}
+
+	return sb.String()
+}
+
+type ESTests struct {
+	Date  time.Time              `json:"date"`
+	Tests map[language.Tag]Tests `json:"tests"`
 }
 
 func (t *Test) UnmarshalJSON(b []byte) error {
@@ -73,38 +120,44 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 //go:embed tests.json
 var data []byte
 
-// skipTest returns true for locales where formatting is hard to be determined for given cases.
-func skipTest(locale language.Tag, options Options) bool {
+// skipTest returns a reason to skip locale testing where formatting is hard to be determined for given cases.
+// Returns empty string if all is fine.
+func skipTest(locale language.Tag, options Options) string {
 	type key struct {
 		locale  string
 		options Options
 	}
 
-	_, ok := map[key]struct{}{
-		// depends on localised era
-		{"th-TH", Options{Year: Year2Digit}}:                        {},
-		{"th-TH", Options{Year: YearNumeric}}:                       {},
-		{"lrc-IR", Options{Year: YearNumeric, Month: MonthNumeric}}: {},
-		{"lrc-IR", Options{Year: YearNumeric, Month: Month2Digit}}:  {},
-		{"lrc-IR", Options{Year: Year2Digit, Month: MonthNumeric}}:  {},
-		{"lrc-IR", Options{Year: Year2Digit, Month: Month2Digit}}:   {},
-		{"mzn-IR", Options{Year: YearNumeric, Month: MonthNumeric}}: {},
-		{"mzn-IR", Options{Year: YearNumeric, Month: Month2Digit}}:  {},
-		{"mzn-IR", Options{Year: Year2Digit, Month: MonthNumeric}}:  {},
-		{"mzn-IR", Options{Year: Year2Digit, Month: Month2Digit}}:   {},
-		{"ps-AF", Options{Year: YearNumeric, Month: MonthNumeric}}:  {},
-		{"ps-AF", Options{Year: YearNumeric, Month: Month2Digit}}:   {},
-		{"ps-AF", Options{Year: Year2Digit, Month: MonthNumeric}}:   {},
-		{"ps-AF", Options{Year: Year2Digit, Month: Month2Digit}}:    {},
+	v := map[key]string{
+		{"lrc-IR", Options{Year: YearNumeric}}:                      "depends on localised era",
+		{"lrc-IR", Options{Year: Year2Digit}}:                       "depends on localised era",
+		{"lrc-IR", Options{Year: YearNumeric, Month: MonthNumeric}}: "depends on localised era",
+		{"lrc-IR", Options{Year: YearNumeric, Month: Month2Digit}}:  "depends on localised era",
+		{"lrc-IR", Options{Year: Year2Digit, Month: MonthNumeric}}:  "depends on localised era",
+		{"lrc-IR", Options{Year: Year2Digit, Month: Month2Digit}}:   "depends on localised era",
+		{"mzn-IR", Options{Year: YearNumeric}}:                      "depends on localised era",
+		{"mzn-IR", Options{Year: Year2Digit}}:                       "depends on localised era",
+		{"mzn-IR", Options{Year: YearNumeric, Month: MonthNumeric}}: "depends on localised era",
+		{"mzn-IR", Options{Year: YearNumeric, Month: Month2Digit}}:  "depends on localised era",
+		{"mzn-IR", Options{Year: Year2Digit, Month: MonthNumeric}}:  "depends on localised era",
+		{"mzn-IR", Options{Year: Year2Digit, Month: Month2Digit}}:   "depends on localised era",
+		{"ps-AF", Options{Year: YearNumeric}}:                       "depends on localised era",
+		{"ps-AF", Options{Year: Year2Digit}}:                        "depends on localised era",
+		{"ps-AF", Options{Year: YearNumeric, Month: MonthNumeric}}:  "depends on localised era",
+		{"ps-AF", Options{Year: YearNumeric, Month: Month2Digit}}:   "depends on localised era",
+		{"ps-AF", Options{Year: Year2Digit, Month: MonthNumeric}}:   "depends on localised era",
+		{"ps-AF", Options{Year: Year2Digit, Month: Month2Digit}}:    "depends on localised era",
+		{"th-TH", Options{Year: Year2Digit}}:                        "depends on localised era",
+		{"th-TH", Options{Year: YearNumeric}}:                       "depends on localised era",
 	}[key{locale.String(), options}]
 
-	return ok
+	return v
 }
 
 func TestDateTime_Format(t *testing.T) {
 	t.Parallel()
 
-	var tests Tests
+	var tests ESTests
 
 	if err := json.Unmarshal(data, &tests); err != nil {
 		panic(err)
@@ -119,14 +172,14 @@ func TestDateTime_Format(t *testing.T) {
 			t.Parallel()
 
 			t.Logf("calendar type: %s", defaultCalendar(locale))
-			t.Logf("cases: %+v", cases)
+			t.Logf("cases:\n%s", cases)
 
 			for _, test := range cases {
-				t.Run(fmt.Sprintf("%+v: %s", test.Options, test.Output), func(t *testing.T) {
+				t.Run(test.String(), func(t *testing.T) {
 					t.Parallel()
 
-					if skipTest(locale, test.Options) {
-						t.Skip()
+					if reason := skipTest(locale, test.Options); reason != "" {
+						t.Skip(reason)
 					}
 
 					got := NewDateTimeFormat(locale, test.Options).Format(tests.Date)

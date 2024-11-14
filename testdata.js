@@ -114,27 +114,24 @@ function generateTests(locales) {
 
     [undefined, "numeric", "2-digit"].forEach((year) => {
       [undefined, "numeric", "2-digit"].forEach((month) => {
-        // TODO(jhorsts): skip default formatting for now. It can be resolved when formatting is fully implemented.
-        if (year === undefined && month === undefined) {
-          return;
-        }
+        [undefined, "numeric", "2-digit"].forEach((day) => {
+          // TODO(jhorsts): skip default formatting for now. It can be resolved when formatting is fully implemented.
+          if (
+            (year === undefined && month === undefined && day == undefined) ||
+            (year !== undefined && month === undefined && day != undefined) ||
+            (year !== undefined && month !== undefined && day != undefined)
+          ) {
+            return;
+          }
 
-        const options = { year, month };
+          const options = { year, month, day };
 
-        result.push([
-          options,
-          new Intl.DateTimeFormat(locale, options).format(date),
-        ]);
+          result.push([
+            options,
+            new Intl.DateTimeFormat(locale, options).format(date),
+          ]);
+        });
       });
-    });
-
-    ["numeric", "2-digit"].forEach((day) => {
-      const options = { day };
-
-      result.push([
-        options,
-        new Intl.DateTimeFormat(locale, options).format(date),
-      ]);
     });
 
     r[locale] = result;
