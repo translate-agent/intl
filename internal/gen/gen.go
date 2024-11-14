@@ -753,7 +753,8 @@ func (g *Generator) months() Months { //nolint:gocognit
 		}
 
 		for calendar := range supportedCalendars(ldml.Dates.Calendars.Calendar) {
-			if calendar.Months == nil {
+			// month names are available only in gregorian calendars (default)
+			if calendar.Months == nil || calendar.Type != "gregorian" {
 				continue
 			}
 
@@ -804,11 +805,11 @@ func (g *Generator) months() Months { //nolint:gocognit
 					}
 
 					indexes := months.Lookup[locale]
-					indexes.Set(calendar.Type, monthWidth.Type, monthContext.Type, i)
+					indexes.Set(monthWidth.Type, monthContext.Type, i)
 
 					// NOTE: fallback "format" context when "stand-alone" not defined
 					if monthContext.Type == "format" {
-						indexes.Set(calendar.Type, monthWidth.Type, "stand-alone", i)
+						indexes.Set(monthWidth.Type, "stand-alone", i)
 					}
 
 					months.Lookup[locale] = indexes
@@ -876,7 +877,7 @@ type TemplateData struct {
 
 // value - locales.
 type Months struct {
-	// key is locale, value is 18 indexes from [List].
+	// key is locale, value is 6 indexes from [List].
 	Lookup map[string]MonthIndexes
 	List   []MonthNames
 }
@@ -894,23 +895,20 @@ type MonthKey struct {
 	Context      string // format or stand-alone
 }
 
-type MonthIndexes [18]int
+// MonthIndexes contains indexes for month names in [Months.List]:
+//
+//	0 - abbreviated, format
+//	1 - abbreviated, stand-alone
+//	2 - wide, format
+//	3 - wide, stand-alone
+//	4 - narrow, format
+//	5 - narrow, stand-alone
+type MonthIndexes [6]int
 
-func (m *MonthIndexes) Set(calendarType, width, context string, i int) {
-	widthsCount := 3
+func (m *MonthIndexes) Set(width, context string, i int) {
 	contextCount := 2
 
-	var t, w, c int
-
-	// the order MUST be the same as const of [intl.calendarType]
-	switch calendarType {
-	case "gregorian":
-		t = 0
-	case "buddhist":
-		t = 1
-	case "persian":
-		t = 2
-	}
+	var w, c int
 
 	switch width {
 	case "abbreviated":
@@ -928,7 +926,7 @@ func (m *MonthIndexes) Set(calendarType, width, context string, i int) {
 		c = 1
 	}
 
-	index := t*widthsCount*contextCount + w*contextCount + c
+	index := w*contextCount + c
 
 	m[index] = i
 }

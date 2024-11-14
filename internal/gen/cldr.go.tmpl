@@ -21,7 +21,7 @@ var calendarMonthNames = [...]calendarMonths{
 
 // monthIndexes contains indexes of months names, each calendar has 6 indexes
 // for all variations of "width" and "context".
-type monthIndexes [18]int16
+type monthIndexes [6]int16
 
 var monthLookup = map[string]monthIndexes{
 {{- range $locale, $indexes := .Months.Lookup }}
