@@ -236,60 +236,59 @@ func parseDatePattern(pattern string) DatePattern {
 	return elements
 }
 
-func yearMonthPatterns(yM, yMM, yyyyM string) (
-	yMPattern, yMMPattern, yyyyMPattern DatePattern,
+func yearMonthPatterns(rawyM, rawyMM, rawyyyyM string) (
+	patternyM, patternyMM, patternyyyyM DatePattern,
 ) {
-	yMPattern = parseDatePattern(yM)
-	yMMPattern = parseDatePattern(yMM)
-	yyyyMPattern = parseDatePattern(yyyyM)
+	patternyM = parseDatePattern(rawyM)
+	patternyMM = parseDatePattern(rawyMM)
+	patternyyyyM = parseDatePattern(rawyyyyM)
 
-	if v := yMPattern.Month(); strings.HasPrefix(v, "L") && len(v) <= 2 {
-		yMPattern.ReplaceMonth(strings.ReplaceAll(v, "L", "M"))
+	if v := patternyM.Month(); strings.HasPrefix(v, "L") && len(v) <= 2 {
+		patternyM.ReplaceMonth(strings.ReplaceAll(v, "L", "M"))
 	}
 
-	if v := yMMPattern.Month(); strings.HasPrefix(v, "L") && len(v) <= 2 {
-		yMMPattern.ReplaceMonth(strings.ReplaceAll(v, "L", "M"))
+	if v := patternyMM.Month(); strings.HasPrefix(v, "L") && len(v) <= 2 {
+		patternyMM.ReplaceMonth(strings.ReplaceAll(v, "L", "M"))
 	}
 
-	if v := yyyyMPattern.Month(); strings.HasPrefix(v, "L") && len(v) <= 2 {
-		yyyyMPattern.ReplaceMonth(strings.ReplaceAll(v, "L", "M"))
+	if v := patternyyyyM.Month(); strings.HasPrefix(v, "L") && len(v) <= 2 {
+		patternyyyyM.ReplaceMonth(strings.ReplaceAll(v, "L", "M"))
 	}
 
 	var patterns DatePatterns
 
-	if len(yMPattern) > 0 {
-		patterns = append(patterns, yMPattern)
+	if len(patternyM) > 0 {
+		patterns = append(patterns, patternyM)
 	}
 
-	if len(yMMPattern) > 0 {
-		patterns = append(patterns, yMMPattern)
+	if len(patternyMM) > 0 {
+		patterns = append(patterns, patternyMM)
 	}
 
-	if len(yyyyMPattern) > 0 {
-		patterns = append(patterns, yyyyMPattern)
+	if len(patternyyyyM) > 0 {
+		patterns = append(patterns, patternyyyyM)
 	}
 
-	if len(yMPattern) == 0 {
-		yMPattern = patterns.FindClosest(idyM)
+	if len(patternyM) == 0 {
+		patternyM = patterns.FindClosest(idyM)
 	}
 
-	if len(yMMPattern) == 0 {
-		yMMPattern = patterns.FindClosest(idyMM)
-		yMMPattern.ReplaceMonth("MM")
+	if len(patternyMM) == 0 {
+		patternyMM = patterns.FindClosest(idyMM)
+		patternyMM.ReplaceMonth("MM")
 	}
 
-	if len(yyyyMPattern) == 0 {
-		yyyyMPattern = patterns.FindClosest(idyyyyM)
+	if len(patternyyyyM) == 0 {
+		patternyyyyM = patterns.FindClosest(idyyyyM)
 
-		if yMPattern.MonthLen(2) { //nolint:mnd
-			yyyyMPattern.ReplaceMonth("MM")
+		if patternyM.MonthLen(2) {
+			patternyyyyM.ReplaceMonth("MM")
 		}
 	}
 
-	return yMPattern, yMMPattern, yyyyMPattern
+	return
 }
 
-//nolint:cyclop,gocognit,gocritic
 func monthDayPatterns(Md, MMd, Mdd, MMdd string) (MdPattern, MMdPattern, MddPattern, MMddPattern DatePattern) {
 	MdPattern = parseDatePattern(Md)
 	MMdPattern = parseDatePattern(MMd)
@@ -318,29 +317,28 @@ func monthDayPatterns(Md, MMd, Mdd, MMdd string) (MdPattern, MMdPattern, MddPatt
 	eqIDFmtMonth2D := (len(MMdPattern) == 0 || MMdPattern.MonthLen(2)) &&
 		(len(MddPattern) == 0 || MddPattern.MonthLen(1)) &&
 		(len(MMddPattern) == 0 || MMddPattern.MonthLen(2))
-	eqIDFmtMonth := eqIDFmtMonth2D && (len(MdPattern) == 0 || MdPattern.MonthLen(1))
+	idEqMonth := eqIDFmtMonth2D && (len(MdPattern) == 0 || MdPattern.MonthLen(1))
 
 	//nolint:mnd
-	eqIDFmtDay2D := (len(MMdPattern) == 0 || MMdPattern.DayLen(1)) &&
+	idEqDay2D := (len(MMdPattern) == 0 || MMdPattern.DayLen(1)) &&
 		(len(MddPattern) == 0 || MddPattern.DayLen(2)) &&
 		(len(MMddPattern) == 0 || MMddPattern.DayLen(2))
-	eqIDFmtDay := eqIDFmtDay2D && (len(MdPattern) == 0 || MdPattern.DayLen(1))
+	idEqDay := idEqDay2D && (len(MdPattern) == 0 || MdPattern.DayLen(1))
 
-	if len(patterns) == 1 && len(MdPattern) > 0 && !eqIDFmtMonth && !eqIDFmtDay {
+	if len(patterns) == 1 && len(MdPattern) > 0 && !idEqMonth && !idEqDay {
 		return MdPattern, MdPattern, MdPattern, MdPattern
 	}
 
 	if len(MdPattern) == 0 {
 		MdPattern = patterns.FindClosest(idMd)
 
-		m := "M"
-		if !eqIDFmtMonth {
-			m = patterns[0].Month()
+		if idEqMonth {
+			MdPattern.ReplaceMonth("M")
+		} else {
+			MdPattern.ReplaceMonth(patterns[0].Month())
 		}
 
-		MdPattern.ReplaceMonth(m)
-
-		if eqIDFmtDay {
+		if idEqDay {
 			MdPattern.ReplaceDay("d")
 		}
 	}
@@ -348,14 +346,13 @@ func monthDayPatterns(Md, MMd, Mdd, MMdd string) (MdPattern, MMdPattern, MddPatt
 	if len(MMdPattern) == 0 {
 		MMdPattern = patterns.FindClosest(idMMd)
 
-		m := "MM"
-		if !eqIDFmtMonth {
-			m = patterns[0].Month()
+		if idEqMonth {
+			MMdPattern.ReplaceMonth("MM")
+		} else {
+			MMdPattern.ReplaceMonth(patterns[0].Month())
 		}
 
-		MMdPattern.ReplaceMonth(m)
-
-		if eqIDFmtDay2D {
+		if idEqDay2D {
 			MMdPattern.ReplaceDay("d")
 		}
 	}
@@ -363,14 +360,13 @@ func monthDayPatterns(Md, MMd, Mdd, MMdd string) (MdPattern, MMdPattern, MddPatt
 	if len(MddPattern) == 0 {
 		MddPattern = patterns.FindClosest(idMdd)
 
-		m := "M"
-		if !eqIDFmtMonth2D {
-			m = patterns[0].Month()
+		if eqIDFmtMonth2D {
+			MddPattern.ReplaceMonth("M")
+		} else {
+			MddPattern.ReplaceMonth(patterns[0].Month())
 		}
 
-		MddPattern.ReplaceMonth(m)
-
-		if eqIDFmtDay {
+		if idEqDay {
 			MddPattern.ReplaceDay("dd")
 		}
 	}
@@ -378,14 +374,13 @@ func monthDayPatterns(Md, MMd, Mdd, MMdd string) (MdPattern, MMdPattern, MddPatt
 	if len(MMddPattern) == 0 {
 		MMddPattern = patterns.FindClosest(idMMdd)
 
-		m := "MM"
-		if !eqIDFmtMonth {
-			m = patterns[0].Month()
+		if idEqMonth {
+			MMddPattern.ReplaceMonth("MM")
+		} else {
+			MddPattern.ReplaceMonth(patterns[0].Month())
 		}
 
-		MMddPattern.ReplaceMonth(m)
-
-		if eqIDFmtDay {
+		if idEqDay {
 			MMddPattern.ReplaceDay("dd")
 		}
 	}
@@ -454,9 +449,9 @@ func BuildFmtMD(md, mmd, mdd, mmdd string, log *slog.Logger) string {
 
 		switch group.Layouts[0].Pattern.Month() {
 		case "MMM":
-			sb.WriteString("fmtMonth = fmtMonthName(locale.String(), calendarTypeGregorian, \"stand-alone\", \"abbreviated\")\n")
+			sb.WriteString("fmtMonth = fmtMonthName(locale.String(), \"stand-alone\", \"abbreviated\")\n")
 		case "MMMMM":
-			sb.WriteString("fmtMonth = fmtMonthName(locale.String(), calendarTypeGregorian, \"stand-alone\", \"narrow\")\n")
+			sb.WriteString("fmtMonth = fmtMonthName(locale.String(), \"stand-alone\", \"narrow\")\n")
 		}
 
 		sb.WriteString("return ")
@@ -587,7 +582,7 @@ func GroupLayouts(layouts ...Layout) []LayoutGroup {
 		return postProcessGroups([]LayoutGroup{{
 			Layouts: layouts,
 		}})
-	case 2: //nolint:mnd
+	case 2:
 		values := slices.Collect(maps.Values(byPatterns))
 		if len(values[0]) > len(values[1]) {
 			values[0], values[1] = values[1], values[0]
@@ -647,7 +642,6 @@ func GroupLayouts(layouts ...Layout) []LayoutGroup {
 	return postProcessGroups(groups)
 }
 
-//nolint:gocognit
 func postProcessGroups(groups []LayoutGroup) []LayoutGroup {
 	slices.SortFunc(groups, func(a, b LayoutGroup) int { return len(a.Layouts) - len(b.Layouts) })
 
@@ -663,7 +657,7 @@ func postProcessGroups(groups []LayoutGroup) []LayoutGroup {
 					switch len(m) {
 					case 1:
 						return FmtTypeNumericOnly
-					case 2: //nolint:mnd
+					case 2:
 						return FmtType2DigitOnly
 					}
 				}
@@ -705,11 +699,11 @@ func postProcessGroups(groups []LayoutGroup) []LayoutGroup {
 				optMonth := "MonthNumeric"
 				optDay := "DayNumeric"
 
-				if groups[i].Layouts[0].ID.MonthLen(2) { //nolint:mnd
+				if groups[i].Layouts[0].ID.MonthLen(2) {
 					optMonth = "Month2Digit"
 				}
 
-				if groups[i].Layouts[0].ID.DayLen(2) { //nolint:mnd
+				if groups[i].Layouts[0].ID.DayLen(2) {
 					optDay = "Day2Digit"
 				}
 

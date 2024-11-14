@@ -36,7 +36,7 @@ return fmtDay(d, DayNumeric) + ". " + fmtMonth(m, MonthNumeric) + "."`,
 		},
 		{
 			in: [4]string{"MMMMM/dd", "MMMMM/dd", "MMMMM/dd", "MMMMM/dd"},
-			out: `fmtMonth = fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "narrow")
+			out: `fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow")
 return fmtMonth(m, opts.Month) + "/" + fmtDay(d, Day2Digit)`,
 		},
 		{
@@ -48,7 +48,7 @@ return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "/" + fmtMonth(m, cmp.Or(opts.Mo
 		},
 		{ // wae-CH
 			in: [4]string{"d. MMM", "d. MMM", "dd. MMM", "dd. MMM"},
-			out: `fmtMonth = fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "abbreviated")
+			out: `fmtMonth = fmtMonthName(locale.String(), "stand-alone", "abbreviated")
 return fmtDay(d, cmp.Or(opts.Day, DayNumeric)) + ". " + fmtMonth(m, opts.Month)`,
 		},
 	} {

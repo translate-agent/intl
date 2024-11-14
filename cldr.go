@@ -2155,7 +2155,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		}
 	case "mn":
 		return func(y int, m time.Month) string {
-			return fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + " " + fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "narrow")(m, opts.Month)
+			return fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + " " + fmtMonthName(locale.String(), "stand-alone", "narrow")(m, opts.Month)
 		}
 	case "ksh":
 		return func(y int, m time.Month) string {
@@ -2199,9 +2199,9 @@ func fmtMonthGregorian(locale language.Tag, digits digits) func(v time.Month, op
 		fmt := fmtMonth(digits)
 		return func(v time.Month, opt Month) string { return fmt(v, opt) + "월" }
 	case "wae":
-		return fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "abbreviated")
+		return fmtMonthName(locale.String(), "stand-alone", "abbreviated")
 	case "mn":
-		return fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "narrow")
+		return fmtMonthName(locale.String(), "stand-alone", "narrow")
 	}
 }
 
@@ -2216,12 +2216,12 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		return func(m time.Month, d int) string { return fmtMonth(m, Month2Digit) + "-" + fmtDay(d, Day2Digit) }
 	case "wae":
 		return func(m time.Month, d int) string {
-			fmtMonth = fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "abbreviated")
+			fmtMonth = fmtMonthName(locale.String(), "stand-alone", "abbreviated")
 			return fmtDay(d, cmp.Or(opts.Day, DayNumeric)) + ". " + fmtMonth(m, opts.Month)
 		}
 	case "mn":
 		return func(m time.Month, d int) string {
-			fmtMonth = fmtMonthName(locale.String(), calendarTypeGregorian, "stand-alone", "narrow")
+			fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow")
 			return fmtMonth(m, opts.Month) + "/" + fmtDay(d, Day2Digit)
 		}
 	case "sv":

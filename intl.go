@@ -374,11 +374,10 @@ func fmtMonth(digits digits) func(v time.Month, opt Month) string {
 }
 
 // fmtMonthName formats month as name.
-func fmtMonthName(locale string, calendar calendarType, context, width string) func(v time.Month, opt Month) string {
+func fmtMonthName(locale string, context, width string) func(v time.Month, opt Month) string {
 	indexes := monthLookup[locale]
 
-	// multiply by 6
-	i := int(calendar<<2 + calendar<<1)
+	var i int
 
 	// "abbreviated" width index is 0
 	switch width {
