@@ -600,9 +600,7 @@ func groupLayouts(layouts ...Layout) []LayoutGroup {
 	switch len(byPatterns) {
 	case 1:
 		// all have identical formatting pattern
-		return postProcessGroups([]LayoutGroup{{
-			Layouts: layouts,
-		}})
+		return processLayoutGroups([]LayoutGroup{{Layouts: layouts}})
 	case 2: //nolint:mnd
 		values := slices.Collect(maps.Values(byPatterns))
 		if len(values[0]) > len(values[1]) {
@@ -611,7 +609,7 @@ func groupLayouts(layouts ...Layout) []LayoutGroup {
 
 		if len(values[0]) == 1 {
 			// all have identical formatting pattern, except the first one
-			return postProcessGroups([]LayoutGroup{{Layouts: values[0]}, {Layouts: values[1]}})
+			return processLayoutGroups([]LayoutGroup{{Layouts: values[0]}, {Layouts: values[1]}})
 		}
 	}
 
@@ -654,10 +652,10 @@ func groupLayouts(layouts ...Layout) []LayoutGroup {
 		groups[groupIdx].Layouts = append(groups[groupIdx].Layouts, layout)
 	}
 
-	return postProcessGroups(groups)
+	return processLayoutGroups(groups)
 }
 
-func postProcessGroups(groups []LayoutGroup) []LayoutGroup {
+func processLayoutGroups(groups []LayoutGroup) []LayoutGroup {
 	slices.SortFunc(groups, func(a, b LayoutGroup) int { return len(a.Layouts) - len(b.Layouts) })
 
 	for i := range groups {
