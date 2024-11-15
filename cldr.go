@@ -12,7 +12,6 @@ import (
 
 type calendarMonths [12]string
 
-// size 144384
 var calendarMonthNames = [...]calendarMonths{
 	{"M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08", "M09", "M10", "M11", "M12"},
 	{"Jan.", "Feb.", "Mrt.", "Apr.", "Mei", "Jun.", "Jul.", "Aug.", "Sep.", "Okt.", "Nov.", "Des."},
