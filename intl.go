@@ -374,6 +374,11 @@ func fmtMonth(digits digits) func(v time.Month, opt Month) string {
 }
 
 // fmtMonthName formats month as name.
+//
+// TODO(jhorsts): ensure this is rectified before release v0.1.0 - when formatting of date is complete.
+// The "context" is always "stand-alone".
+//
+//nolint:unparam
 func fmtMonthName(locale string, context, width string) func(v time.Month, opt Month) string {
 	indexes := monthLookup[locale]
 
