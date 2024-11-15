@@ -18,38 +18,43 @@ func Test_buildFmtMD(t *testing.T) {
 	}{
 		{
 			in: [4]string{"d/M", "", "", "dd-MM"},
-			out: `if opts.Month == MonthNumeric && opts.Day == DayNumeric {
-	return fmtDay(d, DayNumeric) + "/" + fmtMonth(m, MonthNumeric)
-}
-return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "-" + fmtMonth(m, cmp.Or(opts.Month, Month2Digit))`,
+			out: `return func(m time.Month, d int) string {` +
+				` if opts.Month == MonthNumeric && opts.Day == DayNumeric {` +
+				` return fmtDay(d, DayNumeric) + "/" + fmtMonth(m, MonthNumeric) ` +
+				`}; return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "-" + fmtMonth(m, cmp.Or(opts.Month, Month2Digit)) ` +
+				`}`,
 		},
 		{
 			in: [4]string{"d.M.", "", "", "d. M."},
-			out: `if opts.Month == MonthNumeric && opts.Day == DayNumeric {
-	return fmtDay(d, DayNumeric) + "." + fmtMonth(m, MonthNumeric) + "."
-}
-return fmtDay(d, DayNumeric) + ". " + fmtMonth(m, MonthNumeric) + "."`,
+			out: `return func(m time.Month, d int) string {` +
+				` if opts.Month == MonthNumeric && opts.Day == DayNumeric {` +
+				` return fmtDay(d, DayNumeric) + "." + fmtMonth(m, MonthNumeric) + "." ` +
+				`}; return fmtDay(d, DayNumeric) + ". " + fmtMonth(m, MonthNumeric) + "." ` +
+				`}`,
 		},
 		{
-			in:  [4]string{"d.MM", "d.MM", "dd.MM", "dd.MM"},
-			out: `return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "." + fmtMonth(m, Month2Digit)`,
+			in: [4]string{"d.MM", "d.MM", "dd.MM", "dd.MM"},
+			out: `return func(m time.Month, d int) string {` +
+				` return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "." + fmtMonth(m, Month2Digit) }`,
 		},
 		{
 			in: [4]string{"MMMMM/dd", "MMMMM/dd", "MMMMM/dd", "MMMMM/dd"},
-			out: `fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow")
-return fmtMonth(m, opts.Month) + "/" + fmtDay(d, Day2Digit)`,
+			out: `fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow"); ` +
+				`return func(m time.Month, d int) string { return fmtMonth(m, opts.Month) + "/" + fmtDay(d, Day2Digit) }`,
 		},
 		{
 			in: [4]string{"MM-dd", "d/MM", "dd/M", "dd/MM"},
-			out: `if opts.Month == MonthNumeric && opts.Day == DayNumeric {
-	return fmtMonth(m, Month2Digit) + "-" + fmtDay(d, Day2Digit)
-}
-return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "/" + fmtMonth(m, cmp.Or(opts.Month, Month2Digit))`,
+			out: `return func(m time.Month, d int) string {` +
+				` if opts.Month == MonthNumeric && opts.Day == DayNumeric {` +
+				` return fmtMonth(m, Month2Digit) + "-" + fmtDay(d, Day2Digit) ` +
+				`}; return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "/" + fmtMonth(m, cmp.Or(opts.Month, Month2Digit)) ` +
+				`}`,
 		},
 		{ // wae-CH
 			in: [4]string{"d. MMM", "d. MMM", "dd. MMM", "dd. MMM"},
-			out: `fmtMonth = fmtMonthName(locale.String(), "stand-alone", "abbreviated")
-return fmtDay(d, cmp.Or(opts.Day, DayNumeric)) + ". " + fmtMonth(m, opts.Month)`,
+			out: `fmtMonth = fmtMonthName(locale.String(), "stand-alone", "abbreviated"); ` +
+				`return func(m time.Month, d int) string {` +
+				` return fmtDay(d, cmp.Or(opts.Day, DayNumeric)) + ". " + fmtMonth(m, opts.Month) }`,
 		},
 	} {
 		t.Run(fmt.Sprintf("%+v", test.in), func(t *testing.T) {

@@ -414,6 +414,8 @@ func buildFmtMD(formatMd, formatMMd, formatMdd, formatMMdd string, log *slog.Log
 	var sb strings.Builder
 
 	writePattern := func(pattern DatePattern, group LayoutGroup) {
+		sb.WriteString("return ")
+
 		for i, v := range pattern {
 			if i > 0 {
 				sb.WriteString(" + ")
@@ -460,20 +462,22 @@ func buildFmtMD(formatMd, formatMMd, formatMdd, formatMMdd string, log *slog.Log
 
 		switch group.Layouts[0].Pattern.month() {
 		case "MMM":
-			sb.WriteString("fmtMonth = fmtMonthName(locale.String(), \"stand-alone\", \"abbreviated\")\n")
+			sb.WriteString("fmtMonth = fmtMonthName(locale.String(), \"stand-alone\", \"abbreviated\");")
 		case "MMMMM":
-			sb.WriteString("fmtMonth = fmtMonthName(locale.String(), \"stand-alone\", \"narrow\")\n")
+			sb.WriteString("fmtMonth = fmtMonthName(locale.String(), \"stand-alone\", \"narrow\");")
 		}
 
-		sb.WriteString("return ")
-
+		sb.WriteString(" return func(m time.Month, d int) string { ")
 		writePattern(group.Layouts[0].Pattern, group)
+		sb.WriteString(" }")
 	case 2: //nolint:mnd
+		sb.WriteString("return func(m time.Month, d int) string { ")
+
 		for _, group := range groups {
 			if group.Expr != "" {
-				sb.WriteString("if " + group.Expr + " {\n\treturn ")
+				sb.WriteString("if " + group.Expr + " { ")
 				writePattern(group.Layouts[0].Pattern, group)
-				sb.WriteString("\n}\n")
+				sb.WriteString(" }; ")
 
 				continue
 			}
@@ -483,11 +487,11 @@ func buildFmtMD(formatMd, formatMMd, formatMdd, formatMMdd string, log *slog.Log
 					continue
 				}
 
-				sb.WriteString("return ")
-
 				writePattern(layout.Pattern, group)
 			}
 		}
+
+		sb.WriteString(" }")
 	}
 
 	return sb.String()

@@ -143,10 +143,10 @@ func fmtMonthDay{{ title $calendarType}}(locale language.Tag, digits digits, opt
 
   switch lang.String() {
   default:
-    return func(m time.Month, d int) string { {{ $formats.MD.Default }} }
+    {{ $formats.MD.Default }}
   {{- range $fmt, $languages := $formats.MD.Fmt }}
   case "{{ join $languages "\", \"" }}":
-    return func(m time.Month, d int) string { {{ $fmt }} }
+    {{ $fmt }}
   {{- end }}
   }
 }
