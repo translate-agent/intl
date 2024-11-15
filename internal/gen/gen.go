@@ -481,11 +481,11 @@ func (g *Generator) dateTimeFormats(calendarPreferences []CalendarPreference, lo
 		formats := NewCalendarDateTimeFormats()
 
 		formats.Y.Default = strings.NewReplacer("G ", `"AP "+`, "y", "v").Replace(g.findRootDateFormatItem(calendarType, "y"))
-		formats.YM.Default = cmp.Or(
+		formats.YM.Default = g.buildFmtYM(cmp.Or(
 			g.findRootDateFormatItem(calendarType, "yM"),
 			g.findRootDateFormatItem(calendarType, "yMM"),
 			g.findRootDateFormatItem(calendarType, "yyyyM"),
-		)
+		), "", "", log)
 		formats.M.Default = g.findRootDateFormatItem(calendarType, "M")
 		formats.MD.Default = buildFmtMD(
 			g.findRootDateFormatItem(calendarType, "Md"),
@@ -544,11 +544,6 @@ func (g *Generator) dateTimeFormats(calendarPreferences []CalendarPreference, lo
 		g.addFormatD(locale, calendar, formats, localeLog)
 	}
 
-	for calendarType, formats := range dateTimeFormats {
-		formats.YM.Default = g.buildFmtYM(formats.YM.Default, "", "", log)
-		dateTimeFormats[calendarType] = formats
-	}
-
 	return dateTimeFormats
 }
 
@@ -600,16 +595,15 @@ func (g *Generator) addFormatYM(
 
 	log.Debug("add YM format", "yM", yM, "yMM", yMM, "yyyyM", yyyyM)
 
-	if yM == formats.YM.Default &&
-		(yMM == "" || yMM == formats.YM.Default) &&
-		(yyyyM == "" || yyyyM == formats.YM.Default) ||
-		yM == "" && yMM == "" && yyyyM == "" {
+	if yM == "" && yMM == "" && yyyyM == "" {
 		return
 	}
 
 	s := g.buildFmtYM(yM, yMM, yyyyM, log)
 
-	formats.YM.Fmt[s] = append(formats.YM.Fmt[s], locale)
+	if formats.YM.Default != s {
+		formats.YM.Fmt[s] = append(formats.YM.Fmt[s], locale)
+	}
 }
 
 func (g *Generator) addFormatM(

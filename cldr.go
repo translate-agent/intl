@@ -1923,10 +1923,6 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		return func(y int, m time.Month) string {
 			return fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + " " + fmtMonthName(locale.String(), "stand-alone", "narrow")(m, opts.Month)
 		}
-	case "ksh":
-		return func(y int, m time.Month) string {
-			return fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "-" + fmtMonth(m, Month2Digit)
-		}
 	case "dz", "si":
 		return func(y int, m time.Month) string {
 			return fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "-" + fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))
@@ -2178,10 +2174,6 @@ func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) func(
 	case "ps":
 		return func(y int, m time.Month) string {
 			return "G" + " " + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "/" + fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))
-		}
-	case "lrc", "mzn", "sdh":
-		return func(y int, m time.Month) string {
-			return "GGGGG" + " " + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "-" + fmtMonth(m, Month2Digit)
 		}
 	case "fa":
 		return func(y int, m time.Month) string {
