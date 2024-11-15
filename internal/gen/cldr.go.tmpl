@@ -12,16 +12,21 @@ import (
 
 type calendarMonths [12]string
 
-// size 144384
 var calendarMonthNames = [...]calendarMonths{
 {{- range $calendarMonths := .Months.List }}
   {{ $calendarMonths }},
 {{- end }}
 }
 
-// monthIndexes contains indexes of months names, each calendar has 6 indexes
+// monthIndexes contains indexes of months names in Gregorian calendar, it has 6 indexes
 // for all variations of "width" and "context".
-type monthIndexes [18]int16
+//	0 - abbreviated, format
+//	1 - abbreviated, stand-alone
+//	2 - wide, format
+//	3 - wide, stand-alone
+//	4 - narrow, format
+//	5 - narrow, stand-alone
+type monthIndexes [6]int16
 
 var monthLookup = map[string]monthIndexes{
 {{- range $locale, $indexes := .Months.Lookup }}
@@ -128,6 +133,22 @@ func fmtMonth{{ title $calendarType }}(_ language.Tag, digits digits) func(v tim
   {{- end }}
   }
 {{ end }} {{/* $formats.M.Fmt > 1*/}}
+}
+
+func fmtMonthDay{{ title $calendarType}}(locale language.Tag, digits digits, opts Options) func (m time.Month, d int) string {
+  lang, _ := locale.Base()
+
+  fmtMonth := fmtMonth(digits)
+  fmtDay := fmtDay(digits)
+
+  switch lang.String() {
+  default:
+    {{ $formats.MD.Default }}
+  {{- range $fmt, $languages := $formats.MD.Fmt }}
+  case "{{ join $languages "\", \"" }}":
+    {{ $fmt }}
+  {{- end }}
+  }
 }
 
 {{ if gt (len $formats.D.Fmt) 0 }}

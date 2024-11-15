@@ -374,11 +374,15 @@ func fmtMonth(digits digits) func(v time.Month, opt Month) string {
 }
 
 // fmtMonthName formats month as name.
-func fmtMonthName(locale string, calendar calendarType, context, width string) func(v time.Month, opt Month) string {
+//
+// TODO(jhorsts): ensure this is rectified before release v0.1.0 - when formatting of date is complete.
+// The "context" is always "stand-alone".
+//
+//nolint:unparam
+func fmtMonthName(locale string, context, width string) func(v time.Month, opt Month) string {
 	indexes := monthLookup[locale]
 
-	// multiply by 6
-	i := int(calendar<<2 + calendar<<1)
+	var i int
 
 	// "abbreviated" width index is 0
 	switch width {
@@ -435,6 +439,12 @@ func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) f
 		return func(v time.Time) string {
 			return layout(v.Year(), v.Month())
 		}
+	case opts.Month != MonthUnd && opts.Day != DayUnd:
+		layout := fmtMonthDayGregorian(locale, digits, opts)
+
+		return func(v time.Time) string {
+			return layout(v.Month(), v.Day())
+		}
 	case opts.Year != YearUnd:
 		layout := fmtYearGregorian(locale)
 		fmt := fmtYear(digits)
@@ -471,6 +481,14 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 
 			return layout(t.Year(), time.Month(t.Month()))
 		}
+	case opts.Month != MonthUnd && opts.Day != DayUnd:
+		layout := fmtMonthDayPersian(locale, digits, opts)
+
+		return func(v time.Time) string {
+			t := ptime.New(v)
+
+			return layout(time.Month(t.Month()), t.Day())
+		}
 	case opts.Year != YearUnd:
 		layout := fmtYearPersian(locale)
 		fmt := fmtYear(digits)
@@ -506,6 +524,12 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 			t := v.AddDate(543, 0, 0) //nolint:mnd
 
 			return layout(t.Year(), t.Month())
+		}
+	case opts.Month != MonthUnd && opts.Day != DayUnd:
+		layout := fmtMonthDayBuddhist(locale, digits, opts)
+
+		return func(v time.Time) string {
+			return layout(v.Month(), v.Day())
 		}
 	case opts.Year != YearUnd:
 		layout := fmtYearBuddhist(locale)
