@@ -55,7 +55,7 @@ return fmtDay(d, cmp.Or(opts.Day, DayNumeric)) + ". " + fmtMonth(m, opts.Month)`
 		t.Run(fmt.Sprintf("%+v", test.in), func(t *testing.T) {
 			t.Parallel()
 
-			got := BuildFmtMD(test.in[0], test.in[1], test.in[2], test.in[3], slog.Default())
+			got := buildFmtMD(test.in[0], test.in[1], test.in[2], test.in[3], slog.Default())
 
 			if got != test.out {
 				t.Errorf("\nwant %q\ngot  %q", test.out, got)
@@ -245,7 +245,7 @@ func Test_GroupLayouts(t *testing.T) {
 			t.Parallel()
 			t.Log(test.in)
 
-			got := GroupLayouts(test.in...)
+			got := groupLayouts(test.in...)
 
 			if diff := cmp.Diff(test.out, got); diff != "" {
 				t.Errorf("GroupLayouts() mismatch (-want +got):\n%s", diff)

@@ -393,9 +393,8 @@ func merge(dst, src *cldr.LDML, log *slog.Logger) {
 func mergeCalendar(dst, src *cldr.Calendar, log *slog.Logger) {
 	log.Debug("merge calendars", "dst", dst.Type, "src", src.Type)
 
-	if dst.DateTimeFormats == nil {
-		dst.DateTimeFormats = deepCopy(src.DateTimeFormats)
-	} else {
+	switch dst.DateTimeFormats {
+	default:
 		if dst.DateTimeFormats.AvailableFormats == nil && src.DateTimeFormats != nil {
 			dst.DateTimeFormats.AvailableFormats = deepCopy(src.DateTimeFormats.AvailableFormats)
 		}
@@ -407,12 +406,15 @@ func mergeCalendar(dst, src *cldr.Calendar, log *slog.Logger) {
 						continue
 					}
 
+					// NOTE(jhorsts): Why the first AvailableFormats? I don't remember.
 					dst.DateTimeFormats.AvailableFormats[0].DateFormatItem = append(
 						dst.DateTimeFormats.AvailableFormats[0].DateFormatItem,
 						deepCopy(dateFormatItem))
 				}
 			}
 		}
+	case nil:
+		dst.DateTimeFormats = deepCopy(src.DateTimeFormats)
 	}
 
 	// months
@@ -473,21 +475,21 @@ func (g *Generator) dateTimeFormats(calendarPreferences []CalendarPreference, lo
 	for _, calendarType := range supportedCalendarTypes {
 		formats := NewCalendarDateTimeFormats()
 
-		formats.Y.Default = g.findDateFormatItem("root", calendarType, "y")
+		formats.Y.Default = g.findRootDateFormatItem(calendarType, "y")
 		formats.YM.Default = cmp.Or(
-			g.findDateFormatItem("root", calendarType, "yM"),
-			g.findDateFormatItem("root", calendarType, "yMM"),
-			g.findDateFormatItem("root", calendarType, "yyyyM"),
+			g.findRootDateFormatItem(calendarType, "yM"),
+			g.findRootDateFormatItem(calendarType, "yMM"),
+			g.findRootDateFormatItem(calendarType, "yyyyM"),
 		)
-		formats.M.Default = g.findDateFormatItem("root", calendarType, "M")
-		formats.MD.Default = BuildFmtMD(
-			g.findDateFormatItem("root", calendarType, "Md"),
-			g.findDateFormatItem("root", calendarType, "MMd"),
-			g.findDateFormatItem("root", calendarType, "Mdd"),
-			g.findDateFormatItem("root", calendarType, "MMd"),
+		formats.M.Default = g.findRootDateFormatItem(calendarType, "M")
+		formats.MD.Default = buildFmtMD(
+			g.findRootDateFormatItem(calendarType, "Md"),
+			g.findRootDateFormatItem(calendarType, "MMd"),
+			g.findRootDateFormatItem(calendarType, "Mdd"),
+			g.findRootDateFormatItem(calendarType, "MMd"),
 			log,
 		)
-		formats.D.Default = g.findDateFormatItem("root", calendarType, "d")
+		formats.D.Default = g.findRootDateFormatItem(calendarType, "d")
 
 		dateTimeFormats[calendarType] = formats
 	}
@@ -666,18 +668,18 @@ func (g *Generator) addFormatMD(
 	formats CalendarDateTimeFormats,
 	log *slog.Logger,
 ) {
-	md := findDateFormatItem(calendar, "Md")
-	mmd := findDateFormatItem(calendar, "MMd")
-	mdd := findDateFormatItem(calendar, "Mdd")
-	mmdd := findDateFormatItem(calendar, "MMdd")
+	formatMd := findDateFormatItem(calendar, "Md")
+	formatMMd := findDateFormatItem(calendar, "MMd")
+	formatMdd := findDateFormatItem(calendar, "Mdd")
+	formatMMdd := findDateFormatItem(calendar, "MMdd")
 
-	log.Debug("add MD format", "Md", md, "MMd", mmd, "Mdd", mdd, "MMdd", mmdd)
+	log.Debug("add MD format", "Md", formatMd, "MMd", formatMMd, "Mdd", formatMdd, "MMdd", formatMMdd)
 
-	if md == "" && mmd == "" && mdd == "" && mmdd == "" {
+	if formatMd == "" && formatMMd == "" && formatMdd == "" && formatMMdd == "" {
 		return
 	}
 
-	s := BuildFmtMD(md, mmd, mdd, mmdd, log)
+	s := buildFmtMD(formatMd, formatMMd, formatMdd, formatMMdd, log)
 
 	if s == formats.MD.Default {
 		return
@@ -720,8 +722,8 @@ func (g *Generator) addFormatD(
 	formats.D.Fmt[sb.String()] = append(formats.D.Fmt[sb.String()], locale)
 }
 
-func (g *Generator) findDateFormatItem(locale, calendarType string, id string) string {
-	calendar := findCalendar(g.cldr.RawLDML(locale), calendarType)
+func (g *Generator) findRootDateFormatItem(calendarType string, id string) string {
+	calendar := findCalendar(g.cldr.RawLDML("root"), calendarType)
 
 	return findDateFormatItem(calendar, id)
 }
@@ -985,7 +987,8 @@ func Locale(ldml *cldr.LDML) string {
 
 type DefaultNumberingSystems map[string][]string // key - numbering system, value - locales
 
-func deepCopy[T any](v T) T { //nolint:ireturn
+//nolint:ireturn
+func deepCopy[T any](v T) T {
 	var r T
 
 	b, err := json.Marshal(v)
@@ -1034,13 +1037,13 @@ func (g *Generator) buildFmtYM(yM, yMM, yyyyM string, log *slog.Logger) string {
 			default:
 				sb.WriteString(`"` + v.Value + `"`)
 			case "L", "M":
-				if yMMmonth := yMMPattern.Month(); yMM != "" && (yMMmonth == "M" || yMMmonth == "L") { // TODO: use len() instead
+				if yMMmonth := yMMPattern.month(); yMM != "" && (yMMmonth == "M" || yMMmonth == "L") { // TODO: use len() instead
 					sb.WriteString(`fmtMonth(m, MonthNumeric)`)
 				} else {
 					sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))`)
 				}
 			case "LL", "MM":
-				if yMMPattern.Month() == v.Value {
+				if yMMPattern.month() == v.Value {
 					sb.WriteString(`fmtMonth(m, Month2Digit)`)
 				} else {
 					sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, Month2Digit))`)
