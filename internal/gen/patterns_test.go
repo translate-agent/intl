@@ -15,47 +15,41 @@ func Test_buildFmtMD(t *testing.T) {
 	for _, test := range []struct {
 		in  [4]string
 		out string
-	}{
-		{
-			in: [4]string{"d/M", "", "", "dd-MM"},
-			out: `return func(m time.Month, d int) string {` +
-				` if opts.Month == MonthNumeric && opts.Day == DayNumeric {` +
-				` return fmtDay(d, DayNumeric) + "/" + fmtMonth(m, MonthNumeric) ` +
-				`}; return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "-" + fmtMonth(m, cmp.Or(opts.Month, Month2Digit)) ` +
-				`}`,
-		},
-		{
-			in: [4]string{"d.M.", "", "", "d. M."},
-			out: `return func(m time.Month, d int) string {` +
-				` if opts.Month == MonthNumeric && opts.Day == DayNumeric {` +
-				` return fmtDay(d, DayNumeric) + "." + fmtMonth(m, MonthNumeric) + "." ` +
-				`}; return fmtDay(d, DayNumeric) + ". " + fmtMonth(m, MonthNumeric) + "." ` +
-				`}`,
-		},
-		{
-			in: [4]string{"d.MM", "d.MM", "dd.MM", "dd.MM"},
-			out: `return func(m time.Month, d int) string {` +
-				` return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "." + fmtMonth(m, Month2Digit) }`,
-		},
-		{
-			in: [4]string{"MMMMM/dd", "MMMMM/dd", "MMMMM/dd", "MMMMM/dd"},
-			out: `fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow"); ` +
-				`return func(m time.Month, d int) string { return fmtMonth(m, opts.Month) + "/" + fmtDay(d, Day2Digit) }`,
-		},
-		{
-			in: [4]string{"MM-dd", "d/MM", "dd/M", "dd/MM"},
-			out: `return func(m time.Month, d int) string {` +
-				` if opts.Month == MonthNumeric && opts.Day == DayNumeric {` +
-				` return fmtMonth(m, Month2Digit) + "-" + fmtDay(d, Day2Digit) ` +
-				`}; return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "/" + fmtMonth(m, cmp.Or(opts.Month, Month2Digit)) ` +
-				`}`,
-		},
-		{ // wae-CH
-			in: [4]string{"d. MMM", "d. MMM", "dd. MMM", "dd. MMM"},
-			out: `fmtMonth = fmtMonthName(locale.String(), "stand-alone", "abbreviated"); ` +
-				`return func(m time.Month, d int) string {` +
-				` return fmtDay(d, cmp.Or(opts.Day, DayNumeric)) + ". " + fmtMonth(m, opts.Month) }`,
-		},
+	}{{
+		in: [4]string{"d/M", "", "", "dd-MM"},
+		out: `return func(m time.Month, d int) string {` +
+			` if opts.Month == MonthNumeric && opts.Day == DayNumeric {` +
+			` return fmtDay(d, DayNumeric) + "/" + fmtMonth(m, MonthNumeric) ` +
+			`}; return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "-" + fmtMonth(m, cmp.Or(opts.Month, Month2Digit)) ` +
+			`}`,
+	}, {
+		in: [4]string{"d.M.", "", "", "d. M."},
+		out: `return func(m time.Month, d int) string {` +
+			` if opts.Month == MonthNumeric && opts.Day == DayNumeric {` +
+			` return fmtDay(d, DayNumeric) + "." + fmtMonth(m, MonthNumeric) + "." ` +
+			`}; return fmtDay(d, DayNumeric) + ". " + fmtMonth(m, MonthNumeric) + "." ` +
+			`}`,
+	}, {
+		in: [4]string{"d.MM", "d.MM", "dd.MM", "dd.MM"},
+		out: `return func(m time.Month, d int) string {` +
+			` return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "." + fmtMonth(m, Month2Digit) }`,
+	}, {
+		in: [4]string{"MMMMM/dd", "MMMMM/dd", "MMMMM/dd", "MMMMM/dd"},
+		out: `fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow"); ` +
+			`return func(m time.Month, d int) string { return fmtMonth(m, opts.Month) + "/" + fmtDay(d, Day2Digit) }`,
+	}, {
+		in: [4]string{"MM-dd", "d/MM", "dd/M", "dd/MM"},
+		out: `return func(m time.Month, d int) string {` +
+			` if opts.Month == MonthNumeric && opts.Day == DayNumeric {` +
+			` return fmtMonth(m, Month2Digit) + "-" + fmtDay(d, Day2Digit) ` +
+			`}; return fmtDay(d, cmp.Or(opts.Day, Day2Digit)) + "/" + fmtMonth(m, cmp.Or(opts.Month, Month2Digit)) ` +
+			`}`,
+	}, { // wae-CH
+		in: [4]string{"d. MMM", "d. MMM", "dd. MMM", "dd. MMM"},
+		out: `fmtMonth = fmtMonthName(locale.String(), "stand-alone", "abbreviated"); ` +
+			`return func(m time.Month, d int) string {` +
+			` return fmtDay(d, cmp.Or(opts.Day, DayNumeric)) + ". " + fmtMonth(m, opts.Month) }`,
+	},
 	} {
 		t.Run(fmt.Sprintf("%+v", test.in), func(t *testing.T) {
 			t.Parallel()
@@ -72,16 +66,13 @@ func Test_buildFmtMD(t *testing.T) {
 func Test_yearMonthPatterns(t *testing.T) {
 	t.Parallel()
 
-	for _, test := range []struct{ in, out [3]string }{
-		{ // th
-			in:  [3]string{"", "", "M/y"},
-			out: [3]string{"M/y", "MM/y", "M/y"},
-		},
-		{
-			in:  [3]string{"LL-y", "", ""},
-			out: [3]string{"MM-y", "MM-y", "MM-y"},
-		},
-	} {
+	for _, test := range []struct{ in, out [3]string }{{ // th
+		in:  [3]string{"", "", "M/y"},
+		out: [3]string{"M/y", "MM/y", "M/y"},
+	}, {
+		in:  [3]string{"LL-y", "", ""},
+		out: [3]string{"MM-y", "MM-y", "MM-y"},
+	}} {
 		t.Run(fmt.Sprintf("%+v", test.in), func(t *testing.T) {
 			t.Parallel()
 
@@ -107,44 +98,34 @@ func Test_monthDayPatterns(t *testing.T) {
 
 	for _, test := range []struct {
 		in, out [4]string
-	}{
-		{
-			in:  [4]string{"d/M", "", "", ""},
-			out: [4]string{"d/M", "d/MM", "dd/M", "dd/MM"},
-		},
-		{
-			in:  [4]string{"d/M", "", "", "dd-MM"},
-			out: [4]string{"d/M", "d-MM", "dd-M", "dd-MM"},
-		},
-		{ // af-ZA
-			in:  [4]string{"dd-MM", "", "", ""},
-			out: [4]string{"dd-MM", "dd-MM", "dd-MM", "dd-MM"},
-		},
-		{ // om-ET
-			in:  [4]string{"MM-dd", "", "", "dd/MM"},
-			out: [4]string{"MM-dd", "d/MM", "dd/M", "dd/MM"},
-		},
-		{
-			in:  [4]string{"d.M.", "", "", "d. M."},
-			out: [4]string{"d.M.", "d. M.", "d. M.", "d. M."},
-		},
-		{ // bg-BG
-			in:  [4]string{"d.MM", "", "", ""},
-			out: [4]string{"d.MM", "d.MM", "dd.MM", "dd.MM"},
-		},
-		{ // sv-SE
-			in:  [4]string{"d/M", "d/M", "", "dd/MM"},
-			out: [4]string{"d/M", "d/M", "dd/M", "dd/MM"},
-		},
-		{ // sv
-			in:  [4]string{"", "", "", "d/M"},
-			out: [4]string{"d/M", "d/M", "d/M", "d/M"},
-		},
-		{ // wae-CH
-			in:  [4]string{"d. MMM", "", "", ""},
-			out: [4]string{"d. MMM", "d. MMM", "dd. MMM", "dd. MMM"},
-		},
-	} {
+	}{{
+		in:  [4]string{"d/M", "", "", ""},
+		out: [4]string{"d/M", "d/MM", "dd/M", "dd/MM"},
+	}, {
+		in:  [4]string{"d/M", "", "", "dd-MM"},
+		out: [4]string{"d/M", "d-MM", "dd-M", "dd-MM"},
+	}, { // af-ZA
+		in:  [4]string{"dd-MM", "", "", ""},
+		out: [4]string{"dd-MM", "dd-MM", "dd-MM", "dd-MM"},
+	}, { // om-ET
+		in:  [4]string{"MM-dd", "", "", "dd/MM"},
+		out: [4]string{"MM-dd", "d/MM", "dd/M", "dd/MM"},
+	}, {
+		in:  [4]string{"d.M.", "", "", "d. M."},
+		out: [4]string{"d.M.", "d. M.", "d. M.", "d. M."},
+	}, { // bg-BG
+		in:  [4]string{"d.MM", "", "", ""},
+		out: [4]string{"d.MM", "d.MM", "dd.MM", "dd.MM"},
+	}, { // sv-SE
+		in:  [4]string{"d/M", "d/M", "", "dd/MM"},
+		out: [4]string{"d/M", "d/M", "dd/M", "dd/MM"},
+	}, { // sv
+		in:  [4]string{"", "", "", "d/M"},
+		out: [4]string{"d/M", "d/M", "d/M", "d/M"},
+	}, { // wae-CH
+		in:  [4]string{"d. MMM", "", "", ""},
+		out: [4]string{"d. MMM", "d. MMM", "dd. MMM", "dd. MMM"},
+	}} {
 		t.Run(fmt.Sprintf("%+v", test.in), func(t *testing.T) {
 			t.Parallel()
 
@@ -169,7 +150,7 @@ func Test_monthDayPatterns(t *testing.T) {
 	}
 }
 
-func Test_GroupLayouts(t *testing.T) {
+func Test_groupLayouts(t *testing.T) {
 	t.Parallel()
 
 	layout := func(id, fmt string) Layout {
@@ -259,7 +240,7 @@ func Test_GroupLayouts(t *testing.T) {
 	}
 }
 
-func Test_ParseDatePattern(t *testing.T) {
+func Test_parseDatePattern(t *testing.T) {
 	t.Parallel()
 
 	cases := []struct {

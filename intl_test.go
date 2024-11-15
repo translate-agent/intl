@@ -64,7 +64,7 @@ func (t Tests) String() string {
 	return sb.String()
 }
 
-type ESTests struct {
+type AllTests struct {
 	Date  time.Time              `json:"date"`
 	Tests map[language.Tag]Tests `json:"tests"`
 }
@@ -128,7 +128,7 @@ func skipTest(locale language.Tag, options Options) string {
 		options Options
 	}
 
-	v := map[key]string{
+	return map[key]string{
 		{"lrc-IR", Options{Year: YearNumeric}}:                      "depends on localised era",
 		{"lrc-IR", Options{Year: Year2Digit}}:                       "depends on localised era",
 		{"lrc-IR", Options{Year: YearNumeric, Month: MonthNumeric}}: "depends on localised era",
@@ -150,14 +150,12 @@ func skipTest(locale language.Tag, options Options) string {
 		{"th-TH", Options{Year: Year2Digit}}:                        "depends on localised era",
 		{"th-TH", Options{Year: YearNumeric}}:                       "depends on localised era",
 	}[key{locale.String(), options}]
-
-	return v
 }
 
 func TestDateTime_Format(t *testing.T) {
 	t.Parallel()
 
-	var tests ESTests
+	var tests AllTests
 
 	if err := json.Unmarshal(data, &tests); err != nil {
 		panic(err)
