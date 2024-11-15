@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -34,12 +35,10 @@ type Conf struct {
 	saveMerged bool
 }
 
-func Gen(conf Conf) error {
+func Gen(conf Conf, log *slog.Logger) error {
 	var g Generator
 
-	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-
-	if err := g.Load(conf.cldrDir, log); err != nil {
+	if err := g.load(conf.cldrDir, log); err != nil {
 		return err
 	}
 
@@ -49,18 +48,24 @@ func Gen(conf Conf) error {
 		}
 	}
 
-	if err := g.Write(conf.out, log); err != nil {
+	if err := g.write(conf.out, log); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (g *Generator) Load(dir string, log *slog.Logger) error {
+func (g *Generator) load(dir string, log *slog.Logger) error {
 	var (
 		d   cldr.Decoder
 		err error
 	)
+
+	now := time.Now()
+
+	defer func() {
+		log.Debug("loading", "duration", time.Since(now))
+	}()
 
 	d.SetDirFilter("main", "supplemental")
 
@@ -75,7 +80,7 @@ func (g *Generator) Load(dir string, log *slog.Logger) error {
 	return nil
 }
 
-func (g *Generator) Write(out string, log *slog.Logger) error {
+func (g *Generator) write(out string, log *slog.Logger) error {
 	tpl, err := template.New("datetime").Funcs(template.FuncMap{
 		"join":     strings.Join,
 		"contains": strings.Contains,

@@ -2,7 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"log/slog"
+	"os"
 )
 
 func main() {
@@ -22,9 +23,11 @@ func main() {
 		panic("-out flag is required")
 	}
 
-	if err := Gen(conf); err != nil {
+	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+
+	if err := Gen(conf, log); err != nil {
 		panic(err)
 	}
 
-	fmt.Println("done")
+	log.Info("done")
 }

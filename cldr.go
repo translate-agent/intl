@@ -706,8 +706,15 @@ var calendarMonthNames = [...]calendarMonths{
 	{"Januwari", "Februwari", "Mashi", "Ephreli", "Meyi", "Juni", "Julayi", "Agasti", "Septhemba", "Okthoba", "Novemba", "Disemba"},
 }
 
-// monthIndexes contains indexes of months names, each calendar has 6 indexes
+// monthIndexes contains indexes of months names in Gregorian calendar, it has 6 indexes
 // for all variations of "width" and "context".
+//
+//	0 - abbreviated, format
+//	1 - abbreviated, stand-alone
+//	2 - wide, format
+//	3 - wide, stand-alone
+//	4 - narrow, format
+//	5 - narrow, stand-alone
 type monthIndexes [6]int16
 
 var monthLookup = map[string]monthIndexes{
