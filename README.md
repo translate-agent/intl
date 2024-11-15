@@ -27,15 +27,15 @@ The project uses [Earthly](https://earthly.dev) to automate all development task
 TARGETS:
   +init
       init prepares the project for local development
-  +cldr [--cldr_version=45.0]
+  +cldr [--cldr_version=45.0] [--out=.cldr]
       cldr saves CLDR files to .cldr
   +testdata
       testdata generates test cases and saves to tests.json
   +generate
-      generate generates cldr.go
+      generate generates cldr_*.go from CLDR xml
   +test
       test runs unit tests
-  +lint [--golangci_lint_version=1.61.0]
+  +lint [--golangci_lint_version=1.62.0]
       lint runs all linters for golang
   +check
       check verifies code quality by running linters and tests.
