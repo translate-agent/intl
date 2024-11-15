@@ -17,13 +17,17 @@ import (
 	"text/template"
 	"time"
 
+	"golang.org/x/sync/errgroup"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"golang.org/x/text/unicode/cldr"
 )
 
-//go:embed cldr.go.tmpl
-var datetimeTemplate string
+//go:embed cldr_fmt.go.tmpl
+var cldrFmtTemplate string
+
+//go:embed cldr_data.go.tmpl
+var cldrDataTemplate string
 
 type Generator struct {
 	cldr *cldr.CLDR
@@ -81,16 +85,6 @@ func (g *Generator) load(dir string, log *slog.Logger) error {
 }
 
 func (g *Generator) write(out string, log *slog.Logger) error {
-	tpl, err := template.New("datetime").Funcs(template.FuncMap{
-		"join":     strings.Join,
-		"contains": strings.Contains,
-		"title":    title,
-		"sub":      func(a, b int) int { return a - b },
-	}).Parse(datetimeTemplate)
-	if err != nil {
-		return fmt.Errorf("parse datetime template: %w", err)
-	}
-
 	defaultNumberingSystems := g.defaultNumberingSystems()
 	calendarPreferences := g.calendarPreferences()
 
@@ -103,20 +97,63 @@ func (g *Generator) write(out string, log *slog.Logger) error {
 		Months:                  g.months(),
 	}
 
-	name := path.Join(out, "cldr.go")
+	var eg errgroup.Group
 
-	f, err := os.Create(name)
-	if err != nil {
-		return fmt.Errorf("create %s: %w", name, err)
-	}
+	eg.Go(func() error {
+		fmtTpl, err := template.New("cldr_fmt").Funcs(template.FuncMap{
+			"join":     strings.Join,
+			"contains": strings.Contains,
+			"title":    title,
+			"sub":      func(a, b int) int { return a - b },
+		}).Parse(cldrFmtTemplate)
+		if err != nil {
+			return fmt.Errorf("parse cldr_fmt: %w", err)
+		}
 
-	defer f.Close()
+		name := path.Join(out, "cldr_fmt.go")
 
-	if err := tpl.Execute(f, data); err != nil {
-		return fmt.Errorf("execute datetime template: %w", err)
-	}
+		f, err := os.Create(name)
+		if err != nil {
+			return fmt.Errorf("create %s: %w", name, err)
+		}
 
-	return nil
+		defer f.Close()
+
+		if err := fmtTpl.Execute(f, data); err != nil {
+			return fmt.Errorf("execute cldr_fmt: %w", err)
+		}
+
+		return nil
+	})
+
+	eg.Go(func() error {
+		dataTpl, err := template.New("cldr_data").Funcs(template.FuncMap{
+			"join":     strings.Join,
+			"contains": strings.Contains,
+			"title":    title,
+			"sub":      func(a, b int) int { return a - b },
+		}).Parse(cldrDataTemplate)
+		if err != nil {
+			return fmt.Errorf("parse cldr_data: %w", err)
+		}
+
+		name := path.Join(out, "cldr_data.go")
+
+		f, err := os.Create(name)
+		if err != nil {
+			return fmt.Errorf("create %s: %w", name, err)
+		}
+
+		defer f.Close()
+
+		if err := dataTpl.Execute(f, data); err != nil {
+			return fmt.Errorf("execute cldr_data: %w", err)
+		}
+
+		return nil
+	})
+
+	return eg.Wait()
 }
 
 func (g *Generator) saveMerged(out string) error {

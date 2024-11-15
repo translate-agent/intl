@@ -1,7 +1,8 @@
 {
   "editor.formatOnSave": true,
   "files.readonlyInclude": {
-    "cldr.go": true
+    "cldr_data.go": true,
+    "cldr_fmt.go": true
   },
   "go.formatTool": "gofumpt",
   "go.lintOnSave": "workspace",

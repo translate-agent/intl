@@ -27,7 +27,7 @@ testdata:
   RUN node testdata.js
   SAVE ARTIFACT tests.json AS LOCAL tests.json
 
-# generate generates cldr.go
+# generate generates cldr_*.go from CLDR xml
 generate:
   RUN go install mvdan.cc/gofumpt@latest
   COPY --dir +cldr/cldr .
@@ -38,7 +38,8 @@ generate:
     --mount=type=cache,id=go-build,target=/root/.cache/go-build \
     go run -C internal/gen . -cldr-dir /intl/cldr -out=/intl && \
     gofumpt -w .
-  SAVE ARTIFACT cldr.go AS LOCAL cldr.go
+  SAVE ARTIFACT cldr_data.go AS LOCAL cldr_data.go
+  SAVE ARTIFACT cldr_fmt.go AS LOCAL cldr_fmt.go
 
 # test runs unit tests
 test:
