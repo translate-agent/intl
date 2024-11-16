@@ -29,6 +29,9 @@ var cldrFmtTemplate string
 //go:embed cldr_data.go.tmpl
 var cldrDataTemplate string
 
+// LocaleLookup maps a shared property (the key) to a list of locales that share that property.
+type LocaleLookup map[string][]string
+
 type Generator struct {
 	cldr *cldr.CLDR
 }
@@ -105,6 +108,27 @@ func (g *Generator) write(out string, log *slog.Logger) error {
 			"contains": strings.Contains,
 			"title":    title,
 			"sub":      func(a, b int) int { return a - b },
+			"sortKeys": func(m LocaleLookup) []string {
+				// Make generated code deterministic - sort based on the first slice element in value
+				// TODO(jhorsts): replace with iter.Seq2 when go template supports it
+				sorted := make([][2]string, 0, len(m))
+
+				for k, v := range m {
+					sorted = append(sorted, [2]string{k, v[0]})
+				}
+
+				slices.SortFunc(sorted, func(a, b [2]string) int {
+					return cmp.Compare(a[1], b[1])
+				})
+
+				result := make([]string, 0, len(sorted))
+
+				for _, v := range sorted {
+					result = append(result, v[0])
+				}
+
+				return result
+			},
 		}).Parse(cldrFmtTemplate)
 		if err != nil {
 			return fmt.Errorf("parse cldr_fmt: %w", err)
@@ -119,19 +143,12 @@ func (g *Generator) write(out string, log *slog.Logger) error {
 
 		defer f.Close()
 
-		if err := fmtTpl.Execute(f, data); err != nil {
-			return fmt.Errorf("execute cldr_fmt: %w", err)
-		}
-
-		return nil
+		return fmtTpl.Execute(f, data)
 	})
 
 	eg.Go(func() error {
 		dataTpl, err := template.New("cldr_data").Funcs(template.FuncMap{
-			"join":     strings.Join,
-			"contains": strings.Contains,
-			"title":    title,
-			"sub":      func(a, b int) int { return a - b },
+			"title": title,
 		}).Parse(cldrDataTemplate)
 		if err != nil {
 			return fmt.Errorf("parse cldr_data: %w", err)
@@ -146,14 +163,14 @@ func (g *Generator) write(out string, log *slog.Logger) error {
 
 		defer f.Close()
 
-		if err := dataTpl.Execute(f, data); err != nil {
-			return fmt.Errorf("execute cldr_data: %w", err)
-		}
-
-		return nil
+		return dataTpl.Execute(f, data)
 	})
 
-	return eg.Wait()
+	if err := eg.Wait(); err != nil {
+		return fmt.Errorf("write generated .go files: %w", err)
+	}
+
+	return nil
 }
 
 func (g *Generator) saveMerged(out string) error {
@@ -488,8 +505,8 @@ func (g *Generator) calendarPreferences() []CalendarPreference {
 	return preferences
 }
 
-func (g *Generator) defaultNumberingSystems() DefaultNumberingSystems {
-	defaultNumberingSystems := make(DefaultNumberingSystems)
+func (g *Generator) defaultNumberingSystems() LocaleLookup {
+	defaultNumberingSystems := make(LocaleLookup)
 
 	for _, locale := range g.cldr.Locales() {
 		ldml := g.cldr.RawLDML(locale)
@@ -869,7 +886,7 @@ type CLDRDateFormatItem struct {
 	Count string
 }
 
-func (g *Generator) numberingSystems(defaultNumberingSystems DefaultNumberingSystems) []NumberingSystem {
+func (g *Generator) numberingSystems(defaultNumberingSystems LocaleLookup) []NumberingSystem {
 	numberingSystems := make([]NumberingSystem, 0, 12) //nolint:mnd
 
 	ids := slices.Collect(maps.Keys(defaultNumberingSystems))
@@ -894,7 +911,7 @@ func (g *Generator) numberingSystems(defaultNumberingSystems DefaultNumberingSys
 	return numberingSystems
 }
 
-func (g *Generator) numberingSystemsIota(defaultNumberingSystems DefaultNumberingSystems) []string {
+func (g *Generator) numberingSystemsIota(defaultNumberingSystems LocaleLookup) []string {
 	ids := slices.Collect(maps.Keys(defaultNumberingSystems))
 
 	slices.Sort(ids)
@@ -909,7 +926,7 @@ type NumberingSystem struct {
 
 type TemplateData struct {
 	Months                  Months
-	DefaultNumberingSystems DefaultNumberingSystems
+	DefaultNumberingSystems LocaleLookup
 	NumberingSystemIota     []string
 	CalendarPreferences     []CalendarPreference
 	DateTimeFormats         DateTimeFormats
@@ -997,12 +1014,12 @@ func NewCalendarDateTimeFormats() CalendarDateTimeFormats {
 
 type CalendarDateTimeFormat struct {
 	// key - expr (format), value - languages.
-	Fmt     map[string][]string
+	Fmt     LocaleLookup
 	Default string
 }
 
 func NewCalendarDateTimeFormat() CalendarDateTimeFormat {
-	return CalendarDateTimeFormat{Fmt: make(map[string][]string)}
+	return CalendarDateTimeFormat{Fmt: make(LocaleLookup)}
 }
 
 type CalendarPreference struct {
@@ -1023,8 +1040,6 @@ func Locale(ldml *cldr.LDML) string {
 
 	return lang
 }
-
-type DefaultNumberingSystems map[string][]string // key - numbering system, value - locales
 
 //nolint:ireturn
 func deepCopy[T any](v T) T {

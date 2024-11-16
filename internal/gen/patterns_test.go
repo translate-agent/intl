@@ -49,8 +49,7 @@ func Test_buildFmtMD(t *testing.T) {
 		out: `fmtMonth = fmtMonthName(locale.String(), "stand-alone", "abbreviated"); ` +
 			`return func(m time.Month, d int) string {` +
 			` return fmtDay(d, cmp.Or(opts.Day, DayNumeric)) + ". " + fmtMonth(m, opts.Month) }`,
-	},
-	} {
+	}} {
 		t.Run(fmt.Sprintf("%+v", test.in), func(t *testing.T) {
 			t.Parallel()
 
