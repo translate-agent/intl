@@ -48,7 +48,8 @@ func fmtYear{{ title $calendarType }}(locale language.Tag) func(v string) string
   switch lang.String() {
   default:
     return func(v string) string { return {{ $formats.Y.Default }} }
-{{- range $fmt, $languages := $formats.Y.Fmt }}
+{{- range $fmt := sortKeys $formats.Y.Fmt }}
+{{- $languages := index $formats.Y.Fmt $fmt }}
   case "{{ join $languages "\", \"" }}":
     return func (v string) string { return {{ $fmt }} }
 {{- end }}
@@ -62,7 +63,8 @@ func fmtYearMonth{{ title $calendarType}}(locale language.Tag, digits digits, op
   switch language, _ := locale.Base(); language.String() {
   default:
     return func(y int, m time.Month) string { {{ $formats.YM.Default }} }
-{{- range $fmt, $languages := $formats.YM.Fmt }}
+{{- range $fmt := sortKeys $formats.YM.Fmt }}
+{{- $languages := index $formats.YM.Fmt $fmt }}
   case "{{ join $languages "\", \"" }}":
     return func(y int, m time.Month) string { {{ $fmt }} }
 {{- end }}
@@ -81,7 +83,8 @@ func fmtMonth{{ title $calendarType }}(_ language.Tag, digits digits) func(v tim
   switch lang.String() {
   default:
     return fmtMonth(digits)
-  {{- range $fmt, $languages := $formats.M.Fmt }}
+  {{- range $fmt := sortKeys $formats.M.Fmt }}
+  {{- $languages := index $formats.M.Fmt $fmt }}
   case "{{ join $languages "\", \"" }}":
     {{ $fmt }}
   {{- end }}
@@ -98,7 +101,8 @@ func fmtMonthDay{{ title $calendarType}}(locale language.Tag, digits digits, opt
   switch lang.String() {
   default:
     {{ $formats.MD.Default }}
-  {{- range $fmt, $languages := $formats.MD.Fmt }}
+  {{- range $fmt := sortKeys $formats.MD.Fmt }}
+  {{- $languages := index $formats.MD.Fmt $fmt }}
   case "{{ join $languages "\", \"" }}":
     {{ $fmt }}
   {{- end }}
@@ -118,7 +122,8 @@ func fmtDay{{ title $calendarType }}(_ language.Tag, digits digits) func(v int, 
   switch lang.String() {
   default:
     return fmt
-  {{- range $fmt, $languages := $formats.D.Fmt }}
+  {{- range $fmt := sortKeys $formats.D.Fmt }}
+  {{- $languages := index $formats.D.Fmt $fmt }}
   case "{{ join $languages "\", \"" }}":
     return func(v int, opt Day) string { return {{ $fmt }} }
   {{- end }}
