@@ -300,7 +300,7 @@ func buildFmtYM(yM, yMM, yyyyM string, log *slog.Logger) string {
 
 	log.Debug("infer YM patterns", "yM", yMPattern.String(), "yMM", yMMPattern.String())
 
-	if yMPattern.monthLen(5) {
+	if yMPattern.monthLen(5) { //nolint:mnd
 		sb.WriteString(`fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow");`)
 	}
 
