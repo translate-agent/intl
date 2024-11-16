@@ -286,8 +286,9 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 			return fmtMonth(m, Month2Digit) + "." + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "."
 		}
 	case "mn":
+		fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow")
 		return func(y int, m time.Month) string {
-			return fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + " " + fmtMonthName(locale.String(), "stand-alone", "narrow")(m, opts.Month)
+			return fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + " " + fmtMonth(m, opts.Month)
 		}
 	case "om", "yi":
 		return func(y int, m time.Month) string {

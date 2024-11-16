@@ -292,6 +292,89 @@ func yearMonthPatterns(
 	return patternyM, patternyMM, patternyyyyM
 }
 
+// TODO(jhorsts): rework buildFmtYM() the same way as buildFmtMD().
+func buildFmtYM(yM, yMM, yyyyM string, log *slog.Logger) string {
+	var sb strings.Builder
+
+	yMPattern, yMMPattern, _ := yearMonthPatterns(yM, yMM, yyyyM)
+
+	log.Debug("infer YM patterns", "yM", yMPattern.String(), "yMM", yMMPattern.String())
+
+	if yMPattern.monthLen(5) { //nolint:mnd
+		sb.WriteString(`fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow");`)
+	}
+
+	write := func(pattern DatePattern) {
+		sb.WriteString("return ")
+
+		for i, v := range pattern {
+			if i > 0 {
+				sb.WriteRune('+')
+			}
+
+			switch v.Value {
+			default:
+				sb.WriteString(`"` + v.Value + `"`)
+			case "L", "M":
+				if yMMPattern.monthLen(1) {
+					sb.WriteString(`fmtMonth(m, MonthNumeric)`)
+				} else {
+					sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))`)
+				}
+			case "LL", "MM":
+				if yMMPattern.month() == v.Value {
+					sb.WriteString(`fmtMonth(m, Month2Digit)`)
+				} else {
+					sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, Month2Digit))`)
+				}
+			case "MMMMM":
+				sb.WriteString(`fmtMonth(m, opts.Month)`)
+			case "y", "Y":
+				sb.WriteString("fmtYear(y, cmp.Or(opts.Year, YearNumeric))")
+			}
+		}
+	}
+
+	switch {
+	default: // yM == yMM
+		sb.WriteString("return func(y int, m time.Month) string {")
+		write(yMPattern)
+		sb.WriteString("}")
+
+		return sb.String()
+	case yM == "y/M" && yMM == "y年M月":
+		return `return func(y int, m time.Month) string {
+	ys := fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+	ms := fmtMonth(m, MonthNumeric)
+	if opts.Month == MonthNumeric {
+		return ys+"/"+ms
+	}
+	return ys+"年"+ms+"月" }`
+	case yM == "y-MM" && yMM == "MM/y":
+		return `return func(y int, m time.Month) string {
+	ys := fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+	ms := fmtMonth(m, Month2Digit)
+	if opts.Month == MonthNumeric {
+		return ys+"-"+ms
+	}
+	return ms+"/"+ys }`
+	case len(yMPattern) > 0 && len(yMMPattern) > 0 && yMPattern[1] != yMMPattern[1]:
+		sb.WriteString("return func(y int, m time.Month) string { if (opts.Month == MonthNumeric) {")
+		write(yMPattern)
+		sb.WriteString("};")
+		write(yMMPattern)
+		sb.WriteString("}")
+
+		return sb.String()
+	case len(yMPattern) > 0 && yMPattern[0].Value == "MM" && yMMPattern[0].Value == "M":
+		return `return func(y int, m time.Month) string {
+	if opts.Month == MonthNumeric {
+		return fmtMonth(m, Month2Digit)+"/"+fmtYear(y, cmp.Or(opts.Year, YearNumeric))
+	}
+	return fmtMonth(m, MonthNumeric)+"/"+fmtYear(y, cmp.Or(opts.Year, YearNumeric)) }`
+	}
+}
+
 //nolint:gocognit,cyclop
 func monthDayPatterns(
 	formatMd, formatMMd, formatMdd, formatMMdd string,
