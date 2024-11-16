@@ -535,7 +535,7 @@ func (g *Generator) dateTimeFormats(calendarPreferences []CalendarPreference, lo
 		formats := NewCalendarDateTimeFormats()
 
 		formats.Y.Default = strings.NewReplacer("G ", `"AP "+`, "y", "v").Replace(g.findRootDateFormatItem(calendarType, "y"))
-		formats.YM.Default = g.buildFmtYM(cmp.Or(
+		formats.YM.Default = buildFmtYM(cmp.Or(
 			g.findRootDateFormatItem(calendarType, "yM"),
 			g.findRootDateFormatItem(calendarType, "yMM"),
 			g.findRootDateFormatItem(calendarType, "yyyyM"),
@@ -653,7 +653,7 @@ func (g *Generator) addFormatYM(
 		return
 	}
 
-	s := g.buildFmtYM(yM, yMM, yyyyM, log)
+	s := buildFmtYM(yM, yMM, yyyyM, log)
 
 	if formats.YM.Default != s {
 		formats.YM.Fmt[s] = append(formats.YM.Fmt[s], locale)
@@ -1069,72 +1069,4 @@ func title(s string) string {
 	}
 
 	return strings.ReplaceAll(r, "-", "") // e.g. "islamic - umalqura"
-}
-
-func (g *Generator) buildFmtYM(yM, yMM, yyyyM string, log *slog.Logger) string {
-	yMPattern, yMMPattern, _ := yearMonthPatterns(yM, yMM, yyyyM)
-
-	log.Debug("infer YM patterns", "yM", yMPattern.String(), "yMM", yMMPattern.String())
-
-	switch {
-	default: // yM == yMM
-		var sb strings.Builder
-
-		sb.WriteString("return ")
-
-		for i, v := range yMPattern {
-			if i > 0 {
-				sb.WriteRune('+')
-			}
-
-			switch v.Value {
-			default:
-				sb.WriteString(`"` + v.Value + `"`)
-			case "L", "M":
-				if yMMmonth := yMMPattern.month(); yMM != "" && (yMMmonth == "M" || yMMmonth == "L") { // TODO: use len() instead
-					sb.WriteString(`fmtMonth(m, MonthNumeric)`)
-				} else {
-					sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))`)
-				}
-			case "LL", "MM":
-				if yMMPattern.month() == v.Value {
-					sb.WriteString(`fmtMonth(m, Month2Digit)`)
-				} else {
-					sb.WriteString(`fmtMonth(m, cmp.Or(opts.Month, Month2Digit))`)
-				}
-			case "MMMMM":
-				sb.WriteString(`fmtMonthName(locale.String(), "stand-alone", "narrow")(m, opts.Month)`)
-			case "y", "Y":
-				sb.WriteString("fmtYear(y, cmp.Or(opts.Year, YearNumeric))")
-			}
-		}
-
-		return sb.String()
-	case yM == "y/M" && yMM == "y年M月":
-		return `
-	ys := fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-	ms := fmtMonth(m, MonthNumeric)
-	if opts.Month == MonthNumeric {
-		return ys+"/"+ms
-	}
-	return ys+"年"+ms+"月"`
-	case yM == "y-MM" && yMM == "MM/y":
-		return `
-	ys := fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-	ms := fmtMonth(m, Month2Digit)
-	if opts.Month == MonthNumeric {
-		return ys+"-"+ms
-	}
-	return ms+"/"+ys`
-	case len(yMPattern) > 0 && len(yMMPattern) > 0 && yMPattern[1] != yMMPattern[1]:
-		return fmt.Sprintf(
-			`if (opts.Month == MonthNumeric) { %s }; %s`,
-			g.buildFmtYM(yM, "", "", log), g.buildFmtYM(yMM, "", "", log))
-	case len(yMPattern) > 0 && yMPattern[0].Value == "MM" && yMMPattern[0].Value == "M":
-		return `
-	if opts.Month == MonthNumeric {
-		return fmtMonth(m, Month2Digit)+"/"+fmtYear(y, cmp.Or(opts.Year, YearNumeric))
-	}
-	return fmtMonth(m, MonthNumeric)+"/"+fmtYear(y, cmp.Or(opts.Year, YearNumeric))`
-	}
 }
