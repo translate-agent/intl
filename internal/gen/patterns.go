@@ -239,6 +239,27 @@ func parseDatePattern(format string) DatePattern {
 	return pattern
 }
 
+func buildFmtY(formaty string) string {
+	var sb strings.Builder
+
+	for i, v := range parseDatePattern(formaty) {
+		if i > 0 {
+			sb.WriteRune('+')
+		}
+
+		switch v.Value {
+		default:
+			sb.WriteString(`"` + v.Value + `"`)
+		case "y":
+			sb.WriteString("v")
+		case "G":
+			sb.WriteString(`fmtEra(locale)`)
+		}
+	}
+
+	return sb.String()
+}
+
 func yearMonthPatterns(
 	formatyM, formatyMM, formatyyyyM string,
 ) (patternyM, patternyMM, patternyyyyM DatePattern) {
@@ -331,6 +352,8 @@ func buildFmtYM(yM, yMM, yyyyM string, log *slog.Logger) string {
 				sb.WriteString(`fmtMonth(m, opts.Month)`)
 			case "y", "Y":
 				sb.WriteString("fmtYear(y, cmp.Or(opts.Year, YearNumeric))")
+			case "G", "GGGGG":
+				sb.WriteString(`fmtEra(locale)`)
 			}
 		}
 	}

@@ -128,28 +128,7 @@ func skipTest(locale language.Tag, options Options) string {
 		options Options
 	}
 
-	return map[key]string{
-		{"lrc-IR", Options{Year: YearNumeric}}:                      "depends on localised era",
-		{"lrc-IR", Options{Year: Year2Digit}}:                       "depends on localised era",
-		{"lrc-IR", Options{Year: YearNumeric, Month: MonthNumeric}}: "depends on localised era",
-		{"lrc-IR", Options{Year: YearNumeric, Month: Month2Digit}}:  "depends on localised era",
-		{"lrc-IR", Options{Year: Year2Digit, Month: MonthNumeric}}:  "depends on localised era",
-		{"lrc-IR", Options{Year: Year2Digit, Month: Month2Digit}}:   "depends on localised era",
-		{"mzn-IR", Options{Year: YearNumeric}}:                      "depends on localised era",
-		{"mzn-IR", Options{Year: Year2Digit}}:                       "depends on localised era",
-		{"mzn-IR", Options{Year: YearNumeric, Month: MonthNumeric}}: "depends on localised era",
-		{"mzn-IR", Options{Year: YearNumeric, Month: Month2Digit}}:  "depends on localised era",
-		{"mzn-IR", Options{Year: Year2Digit, Month: MonthNumeric}}:  "depends on localised era",
-		{"mzn-IR", Options{Year: Year2Digit, Month: Month2Digit}}:   "depends on localised era",
-		{"ps-AF", Options{Year: YearNumeric}}:                       "depends on localised era",
-		{"ps-AF", Options{Year: Year2Digit}}:                        "depends on localised era",
-		{"ps-AF", Options{Year: YearNumeric, Month: MonthNumeric}}:  "depends on localised era",
-		{"ps-AF", Options{Year: YearNumeric, Month: Month2Digit}}:   "depends on localised era",
-		{"ps-AF", Options{Year: Year2Digit, Month: MonthNumeric}}:   "depends on localised era",
-		{"ps-AF", Options{Year: Year2Digit, Month: Month2Digit}}:    "depends on localised era",
-		{"th-TH", Options{Year: Year2Digit}}:                        "depends on localised era",
-		{"th-TH", Options{Year: YearNumeric}}:                       "depends on localised era",
-	}[key{locale.String(), options}]
+	return map[key]string{}[key{locale.String(), options}]
 }
 
 func TestDateTime_Format(t *testing.T) {
