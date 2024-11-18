@@ -521,14 +521,16 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 		layout := fmtYearMonthBuddhist(locale, digits, opts)
 
 		return func(v time.Time) string {
-			t := v.AddDate(543, 0, 0) //nolint:mnd
+			v = v.AddDate(543, 0, 0) //nolint:mnd
 
-			return layout(t.Year(), t.Month())
+			return layout(v.Year(), v.Month())
 		}
 	case opts.Month != MonthUnd && opts.Day != DayUnd:
 		layout := fmtMonthDayBuddhist(locale, digits, opts)
 
 		return func(v time.Time) string {
+			v = v.AddDate(543, 0, 0) //nolint:mnd
+
 			return layout(v.Month(), v.Day())
 		}
 	case opts.Year != YearUnd:
@@ -536,12 +538,16 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 		fmt := fmtYear(digits)
 
 		return func(v time.Time) string {
+			v = v.AddDate(543, 0, 0) //nolint:mnd
+
 			return layout(fmt(v.Year(), opts.Year))
 		}
 	case opts.Month != MonthUnd:
 		layout := fmtMonthBuddhist(locale, digits)
 
 		return func(v time.Time) string {
+			v = v.AddDate(543, 0, 0) //nolint:mnd
+
 			return layout(v.Month(), opts.Month)
 		}
 	case opts.Day != DayUnd:

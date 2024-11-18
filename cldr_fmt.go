@@ -104,14 +104,27 @@ func defaultCalendar(locale language.Tag) calendarType {
 	}
 }
 
+// TODO(jhorsts): temporary era formatting until [era] option is added.
+// This allows to format era in year formats where it is required.
+//
+// [era]: https://github.com/translate-agent/intl/issues/25
+func fmtEra(locale language.Tag) string {
+	lang, _ := locale.Base()
+
+	switch lang.String() {
+	default:
+		return "AP"
+	case "th":
+		return "พ.ศ."
+	}
+}
+
 func fmtYearBuddhist(locale language.Tag) func(v string) string {
 	lang, _ := locale.Base()
 
 	switch lang.String() {
 	default:
-		return func(v string) string { return "AP " + v }
-	case "th":
-		return func(v string) string { return "G" + " " + v }
+		return func(v string) string { return fmtEra(locale) + " " + v }
 	}
 }
 
@@ -122,7 +135,7 @@ func fmtYearMonthBuddhist(locale language.Tag, digits digits, opts Options) func
 	switch language, _ := locale.Base(); language.String() {
 	default:
 		return func(y int, m time.Month) string {
-			return "GGGGG" + " " + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "-" + fmtMonth(m, Month2Digit)
+			return fmtEra(locale) + " " + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "-" + fmtMonth(m, Month2Digit)
 		}
 	case "th":
 		return func(y int, m time.Month) string {
@@ -542,11 +555,9 @@ func fmtYearPersian(locale language.Tag) func(v string) string {
 
 	switch lang.String() {
 	default:
-		return func(v string) string { return "AP " + v }
+		return func(v string) string { return fmtEra(locale) + " " + v }
 	case "fa":
 		return func(v string) string { return v }
-	case "lrc", "mzn", "ps", "sdh":
-		return func(v string) string { return "G" + " " + v }
 	}
 }
 
@@ -557,7 +568,7 @@ func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) func(
 	switch language, _ := locale.Base(); language.String() {
 	default:
 		return func(y int, m time.Month) string {
-			return "GGGGG" + " " + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "-" + fmtMonth(m, Month2Digit)
+			return fmtEra(locale) + " " + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "-" + fmtMonth(m, Month2Digit)
 		}
 	case "fa":
 		return func(y int, m time.Month) string {
@@ -565,7 +576,7 @@ func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) func(
 		}
 	case "ps":
 		return func(y int, m time.Month) string {
-			return "G" + " " + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "/" + fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))
+			return fmtEra(locale) + " " + fmtYear(y, cmp.Or(opts.Year, YearNumeric)) + "/" + fmtMonth(m, cmp.Or(opts.Month, MonthNumeric))
 		}
 	}
 }
