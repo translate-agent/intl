@@ -124,13 +124,7 @@ var data []byte
 // Returns empty string if all is fine.
 func skipTest(locale language.Tag) string {
 	return map[string]string{
-		"ar-AE":    "regional formatting",
-		"ar-DZ":    "regional formatting",
-		"ar-EH":    "regional formatting",
-		"ar-LY":    "regional formatting",
-		"ar-MA":    "regional formatting",
-		"ar-SA":    "regional formatting",
-		"ar-TN":    "regional formatting",
+		"ar-SA":    "islamic-umalqura calendar",
 		"az-Arab":  "regional formatting",
 		"bs-Cyrl":  "regional formatting",
 		"ckb-IR":   "regional formatting",
@@ -258,7 +252,6 @@ func skipTest(locale language.Tag) string {
 		"no":       "regional formatting",
 		"pa-Arab":  "regional formatting",
 		"ps-PK":    "regional formatting",
-		"sat-Deva": "regional formatting",
 		"sd-Deva":  "regional formatting",
 		"se-FI":    "regional formatting",
 		"sv-FI":    "regional formatting",
@@ -302,7 +295,7 @@ func TestDateTime_Format(t *testing.T) {
 				}
 
 				if test.Output != got {
-					t.Errorf("\nwant '%s'\ngot  '%s'\n[%s]", test.Output, got, test.String())
+					t.Errorf("%s\nwant '%s'\ngot  '%s'", test.String(), test.Output, got)
 					t.Logf("\n%v\n%v\n", []rune(test.Output), []rune(got))
 				}
 			}
