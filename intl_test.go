@@ -125,7 +125,6 @@ var data []byte
 func skipTest(locale language.Tag) string {
 	return map[string]string{
 		"ar-SA":    "islamic-umalqura calendar",
-		"az-Arab":  "regional formatting",
 		"bs-Cyrl":  "regional formatting",
 		"ckb-IR":   "regional formatting",
 		"en-001":   "regional formatting",

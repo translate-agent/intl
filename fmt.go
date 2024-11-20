@@ -1,6 +1,8 @@
 package intl
 
-import "golang.org/x/text/language"
+import (
+	"golang.org/x/text/language"
+)
 
 func defaultNumberingSystem(locale language.Tag) numberingSystem {
 	switch locale.String() {
@@ -37,14 +39,14 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
 }
 
 func defaultCalendar(locale language.Tag) calendarType {
-	switch v, _ := locale.Region(); v.String() {
+	switch locale.String() {
 	default:
 		return calendarTypeGregorian
-	case "AF", "IR":
+	case "fa", "fa-AF", "fa-IR", "lrc", "lrc-IR", "mzn", "mzn-IR", "ps", "ps-AF", "uz-Arab":
 		return calendarTypePersian
 	case "SA":
 		return calendarTypeIslamicUmalqura
-	case "TH":
+	case "th", "th-TH":
 		return calendarTypeBuddhist
 	}
 }
