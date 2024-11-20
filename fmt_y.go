@@ -3,9 +3,7 @@ package intl
 import "golang.org/x/text/language"
 
 func fmtYearGregorian(locale language.Tag) func(v string) string {
-	lang, _ := locale.Base()
-
-	switch lang.String() {
+	switch lang, _ := locale.Base(); lang.String() {
 	default:
 		return func(v string) string { return v }
 	case "bg":

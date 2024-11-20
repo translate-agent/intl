@@ -7,12 +7,9 @@ import "golang.org/x/text/language"
 //
 // [era]: https://github.com/translate-agent/intl/issues/25
 func fmtEra(locale language.Tag) string {
-	lang, _ := locale.Base()
-
-	switch lang.String() {
-	default:
-		return "AP"
-	case "th":
+	if lang, _ := locale.Base(); lang.String() == "th" {
 		return "พ.ศ."
 	}
+
+	return "AP"
 }

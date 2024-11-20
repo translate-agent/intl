@@ -7,9 +7,7 @@ import (
 )
 
 func fmtMonthGregorian(locale language.Tag, digits digits) func(v time.Month, opt Month) string {
-	lang, _ := locale.Base()
-
-	switch lang.String() {
+	switch lang, _ := locale.Base(); lang.String() {
 	default:
 		return fmtMonth(digits)
 	case "br", "fo", "ga", "lt", "uk", "uz":
