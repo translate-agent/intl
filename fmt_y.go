@@ -2,31 +2,31 @@ package intl
 
 import "golang.org/x/text/language"
 
-func fmtYearGregorian(locale language.Tag) func(v string) string {
-	switch lang, _ := locale.Base(); lang.String() {
+func fmtYearGregorian(locale language.Tag) func(y string) string {
+	switch lang, _ := locale.Base(); lang {
 	default:
-		return func(v string) string { return v }
-	case "bg":
-		return func(v string) string { return v + " г." }
-	case "bs", "hr", "hu", "sr":
-		return func(v string) string { return v + "." }
-	case "ja", "yue", "zh":
-		return func(v string) string { return v + "年" }
-	case "ko":
-		return func(v string) string { return v + "년" }
-	case "lv":
-		return func(v string) string { return v + ". g." }
+		return func(y string) string { return y }
+	case bg:
+		return func(y string) string { return y + " г." }
+	case bs, hr, hu, sr:
+		return func(y string) string { return y + "." }
+	case ja, yue, zh:
+		return func(y string) string { return y + "年" }
+	case ko:
+		return func(y string) string { return y + "년" }
+	case lv:
+		return func(y string) string { return y + ". g." }
 	}
 }
 
-func fmtYearBuddhist(locale language.Tag) func(v string) string {
-	return func(v string) string { return fmtEra(locale) + " " + v }
+func fmtYearBuddhist(locale language.Tag) func(y string) string {
+	return func(y string) string { return fmtEra(locale) + " " + y }
 }
 
-func fmtYearPersian(locale language.Tag) func(v string) string {
-	if lang, _ := locale.Base(); lang.String() == "fa" {
-		return func(v string) string { return v }
+func fmtYearPersian(locale language.Tag) func(y string) string {
+	if lang, _ := locale.Base(); lang == fa {
+		return func(y string) string { return y }
 	}
 
-	return func(v string) string { return fmtEra(locale) + " " + v }
+	return func(y string) string { return fmtEra(locale) + " " + y }
 }
