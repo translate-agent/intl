@@ -114,7 +114,7 @@ func fmtYearMonthDayGregorian(
 				fmtMonth(m, opts.Month) + "." +
 				fmtYear(y, opts.Year)
 		}
-	case "be", "da", "de", "dsb", "et", "fi", "he", "hsb", "is", "ka", "lb", "mk", "nb", "nn", "smn", "sq":
+	case "be", "da", "de", "dsb", "et", "fi", "he", "hsb", "is", "ka", "lb", "mk", "nb", "nn", "no", "smn", "sq":
 		// year=numeric,month=numeric,day=numeric,out=2.1.2024
 		// year=numeric,month=numeric,day=2-digit,out=02.1.2024
 		// year=numeric,month=2-digit,day=numeric,out=2.01.2024
