@@ -39,12 +39,13 @@ generate:
     go run -C internal/gen . -cldr-dir /intl/cldr -out=/intl && \
     gofumpt -w .
   SAVE ARTIFACT cldr_data.go AS LOCAL cldr_data.go
-  SAVE ARTIFACT cldr_fmt.go AS LOCAL cldr_fmt.go
 
 # test runs unit tests
 test:
-  COPY +testdata/tests.json .
   COPY go.mod go.sum *.go .
+  COPY --dir internal .
+  COPY +testdata/tests.json .
+  COPY +generate/cldr_data.go .
   RUN \
     --mount=type=cache,id=go-mod,target=/go/pkg/mod \
     --mount=type=cache,id=go-build,target=/root/.cache/go-build \
@@ -55,8 +56,10 @@ lint:
   ARG golangci_lint_version=1.62.0
   FROM golangci/golangci-lint:v$golangci_lint_version-alpine
   WORKDIR /intl
-  COPY +testdata/tests.json .
   COPY go.mod go.sum *.go .golangci.yml .
+  COPY --dir internal .
+  COPY +testdata/tests.json .
+  COPY +generate/cldr_data.go .
   RUN \
     --mount=type=cache,id=go-mod,target=/go/pkg/mod \
     --mount=type=cache,id=go-build,target=/root/.cache/go-build \
