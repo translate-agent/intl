@@ -1,7 +1,6 @@
 package intl
 
 import (
-	"cmp"
 	"time"
 
 	"golang.org/x/text/language"
@@ -38,20 +37,4 @@ func fmtMonthBuddhist(_ language.Tag, digits digits) func(v time.Month, opt Mont
 
 func fmtMonthPersian(_ language.Tag, digits digits) func(v time.Month, opt Month) string {
 	return fmtMonth(digits)
-}
-
-func fmtMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
-	lang, _ := locale.Base()
-
-	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits)
-
-	switch lang.String() {
-	default:
-		return func(m time.Month, d int) string { return fmtMonth(m, Month2Digit) + "-" + fmtDay(d, Day2Digit) }
-	case "fa", "ps":
-		return func(m time.Month, d int) string {
-			return fmtMonth(m, cmp.Or(opts.Month, MonthNumeric)) + "/" + fmtDay(d, cmp.Or(opts.Day, DayNumeric))
-		}
-	}
 }

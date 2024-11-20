@@ -201,3 +201,19 @@ func fmtMonthDayBuddhist(locale language.Tag, digits digits, opts Options) func(
 		}
 	}
 }
+
+func fmtMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
+	lang, _ := locale.Base()
+
+	fmtMonth := fmtMonth(digits)
+	fmtDay := fmtDay(digits)
+
+	switch lang.String() {
+	default:
+		return func(m time.Month, d int) string { return fmtMonth(m, Month2Digit) + "-" + fmtDay(d, Day2Digit) }
+	case "fa", "ps":
+		return func(m time.Month, d int) string {
+			return fmtMonth(m, cmp.Or(opts.Month, MonthNumeric)) + "/" + fmtDay(d, cmp.Or(opts.Day, DayNumeric))
+		}
+	}
+}
