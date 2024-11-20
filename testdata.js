@@ -1,20 +1,10 @@
 const fs = require("fs").promises;
 
 async function getLocales() {
-  const localesAttributeValue = await fs
-    .readFile(".cldr/common/supplemental/supplementalMetadata.xml")
-    .then((v) => v.toString())
-    .then(
-      (v) =>
-        v
-          .matchAll(/<defaultContent locales="([\sa-zA-Z0-9_]*)/gm)
-          .toArray()[0][1]
-    );
-
   return (
-    localesAttributeValue
-      .split(/\s/)
-      .filter((v) => v.trim() !== "")
+    (await fs.readdir(".cldr/common/main"))
+      .map((v) => v.slice(0, -4))
+      .filter((v) => !["root"].includes(v))
       .map((v) => v.replace("_", "-"))
       // Skip the tests for the following locales - ICU does not support them (it falls back to system LANG).
       .filter(
