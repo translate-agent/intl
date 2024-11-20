@@ -152,25 +152,21 @@ func TestDateTime_Format(t *testing.T) {
 			t.Logf("cases:\n%s", cases)
 
 			for _, test := range cases {
-				t.Run(test.String(), func(t *testing.T) {
-					t.Parallel()
+				if reason := skipTest(locale, test.Options); reason != "" {
+					t.Skip(reason)
+				}
 
-					if reason := skipTest(locale, test.Options); reason != "" {
-						t.Skip(reason)
-					}
+				got := NewDateTimeFormat(locale, test.Options).Format(tests.Date)
 
-					got := NewDateTimeFormat(locale, test.Options).Format(tests.Date)
+				// replace space with non-breaking space. Latest CLDR uses non-breaking space.
+				if strings.ContainsRune(got, ' ') {
+					test.Output = strings.ReplaceAll(test.Output, " ", " ")
+				}
 
-					// replace space with non-breaking space. Latest CLDR uses non-breaking space.
-					if strings.ContainsRune(got, ' ') {
-						test.Output = strings.ReplaceAll(test.Output, " ", " ")
-					}
-
-					if test.Output != got {
-						t.Errorf("want '%s', got '%s'", test.Output, got)
-						t.Logf("\n%v\n%v\n", []rune(test.Output), []rune(got))
-					}
-				})
+				if test.Output != got {
+					t.Errorf("\nwant '%s'\ngot  '%s'\n[%s]", test.Output, got, test.String())
+					t.Logf("\n%v\n%v\n", []rune(test.Output), []rune(got))
+				}
 			}
 		})
 	}
