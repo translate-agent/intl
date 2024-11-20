@@ -249,7 +249,6 @@ func skipTest(locale language.Tag) string {
 		"kxv-Orya": "regional formatting",
 		"kxv-Telu": "regional formatting",
 		"mn-Mong":  "regional formatting",
-		"no":       "regional formatting",
 		"pa-Arab":  "regional formatting",
 		"ps-PK":    "regional formatting",
 		"sd-Deva":  "regional formatting",

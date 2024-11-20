@@ -35,3 +35,16 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
 		return numberingSystemOlck
 	}
 }
+
+func defaultCalendar(locale language.Tag) calendarType {
+	switch v, _ := locale.Region(); v.String() {
+	default:
+		return calendarTypeGregorian
+	case "AF", "IR":
+		return calendarTypePersian
+	case "SA":
+		return calendarTypeIslamicUmalqura
+	case "TH":
+		return calendarTypeBuddhist
+	}
+}
