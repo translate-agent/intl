@@ -22,8 +22,9 @@ cldr:
 # testdata generates test cases and saves to tests.json
 testdata:
   FROM node:22.9.0-alpine
+  WORKDIR /intl
   COPY testdata.js .
-  COPY +cldr/cldr/common/supplemental/supplementalMetadata.xml .cldr/common/supplemental/supplementalMetadata.xml
+  COPY --dir +cldr/cldr/common/main .cldr/common/main
   RUN node testdata.js
   SAVE ARTIFACT tests.json AS LOCAL tests.json
 
