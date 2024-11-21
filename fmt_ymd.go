@@ -12,7 +12,7 @@ func fmtYearMonthDayGregorian(
 	digits digits,
 	opts Options,
 ) func(y int, m time.Month, d int) string {
-	lang, script, _ := locale.Raw()
+	lang, script, region := locale.Raw()
 
 	fmtYear := fmtYear(digits)
 	fmtMonth := fmtMonth(digits)
@@ -47,7 +47,7 @@ func fmtYearMonthDayGregorian(
 				fmtMonth(m, opts.Month) + "/" +
 				fmtYear(y, opts.Year)
 		}
-	case ak, eu, ja, zh, yue:
+	case ak, eu, ja, yue:
 		// year=numeric,month=numeric,day=numeric,out=2024/1/2
 		// year=numeric,month=numeric,day=2-digit,out=2024/1/02
 		// year=numeric,month=2-digit,day=numeric,out=2024/01/2
@@ -347,7 +347,7 @@ func fmtYearMonthDayGregorian(
 				fmtDay(d, Day2Digit)
 		}
 	case fr:
-		switch region, _ := locale.Region(); region {
+		switch region {
 		default:
 			// year=numeric,month=numeric,day=numeric,out=02/01/2024
 			// year=numeric,month=numeric,day=2-digit,out=02/1/2024
@@ -1180,6 +1180,55 @@ func fmtYearMonthDayGregorian(
 			return fmtYear(y, opts.Year) + separator +
 				fmtMonth(m, opts.Month) + separator +
 				fmtDay(d, opts.Day)
+		}
+	case zh:
+		switch region {
+		default:
+			// year=numeric,month=numeric,day=numeric,out=2024/1/2
+			// year=numeric,month=numeric,day=2-digit,out=2024/1/02
+			// year=numeric,month=2-digit,day=numeric,out=2024/01/2
+			// year=numeric,month=2-digit,day=2-digit,out=2024/01/02
+			// year=2-digit,month=numeric,day=numeric,out=24/1/2
+			// year=2-digit,month=numeric,day=2-digit,out=24/1/02
+			// year=2-digit,month=2-digit,day=numeric,out=24/01/2
+			// year=2-digit,month=2-digit,day=2-digit,out=24/01/02
+			return func(y int, m time.Month, d int) string {
+				return fmtYear(y, opts.Year) + "/" +
+					fmtMonth(m, opts.Month) + "/" +
+					fmtDay(d, opts.Day)
+			}
+		case regionMO, regionSG:
+			if script == hans {
+				// year=numeric,month=numeric,day=numeric,out=2024年1月2日
+				// year=numeric,month=numeric,day=2-digit,out=2024年1月02日
+				// year=numeric,month=2-digit,day=numeric,out=2024年01月2日
+				// year=numeric,month=2-digit,day=2-digit,out=2024年01月02日
+				// year=2-digit,month=numeric,day=numeric,out=24年1月2日
+				// year=2-digit,month=numeric,day=2-digit,out=24年1月02日
+				// year=2-digit,month=2-digit,day=numeric,out=24年01月2日
+				// year=2-digit,month=2-digit,day=2-digit,out=24年01月02日
+				return func(y int, m time.Month, d int) string {
+					return fmtYear(y, opts.Year) + "年" +
+						fmtMonth(m, opts.Month) + "月" +
+						fmtDay(d, opts.Day) + "日"
+				}
+			}
+
+			fallthrough
+		case regionHK:
+			// year=numeric,month=numeric,day=numeric,out=2/1/2024
+			// year=numeric,month=numeric,day=2-digit,out=02/1/2024
+			// year=numeric,month=2-digit,day=numeric,out=2/01/2024
+			// year=numeric,month=2-digit,day=2-digit,out=02/01/2024
+			// year=2-digit,month=numeric,day=numeric,out=2/1/24
+			// year=2-digit,month=numeric,day=2-digit,out=02/1/24
+			// year=2-digit,month=2-digit,day=numeric,out=2/01/24
+			// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
+			return func(y int, m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "/" +
+					fmtMonth(m, opts.Month) + "/" +
+					fmtYear(y, opts.Year)
+			}
 		}
 	}
 }
