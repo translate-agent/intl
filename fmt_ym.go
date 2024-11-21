@@ -6,9 +6,9 @@ import (
 	"golang.org/x/text/language"
 )
 
-//nolint:cyclop
+//nolint:cyclop,gocognit
 func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
-	lang, script, _ := locale.Raw()
+	lang, script, region := locale.Raw()
 	fmtYear := fmtYear(digits)
 	fmtMonth := fmtMonth(digits)
 
@@ -118,7 +118,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 			return fmtMonth(m, opts.Month) + "/" + fmtYear(y, opts.Year)
 		}
 	case fr:
-		switch region, _ := locale.Region(); region {
+		switch region {
 		default:
 			return func(y int, m time.Month) string {
 				return fmtMonth(m, Month2Digit) + "/" + fmtYear(y, opts.Year)
@@ -220,15 +220,49 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 			return "tháng " + fmtMonth(m, Month2Digit) + ", " + fmtYear(y, opts.Year)
 		}
 	case zh:
-		return func(y int, m time.Month) string {
-			ys := fmtYear(y, opts.Year)
-			ms := fmtMonth(m, MonthNumeric)
+		switch script {
 
-			if opts.Month == MonthNumeric {
-				return ys + "/" + ms
+		case hant:
+			switch region {
+			default:
+				// year=numeric,month=numeric,out=2024/1
+				// year=numeric,month=2-digit,out=2024/01
+				// year=2-digit,month=numeric,out=24/1
+				// year=2-digit,month=2-digit,out=24/01
+				return func(y int, m time.Month) string {
+					return fmtYear(y, opts.Year) + "/" + fmtMonth(m, opts.Month)
+				}
+			case regionHK, regionMO:
+				// year=numeric,month=numeric,out=1/2024
+				// year=numeric,month=2-digit,out=01/2024
+				// year=2-digit,month=numeric,out=1/24
+				// year=2-digit,month=2-digit,out=01/24
+				return func(y int, m time.Month) string {
+					return fmtMonth(m, opts.Month) + "/" + fmtYear(y, opts.Year)
+				}
+			}
+		case hans:
+			// year=numeric,month=numeric,out=1/2024
+			// year=numeric,month=2-digit,out=01/2024
+			// year=2-digit,month=numeric,out=1/24
+			// year=2-digit,month=2-digit,out=01/24
+			if region == regionHK {
+				return func(y int, m time.Month) string {
+					return fmtMonth(m, opts.Month) + "/" + fmtYear(y, opts.Year)
+				}
 			}
 
-			return ys + "年" + ms + "月"
+			fallthrough
+		default:
+			if opts.Month == MonthNumeric {
+				return func(y int, m time.Month) string {
+					return fmtYear(y, opts.Year) + "/" + fmtMonth(m, MonthNumeric)
+				}
+			}
+
+			return func(y int, m time.Month) string {
+				return fmtYear(y, opts.Year) + "年" + fmtMonth(m, MonthNumeric) + "月"
+			}
 		}
 	}
 }

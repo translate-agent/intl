@@ -8,7 +8,7 @@ import (
 
 //nolint:gocognit,cyclop
 func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
-	lang, script, _ := locale.Raw()
+	lang, script, region := locale.Raw()
 
 	fmtMonth := fmtMonth(digits)
 	fmtDay := fmtDay(digits)
@@ -25,7 +25,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month)
 		}
 	case ak, am, asa, bem, bez, blo, brx, ceb, cgg, chr, dav, ebu, ee, en, eu, fil, guz, ha, ja, jmc, kam, kde, ki, kln,
-		ks, ksb, lag, lg, luo, luy, mas, mer, naq, nd, nyn, rof, rwk, saq, sbp, so, teo, tzm, vai, vun, xh, xog, yue, zh:
+		ks, ksb, lag, lg, luo, luy, mas, mer, naq, nd, nyn, rof, rwk, saq, sbp, so, teo, tzm, vai, vun, xh, xog, yue:
 		return func(m time.Month, d int) string {
 			return fmtMonth(m, opts.Month) + "/" + fmtDay(d, opts.Day)
 		}
@@ -104,7 +104,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month)
 		}
 	case fr:
-		switch region, _ := locale.Region(); region {
+		switch region {
 		default:
 			return func(m time.Month, d int) string { return fmtDay(d, Day2Digit) + "/" + fmtMonth(m, Month2Digit) }
 		case regionCA:
@@ -240,6 +240,29 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 
 		return func(m time.Month, d int) string {
 			return fmtDay(d, opts.Day) + ". " + fmtMonth(m, opts.Month)
+		}
+	case zh:
+		switch region {
+		default:
+			return func(m time.Month, d int) string {
+				return fmtMonth(m, opts.Month) + "/" + fmtDay(d, opts.Day)
+			}
+		case regionHK, regionMO:
+			// month=numeric,day=numeric,out=2/1
+			// month=numeric,day=2-digit,out=02/1
+			// month=2-digit,day=numeric,out=2/01
+			// month=2-digit,day=2-digit,out=02/01
+			return func(m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month)
+			}
+		case regionSG:
+			// month=numeric,day=numeric,out=1-2
+			// month=numeric,day=2-digit,out=1-02
+			// month=2-digit,day=numeric,out=01-2
+			// month=2-digit,day=2-digit,out=01-02
+			return func(m time.Month, d int) string {
+				return fmtMonth(m, opts.Month) + "-" + fmtDay(d, opts.Day)
+			}
 		}
 	}
 }
