@@ -22,7 +22,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 			return fmtMonth(m, Month2Digit) + "-" + fmtYear(y, opts.Year)
 		}
 	case agq, ak, am, asa, ast, bas, bem, bez, blo, bm, brx, ca, ceb, cgg, chr, ckb, cs, cy, dav, dje, doi, dua, dyo,
-		ebu, ee, el, en, ewo, ff, fil, fur, gd, gl, guz, ha, haw, hi, id, ig, jmc, kab, kam, kde, khq, ki, kln, km, ks,
+		ebu, ee, el, en, ewo, fil, fur, gd, gl, guz, ha, haw, hi, id, ig, jmc, kab, kam, kde, khq, ki, kln, km, ks,
 		ksb, ksf, kxv, lag, lg, ln, lo, lu, luo, luy, mai, mas, mer, mfe, mg, mgh, mni, mua, my, naq, nd, nmg, nus, nyn,
 		pa, pcm, rn, rof, rwk, sa, saq, sbp, ses, sg, shi, sk, sl, so, su, sw, teo, twq, tzm, ur, vai, vun, xh, xnr, xog,
 		yav, yo, zgh:
@@ -102,6 +102,20 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 	case fi, he:
 		return func(y int, m time.Month) string {
 			return fmtMonth(m, MonthNumeric) + "." + fmtYear(y, opts.Year)
+		}
+	case ff:
+		if script == adlm {
+			// year=numeric,month=numeric,out=𞥑-𞥒𞥐𞥒𞥔
+			// year=numeric,month=2-digit,out=𞥐𞥑-𞥒𞥐𞥒𞥔
+			// year=2-digit,month=numeric,out=𞥑-𞥒𞥔
+			// year=2-digit,month=2-digit,out=𞥐𞥑-𞥒𞥔
+			return func(y int, m time.Month) string {
+				return fmtMonth(m, opts.Month) + "-" + fmtYear(y, opts.Year)
+			}
+		}
+
+		return func(y int, m time.Month) string {
+			return fmtMonth(m, opts.Month) + "/" + fmtYear(y, opts.Year)
 		}
 	case fr:
 		switch region, _ := locale.Region(); region {
