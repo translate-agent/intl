@@ -266,9 +266,6 @@ func skipTest(locale language.Tag) string {
 		"uz-Cyrl-UZ":  "regional formatting",
 		"vai-Latn":    "regional formatting",
 		"vai-Latn-LR": "regional formatting",
-		"yue-Hans":    "regional formatting",
-		"yue-Hans-CN": "regional formatting",
-		"yue-Hant-HK": "regional formatting",
 	}[locale.String()]
 }
 
