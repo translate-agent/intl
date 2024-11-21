@@ -132,7 +132,63 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		return func(y int, m time.Month) string {
 			return fmtYear(y, opts.Year) + "-" + fmtMonth(m, opts.Month)
 		}
-	case es, ti:
+	case es:
+		switch region {
+		case regionAR:
+			// year=numeric,month=numeric,out=1-2024
+			// year=numeric,month=2-digit,out=1/2024
+			// year=2-digit,month=numeric,out=1-24
+			// year=2-digit,month=2-digit,out=1/24
+			separator := "/"
+			if opts.Month == MonthNumeric {
+				separator = "-"
+			}
+
+			return func(y int, m time.Month) string {
+				return fmtMonth(m, MonthNumeric) + separator + fmtYear(y, opts.Year)
+			}
+		case regionCL:
+			// year=numeric,month=numeric,out=01-2024
+			// year=numeric,month=2-digit,out=1/2024
+			// year=2-digit,month=numeric,out=01-24
+			// year=2-digit,month=2-digit,out=1/24
+			separator := "/"
+			if opts.Month == MonthNumeric {
+				separator = "-"
+				opts.Month = Month2Digit
+			} else {
+				opts.Month = MonthNumeric
+			}
+
+			return func(y int, m time.Month) string {
+				return fmtMonth(m, opts.Month) + separator + fmtYear(y, opts.Year)
+			}
+		case regionMX, regionUS:
+			// year=numeric,month=numeric,out=1/2024
+			// year=numeric,month=2-digit,out=01/2024
+			// year=2-digit,month=numeric,out=1/24
+			// year=2-digit,month=2-digit,out=01/24
+			return func(y int, m time.Month) string {
+				return fmtMonth(m, opts.Month) + "/" + fmtYear(y, opts.Year)
+			}
+		case regionPA, regionPR:
+			// year=numeric,month=numeric,out=01/2024
+			// year=numeric,month=2-digit,out=1/2024
+			// year=2-digit,month=numeric,out=01/24
+			// year=2-digit,month=2-digit,out=1/24
+			if opts.Month == MonthNumeric {
+				opts.Month = Month2Digit
+			} else {
+				opts.Month = MonthNumeric
+			}
+
+			return func(y int, m time.Month) string {
+				return fmtMonth(m, opts.Month) + "/" + fmtYear(y, opts.Year)
+			}
+		}
+
+		fallthrough
+	case ti:
 		return func(y int, m time.Month) string {
 			return fmtMonth(m, MonthNumeric) + "/" + fmtYear(y, opts.Year)
 		}
