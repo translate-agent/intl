@@ -20,6 +20,9 @@ var (
 	bem = language.MustParseBase("bem")
 	bez = language.MustParseBase("bez")
 	bg  = language.MustParseBase("bg")
+	bgc = language.MustParseBase("bgc")
+	bgn = language.MustParseBase("bgn")
+	bho = language.MustParseBase("bho")
 	blo = language.MustParseBase("blo")
 	bm  = language.MustParseBase("bm")
 	bn  = language.MustParseBase("bn")
@@ -70,6 +73,7 @@ var (
 	ha  = language.MustParseBase("ha")
 	haw = language.MustParseBase("haw")
 	he  = language.MustParseBase("he")
+	hnj = language.MustParseBase("hnj")
 	hi  = language.MustParseBase("hi")
 	hr  = language.MustParseBase("hr")
 	hsb = language.MustParseBase("hsb")
@@ -115,6 +119,7 @@ var (
 	lkt = language.MustParseBase("lkt")
 	ln  = language.MustParseBase("ln")
 	lo  = language.MustParseBase("lo")
+	lrc = language.MustParseBase("lrc")
 	lt  = language.MustParseBase("lt")
 	lu  = language.MustParseBase("lu")
 	luo = language.MustParseBase("luo")
@@ -136,6 +141,7 @@ var (
 	mt  = language.MustParseBase("mt")
 	mua = language.MustParseBase("mua")
 	my  = language.MustParseBase("my")
+	mzn = language.MustParseBase("mzn")
 	naq = language.MustParseBase("naq")
 	nb  = language.MustParseBase("nb")
 	nd  = language.MustParseBase("nd")
@@ -160,6 +166,7 @@ var (
 	ps  = language.MustParseBase("ps")
 	pt  = language.MustParseBase("pt")
 	qu  = language.MustParseBase("qu")
+	raj = language.MustParseBase("raj")
 	rm  = language.MustParseBase("rm")
 	rn  = language.MustParseBase("rn")
 	ro  = language.MustParseBase("ro")
@@ -172,6 +179,8 @@ var (
 	sat = language.MustParseBase("sat")
 	sbp = language.MustParseBase("sbp")
 	sc  = language.MustParseBase("sc")
+	sd  = language.MustParseBase("sd")
+	sdh = language.MustParseBase("sdh")
 	seh = language.MustParseBase("seh")
 	ses = language.MustParseBase("ses")
 	sg  = language.MustParseBase("sg")
@@ -228,51 +237,88 @@ var (
 
 // Scripts.
 var (
+	adlm = language.MustParseScript("Adlm")
+	arab = language.MustParseScript("Arab")
 	cyrl = language.MustParseScript("Cyrl")
+	latn = language.MustParseScript("Latn")
 )
 
 // Regions.
 var (
+	regionAE = language.MustParseRegion("AE")
 	regionAF = language.MustParseRegion("AF")
 	regionBE = language.MustParseRegion("BE")
 	regionCA = language.MustParseRegion("CA")
 	regionCH = language.MustParseRegion("CH")
+	regionDZ = language.MustParseRegion("DZ")
+	regionEH = language.MustParseRegion("EH")
+	regionIN = language.MustParseRegion("IN")
 	regionIR = language.MustParseRegion("IR")
+	regionLY = language.MustParseRegion("LY")
+	regionMA = language.MustParseRegion("MA")
 	regionSA = language.MustParseRegion("SA")
 	regionTH = language.MustParseRegion("TH")
+	regionTN = language.MustParseRegion("TN")
 )
 
 func defaultNumberingSystem(locale language.Tag) numberingSystem {
-	switch locale.String() {
+	lang, script, region := locale.Raw()
+
+	switch script {
+	case latn:
+		return numberingSystemLatn
+	case adlm:
+		return numberingSystemAdlm
+	}
+
+	switch lang {
 	default:
 		return numberingSystemLatn
-	case "ar", "ar-001", "ar-BH", "ar-DJ", "ar-EG", "ar-ER", "ar-IL", "ar-IQ", "ar-JO", "ar-KM", "ar-KW", "ar-LB",
-		"ar-MR", "ar-OM", "ar-PS", "ar-QA", "ar-SA", "ar-SD", "ar-SO", "ar-SS", "ar-SY", "ar-TD", "ar-YE", "ckb", "ckb-IR",
-		"ckb-IQ", "sd", "sd-Arab", "sdh":
+	case ar:
+		switch region {
+		default:
+			return numberingSystemArab
+		case regionAE, regionDZ, regionEH, regionLY, regionMA, regionTN:
+			return numberingSystemLatn
+		}
+	case ckb, sd, sdh:
 		return numberingSystemArab
-	case "ar-AE", "ar-DZ", "ar-EH", "ar-LY", "ar-MA", "ar-TN":
-		return numberingSystemLatn
-	case "as", "as-IN", "bn", "bn-BD", "bn-IN", "mni", "mni-Beng", "mni-Mtei":
+	case as, bn, mni:
 		return numberingSystemBeng
-	case "bgn", "fa", "fa-AF", "fa-IR", "ks", "ks-Arab", "lrc", "lrc-IQ", "lrc-IR", "mzn", "mzn-IR",
-		"pa-Arab", "ps", "ps-AF", "ps-PK", "ur-IN", "uz-Arab":
+	case bgn, fa, ks, lrc, mzn, ps:
 		return numberingSystemArabext
-	case "bgc", "bgc-IN", "bho", "bho-IN", "mr", "mr-IN", "ne", "ne-IN", "ne-NP", "raj", "raj-IN", "sa", "sa-IN":
+	case bgc, bho, mr, ne, raj, sa:
 		return numberingSystemDeva
-	case "ccp", "ccp-BD", "ccp-IN":
+	case ccp:
 		return numberingSystemCakm
-	case "dz", "dz-BT":
+	case dz:
 		return numberingSystemTibt
-	case "ff-Adlm":
-		return numberingSystemAdlm
-	case "hnj":
+	case hnj:
 		return numberingSystemHmnp
-	case "my", "my-MM":
+	case my:
 		return numberingSystemMymr
-	case "nqo", "nqo-GN":
+	case nqo:
 		return numberingSystemNkoo
-	case "sat", "sat-Deva", "sat-Olck":
+	case pa:
+		if script == arab {
+			return numberingSystemArabext
+		}
+
+		return numberingSystemLatn
+	case sat:
 		return numberingSystemOlck
+	case ur:
+		if region == regionIN {
+			return numberingSystemArabext
+		}
+
+		return numberingSystemLatn
+	case uz:
+		if script == arab {
+			return numberingSystemArabext
+		}
+
+		return numberingSystemLatn
 	}
 }
 

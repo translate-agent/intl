@@ -302,7 +302,37 @@ func fmtYearMonthDayGregorian(
 				fmtMonth(m, opts.Month) + "-" +
 				fmtDay(d, opts.Day)
 		}
-	case ff, kab, khq, ksh, mfe, zgh, seh, ses, sg, shi:
+	case kab, khq, ksh, mfe, zgh, seh, ses, sg, shi:
+		// year=numeric,month=numeric,day=numeric,out=2024-01-02
+		// year=numeric,month=numeric,day=2-digit,out=2024-01-02
+		// year=numeric,month=2-digit,day=numeric,out=2024-01-02
+		// year=numeric,month=2-digit,day=2-digit,out=2024-01-02
+		// year=2-digit,month=numeric,day=numeric,out=24-01-02
+		// year=2-digit,month=numeric,day=2-digit,out=24-01-02
+		// year=2-digit,month=2-digit,day=numeric,out=24-01-02
+		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
+		return func(y int, m time.Month, d int) string {
+			return fmtYear(y, opts.Year) + "-" +
+				fmtMonth(m, Month2Digit) + "-" +
+				fmtDay(d, Day2Digit)
+		}
+	case ff:
+		if script == adlm {
+			// year=numeric,month=numeric,day=numeric,out=𞥒-𞥑-𞥒𞥐𞥒𞥔
+			// year=numeric,month=numeric,day=2-digit,out=𞥐𞥒-𞥑-𞥒𞥐𞥒𞥔
+			// year=numeric,month=2-digit,day=numeric,out=𞥒-𞥐𞥑-𞥒𞥐𞥒𞥔
+			// year=numeric,month=2-digit,day=2-digit,out=𞥐𞥒-𞥐𞥑-𞥒𞥐𞥒𞥔
+			// year=2-digit,month=numeric,day=numeric,out=𞥒-𞥑-𞥒𞥔
+			// year=2-digit,month=numeric,day=2-digit,out=𞥐𞥒-𞥑-𞥒𞥔
+			// year=2-digit,month=2-digit,day=numeric,out=𞥒-𞥐𞥑-𞥒𞥔
+			// year=2-digit,month=2-digit,day=2-digit,out=𞥐𞥒-𞥐𞥑-𞥒𞥔
+			return func(y int, m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "-" +
+					fmtMonth(m, opts.Month) + "-" +
+					fmtYear(y, opts.Year)
+			}
+		}
+
 		// year=numeric,month=numeric,day=numeric,out=2024-01-02
 		// year=numeric,month=numeric,day=2-digit,out=2024-01-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-02

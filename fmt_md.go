@@ -18,7 +18,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		return func(m time.Month, d int) string { return fmtMonth(m, Month2Digit) + "-" + fmtDay(d, Day2Digit) }
 	case af, as, ia, ky, mi, rm, tg, wo:
 		return func(m time.Month, d int) string { return fmtDay(d, Day2Digit) + "-" + fmtMonth(m, Month2Digit) }
-	case agq, ast, bas, bm, ca, cy, dje, doi, dua, dyo, el, ewo, ff, fur, gd, gl, haw, hi, id, ig, kab, kgp, khq, km,
+	case agq, ast, bas, bm, ca, cy, dje, doi, dua, dyo, el, ewo, fur, gd, gl, haw, hi, id, ig, kab, kgp, khq, km,
 		ksf, kxv, ln, lo, lu, mai, mfe, mg, mgh, ml, mni, mua, my, nmg, nus, pa, rn, sa, seh, ses, sg, shi, su, sw, to, tr,
 		twq, ur, xnr, yav, yo, yrl, zgh:
 		return func(m time.Month, d int) string {
@@ -89,6 +89,20 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		}
 	case es, ti:
 		return func(m time.Month, d int) string { return fmtDay(d, DayNumeric) + "/" + fmtMonth(m, MonthNumeric) }
+	case ff:
+		if script == adlm {
+			// month=numeric,day=numeric,out=𞥒-𞥑
+			// month=numeric,day=2-digit,out=𞥐𞥒-𞥑
+			// month=2-digit,day=numeric,out=𞥒-𞥐𞥑
+			// month=2-digit,day=2-digit,out=𞥐𞥒-𞥐𞥑
+			return func(m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "-" + fmtMonth(m, opts.Month)
+			}
+		}
+
+		return func(m time.Month, d int) string {
+			return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month)
+		}
 	case fr:
 		switch region, _ := locale.Region(); region {
 		default:
