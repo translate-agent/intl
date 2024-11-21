@@ -5,7 +5,7 @@ async function getLocales() {
     (await fs.readdir(".cldr/common/main"))
       .map((v) => v.slice(0, -4))
       .filter((v) => !["root"].includes(v))
-      .map((v) => v.replace("_", "-"))
+      .map((v) => v.replaceAll("_", "-"))
       // Skip the tests for the following locales - ICU does not support them (it falls back to system LANG).
       .filter(
         (locale) =>
@@ -84,14 +84,6 @@ async function getLocales() {
             "wbp",
           ].some((v) => locale === v || locale.startsWith(v + "-"))
       )
-      .filter((v) => {
-        try {
-          new Intl.DateTimeFormat(v);
-          return true;
-        } catch (e) {
-          return false;
-        }
-      })
       .sort()
   );
 }
