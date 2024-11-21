@@ -95,7 +95,19 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		return func(y int, m time.Month) string {
 			return fmtMonth(m, MonthNumeric) + "/" + fmtYear(y, opts.Year)
 		}
-	case eu, ja, yue:
+	case yue:
+		if script == hans {
+			// year=numeric,month=numeric,out=2024年1月
+			// year=numeric,month=2-digit,out=2024年1月
+			// year=2-digit,month=numeric,out=24年1月
+			// year=2-digit,month=2-digit,out=24年1月
+			return func(y int, m time.Month) string {
+				return fmtYear(y, opts.Year) + "年" + fmtMonth(m, MonthNumeric) + "月"
+			}
+		}
+
+		fallthrough
+	case eu, ja:
 		return func(y int, m time.Month) string {
 			return fmtYear(y, opts.Year) + "/" + fmtMonth(m, opts.Month)
 		}
