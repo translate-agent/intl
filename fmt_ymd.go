@@ -142,7 +142,191 @@ func fmtYearMonthDayGregorian(
 				fmtMonth(m, Month2Digit) + "." +
 				fmtYear(y, opts.Year) + " г."
 		}
-	case blo, ceb, chr, ee, en, fil, ks, or, xh:
+	case en:
+		switch region {
+		case region001, region150, regionAE, regionAG, regionAI, regionAT, regionBB, regionBM, regionBS, regionCC,
+			regionCK, regionCM, regionCX, regionCY, regionDE, regionDG, regionDK, regionDM, regionER, regionFI, regionFJ,
+			regionFK, regionFM, regionGB, regionGD, regionGG, regionGH, regionGI, regionGM, regionGY, regionID, regionIL,
+			regionIM, regionIO, regionJE, regionJM, regionKE, regionKI, regionKN, regionKY, regionLC, regionLR, regionLS,
+			regionMG, regionMO, regionMS, regionMT, regionMU, regionMW, regionMY, regionNA, regionNF, regionNG, regionNL,
+			regionNR, regionNU, regionPG, regionPK, regionPN, regionPW, regionRW, regionSB, regionSC, regionSD, regionSH,
+			regionSI, regionSL, regionSS, regionSX, regionSZ, regionTC, regionTK, regionTO, regionTT, regionTV, regionTZ,
+			regionUG, regionVC, regionVG, regionVU, regionWS, regionZM:
+			// year=numeric,month=numeric,day=numeric,out=02/01/2024
+			// year=numeric,month=numeric,day=2-digit,out=02/1/2024
+			// year=numeric,month=2-digit,day=numeric,out=2/01/2024
+			// year=numeric,month=2-digit,day=2-digit,out=02/01/2024
+			// year=2-digit,month=numeric,day=numeric,out=02/01/24
+			// year=2-digit,month=numeric,day=2-digit,out=02/1/24
+			// year=2-digit,month=2-digit,day=numeric,out=2/01/24
+			// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
+			if script == shaw {
+				break
+			}
+
+			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			}
+
+			return func(y int, m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "/" +
+					fmtMonth(m, opts.Month) + "/" +
+					fmtYear(y, opts.Year)
+			}
+		case regionAU, regionSG:
+			// year=numeric,month=numeric,day=numeric,out=02/01/2024
+			// year=numeric,month=numeric,day=2-digit,out=02/01/2024
+			// year=numeric,month=2-digit,day=numeric,out=02/01/2024
+			// year=numeric,month=2-digit,day=2-digit,out=02/01/2024
+			// year=2-digit,month=numeric,day=numeric,out=2/1/24
+			// year=2-digit,month=numeric,day=2-digit,out=02/1/24
+			// year=2-digit,month=2-digit,day=numeric,out=2/01/24
+			// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
+			if opts.Year == YearNumeric {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			}
+
+			return func(y int, m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "/" +
+					fmtMonth(m, opts.Month) + "/" +
+					fmtYear(y, opts.Year)
+			}
+		case regionBE, regionHK, regionIE, regionIN, regionZW:
+			// year=numeric,month=numeric,day=numeric,out=2/1/2024
+			// year=numeric,month=numeric,day=2-digit,out=02/1/2024
+			// year=numeric,month=2-digit,day=numeric,out=2/01/2024
+			// year=numeric,month=2-digit,day=2-digit,out=02/01/2024
+			// year=2-digit,month=numeric,day=numeric,out=2/1/24
+			// year=2-digit,month=numeric,day=2-digit,out=02/1/24
+			// year=2-digit,month=2-digit,day=numeric,out=2/01/24
+			// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
+			return func(y int, m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "/" +
+					fmtMonth(m, opts.Month) + "/" +
+					fmtYear(y, opts.Year)
+			}
+		case regionBW, regionBZ:
+			// year=numeric,month=numeric,day=numeric,out=02/01/2024
+			// year=numeric,month=numeric,day=2-digit,out=02/01/2024
+			// year=numeric,month=2-digit,day=numeric,out=02/01/2024
+			// year=numeric,month=2-digit,day=2-digit,out=02/01/2024
+			// year=2-digit,month=numeric,day=numeric,out=02/01/24
+			// year=2-digit,month=numeric,day=2-digit,out=02/1/24
+			// year=2-digit,month=2-digit,day=numeric,out=2/01/24
+			// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
+			if opts.Year == YearNumeric || opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			}
+
+			return func(y int, m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "/" +
+					fmtMonth(m, opts.Month) + "/" +
+					fmtYear(y, opts.Year)
+			}
+		case regionCA, regionSE:
+			// year=numeric,month=numeric,day=numeric,out=2024-01-02
+			// year=numeric,month=numeric,day=2-digit,out=2024-1-02
+			// year=numeric,month=2-digit,day=numeric,out=2024-01-2
+			// year=numeric,month=2-digit,day=2-digit,out=2024-01-02
+			// year=2-digit,month=numeric,day=numeric,out=24-01-02
+			// year=2-digit,month=numeric,day=2-digit,out=24-1-02
+			// year=2-digit,month=2-digit,day=numeric,out=24-01-2
+			// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
+			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			}
+
+			return func(y int, m time.Month, d int) string {
+				return fmtYear(y, opts.Year) + "-" +
+					fmtMonth(m, opts.Month) + "-" +
+					fmtDay(d, opts.Day)
+			}
+		case regionCH:
+			// year=numeric,month=numeric,day=numeric,out=02.01.2024
+			// year=numeric,month=numeric,day=2-digit,out=02.1.2024
+			// year=numeric,month=2-digit,day=numeric,out=2.01.2024
+			// year=numeric,month=2-digit,day=2-digit,out=02.01.2024
+			// year=2-digit,month=numeric,day=numeric,out=02.01.24
+			// year=2-digit,month=numeric,day=2-digit,out=02.1.24
+			// year=2-digit,month=2-digit,day=numeric,out=2.01.24
+			// year=2-digit,month=2-digit,day=2-digit,out=02.01.24
+			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			}
+
+			return func(y int, m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "." +
+					fmtMonth(m, opts.Month) + "." +
+					fmtYear(y, opts.Year)
+			}
+		case regionMV:
+			// year=numeric,month=numeric,day=numeric,out=02/01/2024
+			// year=numeric,month=numeric,day=2-digit,out=02-1-2024
+			// year=numeric,month=2-digit,day=numeric,out=2-01-2024
+			// year=numeric,month=2-digit,day=2-digit,out=02-01-2024
+			// year=2-digit,month=numeric,day=numeric,out=02/01/24
+			// year=2-digit,month=numeric,day=2-digit,out=02-1-24
+			// year=2-digit,month=2-digit,day=numeric,out=2-01-24
+			// year=2-digit,month=2-digit,day=2-digit,out=02-01-24
+			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				return func(y int, m time.Month, d int) string {
+					return fmtDay(d, Day2Digit) + "/" +
+						fmtMonth(m, Month2Digit) + "/" +
+						fmtYear(y, opts.Year)
+				}
+			}
+
+			return func(y int, m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "-" +
+					fmtMonth(m, opts.Month) + "-" +
+					fmtYear(y, opts.Year)
+			}
+		case regionNZ:
+			// year=numeric,month=numeric,day=numeric,out=2/01/2024
+			// year=numeric,month=numeric,day=2-digit,out=02/1/2024
+			// year=numeric,month=2-digit,day=numeric,out=2/01/2024
+			// year=numeric,month=2-digit,day=2-digit,out=02/01/2024
+			// year=2-digit,month=numeric,day=numeric,out=2/01/24
+			// year=2-digit,month=numeric,day=2-digit,out=02/1/24
+			// year=2-digit,month=2-digit,day=numeric,out=2/01/24
+			// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
+			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				opts.Month = Month2Digit
+			}
+
+			return func(y int, m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "/" +
+					fmtMonth(m, opts.Month) + "/" +
+					fmtYear(y, opts.Year)
+			}
+		case regionZA:
+			// year=numeric,month=numeric,day=numeric,out=2024/01/02
+			// year=numeric,month=numeric,day=2-digit,out=2024/1/02
+			// year=numeric,month=2-digit,day=numeric,out=2024/01/2
+			// year=numeric,month=2-digit,day=2-digit,out=2024/01/02
+			// year=2-digit,month=numeric,day=numeric,out=24/01/02
+			// year=2-digit,month=numeric,day=2-digit,out=24/1/02
+			// year=2-digit,month=2-digit,day=numeric,out=24/01/2
+			// year=2-digit,month=2-digit,day=2-digit,out=24/01/02
+			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			}
+
+			return func(y int, m time.Month, d int) string {
+				return fmtYear(y, opts.Year) + "/" +
+					fmtMonth(m, opts.Month) + "/" +
+					fmtDay(d, opts.Day)
+			}
+		}
+
+		fallthrough
+	case blo, ceb, chr, ee, fil, ks, or, xh:
 		// year=numeric,month=numeric,day=numeric,out=1/2/2024
 		// year=numeric,month=numeric,day=2-digit,out=1/02/2024
 		// year=numeric,month=2-digit,day=numeric,out=01/2/2024

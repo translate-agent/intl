@@ -21,8 +21,49 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		return func(y int, m time.Month) string {
 			return fmtMonth(m, Month2Digit) + "-" + fmtYear(y, opts.Year)
 		}
+	case en:
+		switch region {
+		case region001, region150, regionAE, regionAG, regionAI, regionAT, regionAU, regionBB, regionBE, regionBM, regionBS,
+			regionBW, regionBZ, regionCC, regionCK, regionCM, regionCX, regionCY, regionDE, regionDG, regionDK, regionDM,
+			regionER, regionFI, regionFJ, regionFK, regionFM, regionGB, regionGD, regionGG, regionGH, regionGI, regionGM,
+			regionGY, regionHK, regionID, regionIE, regionIL, regionIM, regionIN, regionIO, regionJE, regionJM, regionKE,
+			regionKI, regionKN, regionKY, regionLC, regionLR, regionLS, regionMG, regionMO, regionMS, regionMT, regionMU,
+			regionMV, regionMW, regionMY, regionNA, regionNF, regionNG, regionNL, regionNR, regionNU, regionNZ, regionPG,
+			regionPK, regionPN, regionPW, regionRW, regionSB, regionSC, regionSD, regionSG, regionSH, regionSI, regionSL,
+			regionSS, regionSX, regionSZ, regionTC, regionTK, regionTO, regionTT, regionTV, regionTZ, regionUG, regionVC,
+			regionVG, regionVU, regionWS, regionZA, regionZM, regionZW:
+			// year=numeric,month=numeric,out=01/2024
+			// year=numeric,month=2-digit,out=01/2024
+			// year=2-digit,month=numeric,out=01/24
+			// year=2-digit,month=2-digit,out=01/24
+			if script == shaw {
+				break
+			}
+
+			return func(y int, m time.Month) string {
+				return fmtMonth(m, Month2Digit) + "/" + fmtYear(y, opts.Year)
+			}
+		case regionCA, regionSE:
+			// year=numeric,month=numeric,out=2024-01
+			// year=numeric,month=2-digit,out=2024-01
+			// year=2-digit,month=numeric,out=24-01
+			// year=2-digit,month=2-digit,out=24-01
+			return func(y int, m time.Month) string {
+				return fmtYear(y, opts.Year) + "-" + fmtMonth(m, Month2Digit)
+			}
+		case regionCH:
+			// year=numeric,month=numeric,out=01.2024
+			// year=numeric,month=2-digit,out=01.2024
+			// year=2-digit,month=numeric,out=01.24
+			// year=2-digit,month=2-digit,out=01.24
+			return func(y int, m time.Month) string {
+				return fmtMonth(m, Month2Digit) + "." + fmtYear(y, opts.Year)
+			}
+		}
+
+		fallthrough
 	case agq, ak, am, asa, ast, bas, bem, bez, blo, bm, brx, ca, ceb, cgg, chr, ckb, cs, cy, dav, dje, doi, dua, dyo,
-		ebu, ee, el, en, ewo, fil, fur, gd, gl, guz, ha, haw, hi, id, ig, jmc, kab, kam, kde, khq, ki, kln, km, ks,
+		ebu, ee, el, ewo, fil, fur, gd, gl, guz, ha, haw, hi, id, ig, jmc, kab, kam, kde, khq, ki, kln, km, ks,
 		ksb, ksf, kxv, lag, lg, ln, lo, lu, luo, luy, mai, mas, mer, mfe, mg, mgh, mni, mua, my, naq, nd, nmg, nus, nyn,
 		pa, pcm, rn, rof, rwk, sa, saq, sbp, ses, sg, shi, sk, sl, so, su, sw, teo, twq, tzm, ur, vai, vun, xh, xnr, xog,
 		yav, yo, zgh:

@@ -24,7 +24,77 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		return func(m time.Month, d int) string {
 			return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month)
 		}
-	case ak, am, asa, bem, bez, blo, brx, ceb, cgg, chr, dav, ebu, ee, en, eu, fil, guz, ha, ja, jmc, kam, kde, ki, kln,
+	case en:
+		switch region {
+		case region001, region150, regionAE, regionAG, regionAI, regionAT, regionBB, regionBM, regionBS, regionBW,
+			regionBZ, regionCC, regionCK, regionCM, regionCX, regionCY, regionDE, regionDG, regionDK, regionDM, regionER,
+			regionFI, regionFJ, regionFK, regionFM, regionGB, regionGD, regionGG, regionGH, regionGI, regionGM, regionGY,
+			regionHK, regionID, regionIL, regionIM, regionIN, regionIO, regionJE, regionJM, regionKE, regionKI, regionKN,
+			regionKY, regionLC, regionLR, regionLS, regionMG, regionMO, regionMS, regionMT, regionMU, regionMV, regionMW,
+			regionMY, regionNA, regionNF, regionNG, regionNL, regionNR, regionNU, regionPG, regionPK, regionPN, regionPW,
+			regionRW, regionSB, regionSC, regionSD, regionSE, regionSG, regionSH, regionSI, regionSL, regionSS, regionSX,
+			regionSZ, regionTC, regionTK, regionTO, regionTT, regionTV, regionTZ, regionUG, regionVC, regionVG, regionVU,
+			regionWS, regionZM:
+			// month=numeric,day=numeric,out=02/01
+			// month=numeric,day=2-digit,out=02/1
+			// month=2-digit,day=numeric,out=2/01
+			// month=2-digit,day=2-digit,out=02/01
+			if script == shaw {
+				break
+			}
+
+			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			}
+
+			return func(m time.Month, d int) string { return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month) }
+		case regionAU, regionBE, regionIE, regionNZ, regionZW:
+			// month=numeric,day=numeric,out=2/1
+			// month=numeric,day=2-digit,out=02/1
+			// month=2-digit,day=numeric,out=2/01
+			// month=2-digit,day=2-digit,out=02/01
+			return func(m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month)
+			}
+		case regionCA:
+			// month=numeric,day=numeric,out=01-02
+			// month=numeric,day=2-digit,out=1-02
+			// month=2-digit,day=numeric,out=01-2
+			// month=2-digit,day=2-digit,out=01-02
+			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			}
+
+			return func(m time.Month, d int) string {
+				return fmtMonth(m, opts.Month) + "-" + fmtDay(d, opts.Day)
+			}
+		case regionCH:
+			// month=numeric,day=numeric,out=02.01
+			// month=numeric,day=2-digit,out=02.1
+			// month=2-digit,day=numeric,out=2.01
+			// month=2-digit,day=2-digit,out=02.01
+			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			}
+
+			return func(m time.Month, d int) string { return fmtDay(d, opts.Day) + "." + fmtMonth(m, opts.Month) }
+		case regionZA:
+			// month=numeric,day=numeric,out=01/02
+			// month=numeric,day=2-digit,out=01/02
+			// month=2-digit,day=numeric,out=01/02
+			// month=2-digit,day=2-digit,out=02/01
+			if opts.Month == Month2Digit && opts.Day == Day2Digit {
+				return func(m time.Month, d int) string { return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month) }
+			}
+
+			return func(m time.Month, d int) string { return fmtMonth(m, Month2Digit) + "/" + fmtDay(d, Day2Digit) }
+		}
+
+		fallthrough
+	case ak, am, asa, bem, bez, blo, brx, ceb, cgg, chr, dav, ebu, ee, eu, fil, guz, ha, ja, jmc, kam, kde, ki, kln,
 		ks, ksb, lag, lg, luo, luy, mas, mer, naq, nd, nyn, rof, rwk, saq, sbp, so, teo, tzm, vai, vun, xh, xog, yue:
 		return func(m time.Month, d int) string {
 			return fmtMonth(m, opts.Month) + "/" + fmtDay(d, opts.Day)
