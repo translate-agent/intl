@@ -157,7 +157,48 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		return func(m time.Month, d int) string {
 			return fmtMonth(m, opts.Month) + "-" + fmtDay(d, opts.Day)
 		}
-	case es, ti:
+	case es:
+		switch region {
+		case regionCL:
+			// month=numeric,day=numeric,out=02-01
+			// month=numeric,day=2-digit,out=02-01
+			// month=2-digit,day=numeric,out=2/1
+			// month=2-digit,day=2-digit,out=2/1
+			separator := "/"
+			if opts.Month == MonthNumeric {
+				separator = "-"
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			} else {
+				opts.Month = MonthNumeric
+				opts.Day = DayNumeric
+			}
+
+			return func(m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + separator + fmtMonth(m, opts.Month)
+			}
+		case regionMX, regionUS:
+			// month=numeric,day=numeric,out=2/1
+			// month=numeric,day=2-digit,out=02/1
+			// month=2-digit,day=numeric,out=2/01
+			// month=2-digit,day=2-digit,out=02/01
+			return func(m time.Month, d int) string { return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month) }
+		case regionPA, regionPR:
+			// month=numeric,day=numeric,out=01/02
+			// month=numeric,day=2-digit,out=01/02
+			// month=2-digit,day=numeric,out=2/1
+			// month=2-digit,day=2-digit,out=2/1
+			if opts.Month == MonthNumeric {
+				return func(m time.Month, d int) string { return fmtMonth(m, Month2Digit) + "/" + fmtDay(d, Day2Digit) }
+			}
+
+			return func(m time.Month, d int) string {
+				return fmtDay(d, DayNumeric) + "/" + fmtMonth(m, MonthNumeric)
+			}
+		}
+
+		fallthrough
+	case ti:
 		return func(m time.Month, d int) string { return fmtDay(d, DayNumeric) + "/" + fmtMonth(m, MonthNumeric) }
 	case ff:
 		if script == adlm {

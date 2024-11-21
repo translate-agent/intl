@@ -30,8 +30,51 @@ func fmtYearMonthDayGregorian(
 				fmtMonth(m, opts.Month) + "-" +
 				fmtDay(d, opts.Day)
 		}
+	case es:
+		switch region {
+		case regionCL:
+			// year=numeric,month=numeric,day=numeric,out=02-01-2024
+			// year=numeric,month=numeric,day=2-digit,out=02-1-2024
+			// year=numeric,month=2-digit,day=numeric,out=2-01-2024
+			// year=numeric,month=2-digit,day=2-digit,out=02-01-2024
+			// year=2-digit,month=numeric,day=numeric,out=02-01-24
+			// year=2-digit,month=numeric,day=2-digit,out=02-1-24
+			// year=2-digit,month=2-digit,day=numeric,out=2-01-24
+			// year=2-digit,month=2-digit,day=2-digit,out=02-01-24
+			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			}
+
+			return func(y int, m time.Month, d int) string {
+				return fmtDay(d, opts.Day) + "-" +
+					fmtMonth(m, opts.Month) + "-" +
+					fmtYear(y, opts.Year)
+			}
+		case regionPA, regionPR:
+			// year=numeric,month=numeric,day=numeric,out=01/02/2024
+			// year=numeric,month=numeric,day=2-digit,out=1/02/2024
+			// year=numeric,month=2-digit,day=numeric,out=01/2/2024
+			// year=numeric,month=2-digit,day=2-digit,out=01/02/2024
+			// year=2-digit,month=numeric,day=numeric,out=01/02/24
+			// year=2-digit,month=numeric,day=2-digit,out=1/02/24
+			// year=2-digit,month=2-digit,day=numeric,out=01/2/24
+			// year=2-digit,month=2-digit,day=2-digit,out=01/02/24
+			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			}
+
+			return func(y int, m time.Month, d int) string {
+				return fmtMonth(m, opts.Month) + "/" +
+					fmtDay(d, opts.Day) + "/" +
+					fmtYear(y, opts.Year)
+			}
+		}
+
+		fallthrough
 	case agq, am, asa, ast, bas, bem, bez, bm, bn, ca, ccp, cgg, cy, dav, dje, doi,
-		dua, dyo, ebu, el, es, ewo, gd, gl, gu, haw, hi, id, ig, km, kn, ksf, kxv, ln,
+		dua, dyo, ebu, el, ewo, gd, gl, gu, haw, hi, id, ig, km, kn, ksf, kxv, ln,
 		lo, lu, mai, mgh, ml, mni, mr, ms, mua, my, nmg, nnh, nus, pa, pcm, rn, sa, su,
 		sw, ta, tg, ti, to, twq, ur, vi, xnr, yav:
 		// year=numeric,month=numeric,day=numeric,out=2/1/2024
