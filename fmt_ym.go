@@ -221,7 +221,6 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		}
 	case zh:
 		switch script {
-
 		case hant:
 			switch region {
 			default:
