@@ -24,9 +24,19 @@ func fmtYearBuddhist(locale language.Tag) func(y string) string {
 }
 
 func fmtYearPersian(locale language.Tag) func(y string) string {
-	if lang, _ := locale.Base(); lang == fa {
+	lang, _, region := locale.Raw()
+
+	switch lang {
+	case fa:
 		return func(y string) string { return y }
+	case uz:
+		if region == regionAF {
+			return func(y string) string { return y }
+		}
+
+		fallthrough
+	default:
+		return func(y string) string { return fmtEra(locale) + " " + y }
 	}
 
-	return func(y string) string { return fmtEra(locale) + " " + y }
 }

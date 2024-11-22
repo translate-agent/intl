@@ -181,6 +181,7 @@ var (
 	sc  = language.MustParseBase("sc")
 	sd  = language.MustParseBase("sd")
 	sdh = language.MustParseBase("sdh")
+	se  = language.MustParseBase("se")
 	seh = language.MustParseBase("seh")
 	ses = language.MustParseBase("ses")
 	sg  = language.MustParseBase("sg")
@@ -240,10 +241,13 @@ var (
 	adlm = language.MustParseScript("Adlm")
 	arab = language.MustParseScript("Arab")
 	cyrl = language.MustParseScript("Cyrl")
+	deva = language.MustParseScript("Deva")
 	hans = language.MustParseScript("Hans")
 	hant = language.MustParseScript("Hant")
 	latn = language.MustParseScript("Latn")
+	orya = language.MustParseScript("Orya")
 	shaw = language.MustParseScript("Shaw")
+	telu = language.MustParseScript("Telu")
 )
 
 // Regions.
@@ -261,6 +265,7 @@ var (
 	regionAR  = language.MustParseRegion("AR")
 	regionAT  = language.MustParseRegion("AT")
 	regionAU  = language.MustParseRegion("AU")
+	regionBA  = language.MustParseRegion("BA")
 	regionBB  = language.MustParseRegion("BB")
 	regionBE  = language.MustParseRegion("BE")
 	regionBM  = language.MustParseRegion("BM")
@@ -388,11 +393,17 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
 		case regionAE, regionDZ, regionEH, regionLY, regionMA, regionTN:
 			return numberingSystemLatn
 		}
-	case ckb, sd, sdh:
+	case ckb, sdh:
+		return numberingSystemArab
+	case sd:
+		if script == deva {
+			return numberingSystemLatn
+		}
+
 		return numberingSystemArab
 	case as, bn, mni:
 		return numberingSystemBeng
-	case bgn, fa, ks, lrc, mzn, ps:
+	case bgn, fa, lrc, mzn, ps:
 		return numberingSystemArabext
 	case bgc, bho, mr, ne, raj, sa:
 		return numberingSystemDeva
@@ -400,6 +411,12 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
 		return numberingSystemCakm
 	case dz:
 		return numberingSystemTibt
+	case ks:
+		if script == deva {
+			return numberingSystemLatn
+		}
+
+		return numberingSystemArabext
 	case hnj:
 		return numberingSystemHmnp
 	case my:
