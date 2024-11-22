@@ -210,6 +210,7 @@ func (g *Generator) filterApproved() {
 
 func (g *Generator) merge(log *slog.Logger) {
 	g.mergeAliases()
+	g.mergeParent(log)
 	g.mergeLocal(log)
 
 	root := g.cldr.RawLDML("root")
@@ -300,6 +301,52 @@ func (g *Generator) mergeAliases() {
 	}
 }
 
+func (g *Generator) mergeParent(log *slog.Logger) {
+	log = log.With("func", "mergeParent")
+
+	for _, locale := range g.cldr.Locales() {
+		if locale == "root" {
+			continue
+		}
+
+		// main language, skip it
+		parts := strings.Split(locale, "_")
+		if len(parts) == 1 {
+			continue
+		}
+
+		parent := g.cldr.RawLDML(parts[0])
+		if parent.Dates == nil || parent.Dates.Calendars == nil {
+			continue
+		}
+
+		parentGregorian := findCalendar(parent, "gregorian")
+		ldml := g.cldr.RawLDML(locale)
+
+		if ldml.Dates == nil {
+			ldml.Dates = deepCopy(parent.Dates)
+			continue
+		}
+
+		if ldml.Dates.Calendars == nil {
+			continue
+		}
+
+		logger := log.With("locale", locale)
+
+		calendar := findCalendar(ldml, "gregorian")
+		if calendar == nil {
+			logger.Debug("copy gregorian calendar")
+
+			ldml.Dates.Calendars.Calendar = append(ldml.Dates.Calendars.Calendar, deepCopy(parentGregorian))
+
+			continue
+		}
+
+		mergeCalendar(calendar, parentGregorian, logger)
+	}
+}
+
 func (g *Generator) mergeLocal(log *slog.Logger) {
 	for _, locale := range g.cldr.Locales() {
 		ldml := g.cldr.RawLDML(locale)
@@ -308,6 +355,7 @@ func (g *Generator) mergeLocal(log *slog.Logger) {
 			continue
 		}
 
+		// merge generic calendar to persian or buddhist calendar
 		generic := findCalendar(ldml, "generic")
 
 		if generic == nil || generic.DateTimeFormats == nil {

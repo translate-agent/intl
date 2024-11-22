@@ -124,9 +124,7 @@ var data []byte
 // Returns empty string if all is fine.
 func skipTest(locale language.Tag) string {
 	return map[string]string{
-		"ar-SA":      "islamic-umalqura calendar",
-		"mn-Mong":    "regional formatting",
-		"mn-Mong-CN": "regional formatting",
+		"ar-SA": "islamic-umalqura calendar",
 	}[locale.String()]
 }
 

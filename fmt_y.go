@@ -38,5 +38,4 @@ func fmtYearPersian(locale language.Tag) func(y string) string {
 	default:
 		return func(y string) string { return fmtEra(locale) + " " + y }
 	}
-
 }
