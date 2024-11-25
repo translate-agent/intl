@@ -648,6 +648,7 @@ func (g *Generator) months() Months { //nolint:gocognit
 	return months
 }
 
+//nolint:gocognit
 func (g *Generator) fields() Fields {
 	fields := make(Fields)
 
