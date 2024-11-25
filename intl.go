@@ -439,6 +439,12 @@ func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) f
 		return func(v time.Time) string {
 			return layout(v.Year(), v.Month(), v.Day())
 		}
+	case opts.Year != YearUnd && opts.Month == MonthUnd && opts.Day != DayUnd:
+		layout := fmtYearDayGregorian(locale, digits, opts)
+
+		return func(v time.Time) string {
+			return layout(v.Year(), v.Day())
+		}
 	case opts.Year != YearUnd && opts.Month != MonthUnd:
 		layout := fmtYearMonthGregorian(locale, digits, opts)
 
@@ -486,6 +492,14 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 			t := ptime.New(v)
 
 			return layout(t.Year(), time.Month(t.Month()), t.Day())
+		}
+	case opts.Year != YearUnd && opts.Month == MonthUnd && opts.Day != DayUnd:
+		layout := fmtYearDayPersian(locale, digits, opts)
+
+		return func(v time.Time) string {
+			t := ptime.New(v)
+
+			return layout(t.Year(), t.Day())
 		}
 	case opts.Year != YearUnd && opts.Month != MonthUnd:
 		layout := fmtYearMonthPersian(locale, digits, opts)
@@ -538,6 +552,14 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 			v = v.AddDate(543, 0, 0) //nolint:mnd
 
 			return layout(v.Year(), v.Month(), v.Day())
+		}
+	case opts.Year != YearUnd && opts.Month == MonthUnd && opts.Day != DayUnd:
+		layout := fmtYearDayBuddhist(locale, digits, opts)
+
+		return func(v time.Time) string {
+			v = v.AddDate(543, 0, 0) //nolint:mnd
+
+			return layout(v.Year(), v.Day())
 		}
 	case opts.Year != YearUnd && opts.Month != MonthUnd:
 		layout := fmtYearMonthBuddhist(locale, digits, opts)

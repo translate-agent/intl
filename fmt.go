@@ -297,6 +297,7 @@ var (
 	regionGH  = language.MustParseRegion("GH")
 	regionGI  = language.MustParseRegion("GI")
 	regionGM  = language.MustParseRegion("GM")
+	regionGU  = language.MustParseRegion("GU")
 	regionGY  = language.MustParseRegion("GY")
 	regionHK  = language.MustParseRegion("HK")
 	regionID  = language.MustParseRegion("ID")
@@ -337,6 +338,7 @@ var (
 	regionNZ  = language.MustParseRegion("NZ")
 	regionPA  = language.MustParseRegion("PA")
 	regionPG  = language.MustParseRegion("PG")
+	regionPH  = language.MustParseRegion("PH")
 	regionPK  = language.MustParseRegion("PK")
 	regionPN  = language.MustParseRegion("PN")
 	regionPR  = language.MustParseRegion("PR")
@@ -363,9 +365,11 @@ var (
 	regionTV  = language.MustParseRegion("TV")
 	regionTZ  = language.MustParseRegion("TZ")
 	regionUG  = language.MustParseRegion("UG")
+	regionUM  = language.MustParseRegion("UM")
 	regionUS  = language.MustParseRegion("US")
 	regionVC  = language.MustParseRegion("VC")
 	regionVG  = language.MustParseRegion("VG")
+	regionVI  = language.MustParseRegion("VI")
 	regionVU  = language.MustParseRegion("VU")
 	regionWS  = language.MustParseRegion("WS")
 	regionZA  = language.MustParseRegion("ZA")
@@ -465,4 +469,34 @@ func defaultCalendar(locale language.Tag) calendarType {
 	case regionTH:
 		return calendarTypeBuddhist
 	}
+}
+
+func dayName(locale language.Tag) string {
+	lang, _ := locale.Base()
+	s := lang.String()
+
+	if v, confidence := locale.Script(); confidence == language.Exact {
+		s += "-" + v.String()
+
+		v, ok := fieldsLookup[s]
+		if ok {
+			return v.Day
+		}
+	}
+
+	if v, confidence := locale.Region(); confidence == language.Exact {
+		s += "-" + v.String()
+	}
+
+	v, ok := fieldsLookup[s]
+	if ok {
+		return v.Day
+	}
+
+	v, ok = fieldsLookup[lang.String()]
+	if ok {
+		return v.Day
+	}
+
+	return "Day"
 }
