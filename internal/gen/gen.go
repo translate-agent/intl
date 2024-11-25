@@ -91,6 +91,7 @@ func (g *Generator) write(out string) error {
 		NumberingSystems:        g.numberingSystems(defaultNumberingSystems),
 		NumberingSystemIota:     g.numberingSystemsIota(defaultNumberingSystems),
 		DefaultNumberingSystems: defaultNumberingSystems,
+		Fields:                  g.fields(),
 		Months:                  g.months(),
 	}
 
@@ -316,11 +317,10 @@ func (g *Generator) mergeParent(log *slog.Logger) {
 		}
 
 		parent := g.cldr.RawLDML(parts[0])
-		if parent.Dates == nil || parent.Dates.Calendars == nil {
+		if parent.Dates == nil {
 			continue
 		}
 
-		parentGregorian := findCalendar(parent, "gregorian")
 		ldml := g.cldr.RawLDML(locale)
 
 		if ldml.Dates == nil {
@@ -328,22 +328,28 @@ func (g *Generator) mergeParent(log *slog.Logger) {
 			continue
 		}
 
-		if ldml.Dates.Calendars == nil {
-			continue
+		mergeFields(ldml, parent)
+
+		if parent.Dates.Calendars != nil {
+			parentGregorian := findCalendar(parent, "gregorian")
+
+			if ldml.Dates.Calendars == nil {
+				continue
+			}
+
+			logger := log.With("locale", locale)
+
+			calendar := findCalendar(ldml, "gregorian")
+			if calendar == nil {
+				logger.Debug("copy gregorian calendar")
+
+				ldml.Dates.Calendars.Calendar = append(ldml.Dates.Calendars.Calendar, deepCopy(parentGregorian))
+
+				continue
+			}
+
+			mergeCalendar(calendar, parentGregorian, logger)
 		}
-
-		logger := log.With("locale", locale)
-
-		calendar := findCalendar(ldml, "gregorian")
-		if calendar == nil {
-			logger.Debug("copy gregorian calendar")
-
-			ldml.Dates.Calendars.Calendar = append(ldml.Dates.Calendars.Calendar, deepCopy(parentGregorian))
-
-			continue
-		}
-
-		mergeCalendar(calendar, parentGregorian, logger)
 	}
 }
 
@@ -422,6 +428,8 @@ func merge(dst, src *cldr.LDML, log *slog.Logger) {
 		dst.Dates = deepCopy(src.Dates)
 	}
 
+	mergeFields(dst, src)
+
 	if dst.Dates.Calendars == nil {
 		dst.Dates.Calendars = deepCopy(src.Dates.Calendars)
 	}
@@ -481,6 +489,43 @@ func mergeCalendar(dst, src *cldr.Calendar, log *slog.Logger) {
 
 	if dst.Months != nil && len(dst.Months.MonthContext) == 0 && len(src.Months.MonthContext) > 0 {
 		dst.Months.MonthContext = deepCopy(src.Months.MonthContext)
+	}
+}
+
+func mergeFields(dst, src *cldr.LDML) {
+	if src.Dates == nil || src.Dates.Fields == nil {
+		return
+	}
+
+	if dst.Dates == nil {
+		dst.Dates = deepCopy(src.Dates)
+		return
+	}
+
+	if dst.Dates.Fields == nil {
+		dst.Dates.Fields = deepCopy(src.Dates.Fields)
+		return
+	}
+
+	if len(dst.Dates.Fields.Field) == 0 {
+		dst.Dates.Fields.Field = deepCopy(src.Dates.Fields.Field)
+		return
+	}
+
+	for _, field := range src.Dates.Fields.Field {
+		found := func() bool {
+			for _, v := range dst.Dates.Fields.Field {
+				if v.Type == field.Type {
+					return true
+				}
+			}
+
+			return false
+		}()
+
+		if !found {
+			dst.Dates.Fields.Field = append(dst.Dates.Fields.Field, deepCopy(field))
+		}
 	}
 }
 
@@ -603,6 +648,94 @@ func (g *Generator) months() Months { //nolint:gocognit
 	return months
 }
 
+//nolint:gocognit
+func (g *Generator) fields() Fields {
+	fields := make(Fields)
+
+	for _, locale := range g.cldr.Locales() {
+		if locale == "root" {
+			continue
+		}
+
+		ldml := g.cldr.RawLDML(locale)
+
+		if ldml.Dates == nil || ldml.Dates.Fields == nil {
+			continue
+		}
+
+		locale = strings.ReplaceAll(locale, "_", "-")
+
+		for _, field := range ldml.Dates.Fields.Field {
+			if field.Type == "day" && len(field.DisplayName) > 0 {
+				f := fields[locale]
+				f.Day = field.DisplayName[0].CharData
+				fields[locale] = f
+			}
+		}
+	}
+
+	for _, locale := range []string{"en-Dsrt", "en-Shaw"} {
+		f := fields[locale]
+		f.Day = "day"
+		fields[locale] = f
+	}
+
+	// remove the entries if the language has the same values
+	for k, v := range fields {
+		lang := strings.Split(k, "-")[0]
+
+		if k != lang {
+			continue
+		}
+
+		for k2 := range fields {
+			if lang == k2 {
+				continue
+			}
+
+			if lang == strings.Split(k2, "-")[0] && v.Day == fields[k2].Day {
+				delete(fields, k2)
+			}
+		}
+	}
+
+	// Correct the naming! The naming is different in Node.js.
+
+	// year, day formatting
+	for _, locale := range []string{} { //  "en-Dsrt", "en-Shaw"
+		f := fields[locale]
+		f.Day = "day"
+		fields[locale] = f
+	}
+
+	for _, locale := range []string{
+		"ckb", "ckb-IQ", "ckb-IR", "eo", "ie", "kl", "kw", "lij", "mn-Mong-MN", "ms-Arab", "nds", "oc", "oc-ES", "prg",
+		"szl", "za",
+	} {
+		delete(fields, locale)
+	}
+
+	for _, locale := range []string{"az-Cyrl", "kxv-Deva", "kxv-Orya", "kxv-Telu", "uz-Arab"} {
+		f := fields[locale]
+		f.Day = "Day"
+		fields[locale] = f
+	}
+
+	f := fields["nn"]
+	f.Day = "dag"
+	fields["nn"] = f
+
+	for locale, v := range fields {
+		// NOTE! all "Day" values at language level can be deleted (manually verified).
+		// Correct way is to verify that all scripts and regions have the "Day" value.
+		if !strings.Contains(locale, "-") && v.Day == "Day" {
+			delete(fields, locale)
+		}
+	}
+
+	return fields
+}
+
 // CLDRDateFormatItem is a copy of CLDR DateFormatItem.
 type CLDRDateFormatItem struct {
 	cldr.Common
@@ -650,6 +783,7 @@ type NumberingSystem struct {
 
 type TemplateData struct {
 	Months                  Months
+	Fields                  Fields
 	DefaultNumberingSystems LocaleLookup
 	NumberingSystemIota     []string
 	CalendarPreferences     []CalendarPreference
@@ -716,6 +850,12 @@ type MonthNames [12]string
 
 func (n MonthNames) String() string {
 	return `{"` + strings.Join(n[:], `", "`) + `"}`
+}
+
+type Fields map[string]Field
+
+type Field struct {
+	Day string
 }
 
 type CalendarPreference struct {
