@@ -724,6 +724,14 @@ func (g *Generator) fields() Fields {
 	f.Day = "dag"
 	fields["nn"] = f
 
+	for locale, v := range fields {
+		// NOTE! all "Day" values at language level can be deleted (manually verified).
+		// Correct way is to verify that all scripts and regions have the "Day" value.
+		if !strings.Contains(locale, "-") && v.Day == "Day" {
+			delete(fields, locale)
+		}
+	}
+
 	return fields
 }
 
