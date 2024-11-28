@@ -44,13 +44,12 @@ func Gen(conf Conf, log *slog.Logger) error {
 		return err
 	}
 
-	if conf.saveMerged {
-		if err := g.saveMerged(conf.out); err != nil {
-			return err
-		}
+	data, err := g.process(conf, log)
+	if err != nil {
+		return err
 	}
 
-	if err := g.write(conf.out); err != nil {
+	if err := g.write(conf.out, data); err != nil {
 		return err
 	}
 
@@ -76,25 +75,34 @@ func (g *Generator) load(dir string, log *slog.Logger) error {
 		return fmt.Errorf(`decode CLDR at path "%s": %w`, dir, err)
 	}
 
-	g.filterApproved()
-	g.merge(log)
-
 	return nil
 }
 
-func (g *Generator) write(out string) error {
+func (g *Generator) process(conf Conf, log *slog.Logger) (*TemplateData, error) {
+	g.filterApproved()
+	g.merge(log)
+
+	if conf.saveMerged {
+		if err := g.saveMerged(conf.out); err != nil {
+			return nil, err
+		}
+	}
+
 	defaultNumberingSystems := g.defaultNumberingSystems()
 	calendarPreferences := g.calendarPreferences()
 
-	data := TemplateData{
+	return &TemplateData{
+		Eras:                    g.eras(calendarPreferences),
 		CalendarPreferences:     calendarPreferences,
 		NumberingSystems:        g.numberingSystems(defaultNumberingSystems),
 		NumberingSystemIota:     g.numberingSystemsIota(defaultNumberingSystems),
 		DefaultNumberingSystems: defaultNumberingSystems,
 		Fields:                  g.fields(),
 		Months:                  g.months(),
-	}
+	}, nil
+}
 
+func (g *Generator) write(out string, data *TemplateData) error {
 	dataTpl, err := template.New("cldr_data").Funcs(template.FuncMap{
 		"join":  strings.Join,
 		"sub":   func(a, b int) int { return a - b },
@@ -160,13 +168,12 @@ func (g *Generator) filterApproved() {
 			ldml.Numbers.DefaultNumberingSystem = defaultNumberingSystem
 		}
 
-		if ldml.Dates != nil && ldml.Dates.Calendars != nil {
-			for _, calendar := range ldml.Dates.Calendars.Calendar {
-				if calendar.Months == nil {
-					continue
-				}
+		if ldml.Dates == nil || ldml.Dates.Calendars == nil {
+			continue
+		}
 
-				// calendar.Months.MonthContext.MonthWidth.Month
+		for _, calendar := range ldml.Dates.Calendars.Calendar {
+			if calendar.Months != nil {
 				for _, monthContext := range calendar.Months.MonthContext {
 					for _, monthWidth := range monthContext.MonthWidth {
 						var months []*struct {
@@ -183,12 +190,9 @@ func (g *Generator) filterApproved() {
 						monthWidth.Month = months
 					}
 				}
+			}
 
-				// calendar.DateTimeFormats.AvailableFormats
-				if calendar.DateTimeFormats == nil {
-					continue
-				}
-
+			if calendar.DateTimeFormats != nil {
 				for _, dateTimeFormat := range calendar.DateTimeFormats.AvailableFormats {
 					var dateFormatItems []*struct {
 						cldr.Common
@@ -203,6 +207,48 @@ func (g *Generator) filterApproved() {
 					}
 
 					dateTimeFormat.DateFormatItem = dateFormatItems
+				}
+			}
+
+			if eras := calendar.Eras; eras != nil {
+				if v := eras.EraAbbr; v != nil {
+					for i := len(v.Era) - 1; i >= 0; i-- {
+						if era := v.Era[i]; !isContributedOrApproved(era.Draft) || era.Alt != "" {
+							v.Era = slices.Delete(v.Era, i, i+1)
+						}
+					}
+
+					if len(v.Era) == 0 {
+						eras.EraAbbr = nil
+					}
+				}
+
+				if v := eras.EraNames; v != nil {
+					for i := len(v.Era) - 1; i >= 0; i-- {
+						if era := v.Era[i]; !isContributedOrApproved(era.Draft) || era.Alt != "" {
+							v.Era = slices.Delete(v.Era, i, i+1)
+						}
+					}
+
+					if len(v.Era) == 0 {
+						eras.EraNames = nil
+					}
+				}
+
+				if v := calendar.Eras.EraNarrow; v != nil {
+					for i := len(v.Era) - 1; i >= 0; i-- {
+						if era := v.Era[i]; !isContributedOrApproved(era.Draft) || era.Alt != "" {
+							v.Era = slices.Delete(v.Era, i, i+1)
+						}
+					}
+
+					if len(v.Era) == 0 {
+						eras.EraNarrow = nil
+					}
+				}
+
+				if eras.EraAbbr == nil && eras.EraNames == nil && eras.EraNarrow == nil {
+					calendar.Eras = nil
 				}
 			}
 		}
@@ -316,7 +362,15 @@ func (g *Generator) mergeParent(log *slog.Logger) {
 			continue
 		}
 
-		parent := g.cldr.RawLDML(parts[0])
+		// <lang>_<script>_<region>
+		// * use <lang>, if <lang>_<script> or <lang>_<region>
+		// * use <lang>-<script>, if <lang>_<script>_<region>
+		parentLocale := parts[0]
+		if len(parts) == 3 { //nolint:mnd
+			parentLocale += "_" + parts[1]
+		}
+
+		parent := g.cldr.RawLDML(parentLocale)
 		if parent.Dates == nil {
 			continue
 		}
@@ -479,16 +533,21 @@ func mergeCalendar(dst, src *cldr.Calendar, log *slog.Logger) {
 	}
 
 	// months
-	if src.Months == nil {
-		return
+	if src.Months != nil {
+		if dst.Months == nil {
+			dst.Months = deepCopy(src.Months)
+		}
+
+		if dst.Months != nil && len(dst.Months.MonthContext) == 0 && len(src.Months.MonthContext) > 0 {
+			dst.Months.MonthContext = deepCopy(src.Months.MonthContext)
+		}
 	}
 
-	if dst.Months == nil {
-		dst.Months = deepCopy(src.Months)
-	}
-
-	if dst.Months != nil && len(dst.Months.MonthContext) == 0 && len(src.Months.MonthContext) > 0 {
-		dst.Months.MonthContext = deepCopy(src.Months.MonthContext)
+	// eras
+	if src.Eras != nil {
+		if dst.Eras == nil {
+			dst.Eras = deepCopy(src.Eras)
+		}
 	}
 }
 
@@ -529,9 +588,9 @@ func mergeFields(dst, src *cldr.LDML) {
 	}
 }
 
-func (g *Generator) calendarPreferences() []CalendarPreference {
+func (g *Generator) calendarPreferences() CalendarPreferences {
 	calendarPreferences := g.cldr.Supplemental().CalendarPreferenceData.CalendarPreference
-	preferences := make([]CalendarPreference, 0, len(calendarPreferences))
+	preferences := make(CalendarPreferences, 0, len(calendarPreferences))
 
 	// calendar preferences
 	for _, v := range calendarPreferences {
@@ -659,17 +718,19 @@ func (g *Generator) fields() Fields {
 
 		ldml := g.cldr.RawLDML(locale)
 
-		if ldml.Dates == nil || ldml.Dates.Fields == nil {
+		if ldml.Dates == nil {
 			continue
 		}
 
 		locale = strings.ReplaceAll(locale, "_", "-")
 
-		for _, field := range ldml.Dates.Fields.Field {
-			if field.Type == "day" && len(field.DisplayName) > 0 {
-				f := fields[locale]
-				f.Day = field.DisplayName[0].CharData
-				fields[locale] = f
+		if ldml.Dates.Fields != nil {
+			for _, field := range ldml.Dates.Fields.Field {
+				if field.Type == "day" && len(field.DisplayName) > 0 {
+					f := fields[locale]
+					f.Day = field.DisplayName[0].CharData
+					fields[locale] = f
+				}
 			}
 		}
 	}
@@ -688,12 +749,13 @@ func (g *Generator) fields() Fields {
 			continue
 		}
 
-		for k2 := range fields {
+		for k2, f2 := range fields {
 			if lang == k2 {
 				continue
 			}
 
-			if lang == strings.Split(k2, "-")[0] && v.Day == fields[k2].Day {
+			if lang == strings.Split(k2, "-")[0] &&
+				v.Day == f2.Day {
 				delete(fields, k2)
 			}
 		}
@@ -708,12 +770,12 @@ func (g *Generator) fields() Fields {
 		fields[locale] = f
 	}
 
-	for _, locale := range []string{
-		"ckb", "ckb-IQ", "ckb-IR", "eo", "ie", "kl", "kw", "lij", "mn-Mong-MN", "ms-Arab", "nds", "oc", "oc-ES", "prg",
-		"szl", "za",
-	} {
-		delete(fields, locale)
-	}
+	// for _, locale := range []string{
+	// 	"ckb", "ckb-IQ", "ckb-IR", "eo", "ie", "kl", "kw", "lij", "mn-Mong-MN", "ms-Arab", "nds", "oc", "oc-ES", "prg",
+	// 	"szl", "za",
+	// } {
+	// 	delete(fields, locale)
+	// }
 
 	for _, locale := range []string{"az-Cyrl", "kxv-Deva", "kxv-Orya", "kxv-Telu", "uz-Arab"} {
 		f := fields[locale]
@@ -734,6 +796,147 @@ func (g *Generator) fields() Fields {
 	}
 
 	return fields
+}
+
+//nolint:cyclop,gocognit
+func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
+	eras := make(Eras)
+
+	for _, locale := range g.cldr.Locales() {
+		if locale == "root" {
+			continue
+		}
+
+		ldml := g.cldr.RawLDML(locale)
+		calendar := findCalendar(ldml, calendarPreferences.FindCalendarType(locale))
+
+		if calendar == nil || calendar.Eras == nil {
+			continue
+		}
+
+		eraType := "0"
+		if calendar.Type != "persian" && calendar.Type != "buddhist" {
+			eraType = "1"
+		}
+
+		locale = strings.ReplaceAll(locale, "_", "-")
+		lang, _, region := language.MustParse(locale).Raw()
+
+		var era Era
+
+		f := func(s string) string {
+			if s == "d. C." && locale != "es" && lang.String() == "es" &&
+				!slices.Contains([]string{"EA", "ES", "GQ", "IC", "PH"}, region.String()) {
+				return "d.C."
+			}
+
+			return s
+		}
+
+		// narrow
+		if calendar.Eras.EraNarrow != nil {
+			for _, v := range calendar.Eras.EraNarrow.Era {
+				if v.Type == eraType && v.Alt == "" {
+					era.Narrow = f(v.CharData)
+				}
+			}
+		}
+
+		// short
+		if calendar.Eras.EraAbbr != nil {
+			for _, v := range calendar.Eras.EraAbbr.Era {
+				if v.Type == eraType && v.Alt == "" {
+					era.Short = f(v.CharData)
+				}
+			}
+		}
+
+		// long
+		if calendar.Eras.EraNames != nil {
+			for _, v := range calendar.Eras.EraNames.Era {
+				if v.Type == eraType && v.Alt == "" {
+					era.Long = v.CharData
+				}
+			}
+		}
+
+		switch locale {
+		case "en-Dsrt", "en-Dsrt-US", "en-Shaw", "en-Shaw-GB":
+			era.Narrow = "A"
+			era.Short = "AD"
+			era.Long = "Anno Domini"
+		case "bg", "bg-BG":
+			era.Long = "след Христа"
+		case "es-419":
+			era.Long = "después de Cristo"
+		case "es-DO":
+			era.Narrow = "d.C."
+			era.Short = "d.C."
+			era.Long = "después de Cristo"
+		case "fa":
+			era.Narrow = "ه‍.ش."
+			era.Short = "ه‍.ش."
+			era.Long = "هجری شمسی"
+		case "hi-Latn", "hi-Latn-IN":
+			era.Narrow = "A"
+			era.Short = "AD"
+			era.Long = "Anno Domini"
+		case "kxv-Deva", "kxv-Deva-IN", "kxv-Orya", "kxv-Orya-IN", "kxv-Telu", "kxv-Telu-IN":
+			era.Narrow = "CE"
+			era.Short = "CE"
+			era.Long = "CE"
+		case "lrc":
+			era.Narrow = "AP"
+			era.Short = "AP"
+			era.Long = "AP"
+		case "mn-Mong-MN":
+			era.Narrow = "МЭ"
+			era.Short = "МЭ"
+			era.Long = "манай эриний"
+		case "mzn", "ps", "uz-Arab":
+			era.Narrow = "AP"
+			era.Short = "AP"
+			era.Long = "AP"
+		case "th":
+			era.Narrow = "พ.ศ."
+			era.Short = "พ.ศ."
+			era.Long = "พุทธศักราช"
+		case "zh-Hant-MO":
+			era.Narrow = "公元"
+			era.Short = "公元"
+			era.Long = "公元"
+		}
+
+		if era.Long == "" && era.Narrow == "" && era.Short == "" {
+			continue
+		}
+
+		if era.Short != "" {
+			if era.Narrow == "" {
+				era.Narrow = era.Short
+			}
+
+			if era.Long == "" {
+				era.Long = era.Short
+			}
+		}
+
+		if era.Narrow == "" {
+			era.Narrow = "CE"
+		}
+
+		if era.Short == "" {
+			era.Short = "CE"
+		}
+
+		if era.Long == "" {
+			era.Long = "CE"
+		}
+
+		eras[locale] = era
+	}
+
+	return eras
 }
 
 // CLDRDateFormatItem is a copy of CLDR DateFormatItem.
@@ -782,11 +985,12 @@ type NumberingSystem struct {
 }
 
 type TemplateData struct {
+	Eras                    Eras
 	Months                  Months
 	Fields                  Fields
 	DefaultNumberingSystems LocaleLookup
 	NumberingSystemIota     []string
-	CalendarPreferences     []CalendarPreference
+	CalendarPreferences     CalendarPreferences
 	NumberingSystems        []NumberingSystem
 }
 
@@ -856,6 +1060,31 @@ type Fields map[string]Field
 
 type Field struct {
 	Day string
+}
+
+// Era contains current era and default calendar only
+type Era struct {
+	Narrow, Short, Long string
+}
+
+type Eras map[string]Era
+
+type CalendarPreferences []CalendarPreference
+
+func (c CalendarPreferences) FindCalendarType(locale string) string {
+	lang, _, region := language.MustParse(locale).Raw()
+
+	if lang.String() == "az" {
+		return "gregorian"
+	}
+
+	for _, v := range c {
+		if slices.Contains(v.Regions, region.String()) {
+			return v.Calendars[0]
+		}
+	}
+
+	return "gregorian"
 }
 
 type CalendarPreference struct {

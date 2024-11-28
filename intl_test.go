@@ -20,7 +20,16 @@ type Test struct {
 func (t *Test) String() string {
 	var sb strings.Builder
 
+	if t.Options.Era != EraUnd {
+		sb.WriteString("era=")
+		sb.WriteString(t.Options.Era.String())
+	}
+
 	if t.Options.Year != YearUnd {
+		if sb.Len() > 0 {
+			sb.WriteRune(',')
+		}
+
 		sb.WriteString("year=")
 		sb.WriteString(t.Options.Year.String())
 	}
@@ -84,31 +93,20 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 	test := Test{Output: out}
 
 	if o, ok := data[0].(map[string]any); ok {
-		if v, ok := o["year"].(string); ok {
-			switch v {
-			case "numeric":
-				test.Options.Year = YearNumeric
-			case "2-digit":
-				test.Options.Year = Year2Digit
-			}
+		if v, ok := o["era"].(string); ok {
+			test.Options.Era = MustParseEra(v)
 		}
 
-		if v, ok := o["day"].(string); ok {
-			switch v {
-			case "numeric":
-				test.Options.Day = DayNumeric
-			case "2-digit":
-				test.Options.Day = Day2Digit
-			}
+		if v, ok := o["year"].(string); ok {
+			test.Options.Year = MustParseYear(v)
 		}
 
 		if v, ok := o["month"].(string); ok {
-			switch v {
-			case "numeric":
-				test.Options.Month = MonthNumeric
-			case "2-digit":
-				test.Options.Month = Month2Digit
-			}
+			test.Options.Month = MustParseMonth(v)
+		}
+
+		if v, ok := o["day"].(string); ok {
+			test.Options.Day = MustParseDay(v)
 		}
 	}
 
@@ -151,6 +149,13 @@ func TestDateTime_Format(t *testing.T) {
 			for _, test := range cases {
 				if reason := skipTest(locale); reason != "" {
 					t.Skip(reason)
+				}
+
+				if !(test.Options.Era != EraUnd &&
+					test.Options.Year != YearUnd &&
+					test.Options.Month == MonthUnd &&
+					test.Options.Day == DayUnd) {
+					continue
 				}
 
 				got := NewDateTimeFormat(locale, test.Options).Format(tests.Date)

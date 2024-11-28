@@ -56,6 +56,70 @@ func (t calendarType) String() string {
 	}
 }
 
+type Era byte
+
+const (
+	EraUnd Era = iota
+	EraNarrow
+	EraShort
+	EraLong
+)
+
+// String returns the string representation of the [Era].
+// It converts the [Era] constant to its corresponding string value.
+//
+// Returns:
+//   - "narrow" for [EraNarrow]
+//   - "short" for [EraShort]
+//   - "long" for [EraLong]
+//   - "" for any other value (including [EraUnd])
+func (e Era) String() string {
+	switch e {
+	default:
+		return ""
+	case EraNarrow:
+		return "narrow"
+	case EraShort:
+		return "short"
+	case EraLong:
+		return "long"
+	}
+}
+
+// ParseEra converts a string representation of a year format to the [Era] type.
+//
+// Parameters:
+//   - s: A string representing the era format. Valid values are "narrow", "short", "long" or an empty string.
+//
+// Returns:
+//   - Era: The corresponding [Era] constant ([EraNarrow], [EraShort], or [EraLong]).
+//   - error: An error if the input string is not a valid era format.
+func ParseEra(s string) (Era, error) {
+	switch s {
+	default:
+		return EraUnd, fmt.Errorf(`bad era value "%s", want "narrow", "short", "long" or ""`, s)
+	case "":
+		return EraUnd, nil
+	case "narrow":
+		return EraNarrow, nil
+	case "short":
+		return EraShort, nil
+	case "long":
+		return EraLong, nil
+	}
+}
+
+// MustParseEra converts a string representation of an era format to the [Era] type.
+// It panics if the input string is not a valid era format.
+func MustParseEra(s string) Era {
+	v, err := ParseEra(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
+
 // Year is year option for [Options].
 type Year byte
 
@@ -256,6 +320,7 @@ func MustParseDay(s string) Day {
 // Options defines configuration parameters for [NewDateTimeFormat].
 // It allows customization of the date and time representations in formatted output.
 type Options struct {
+	Era   Era
 	Year  Year
 	Month Month
 	Day   Day
@@ -427,11 +492,55 @@ func fmtDay(digits digits) func(v int, opt Day) string {
 	}
 }
 
+//nolint:cyclop
 func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
 	switch {
 	default:
 		return func(_ time.Time) string {
 			return ""
+		}
+	case opts.Era != EraUnd && (opts.Year != YearUnd && opts.Month != MonthUnd && opts.Day != DayUnd ||
+		opts.Year == YearUnd && opts.Month == MonthUnd && opts.Day == DayUnd):
+		layout := fmtEraYearMonthDayGregorian(locale, digits, opts)
+
+		return func(t time.Time) string {
+			return layout(t.Year(), t.Month(), t.Day())
+		}
+	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month != MonthUnd && opts.Day == DayUnd:
+		layout := fmtEraYearMonth(locale, digits, opts)
+
+		return func(t time.Time) string {
+			return layout(t.Year(), t.Month())
+		}
+	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month == MonthUnd && opts.Day == DayUnd:
+		layout := fmtEraYearGregorian(locale, digits, opts)
+
+		return func(t time.Time) string {
+			return layout(t.Year())
+		}
+	case opts.Era != EraUnd && opts.Year == YearUnd && opts.Month != MonthUnd && opts.Day == DayUnd:
+		layout := fmtEraMonthGregorian(locale, digits, opts)
+
+		return func(t time.Time) string {
+			return layout(t.Month())
+		}
+	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month == MonthUnd && opts.Day != DayUnd:
+		layout := fmtEraYearDayGregorian(locale, digits, opts)
+
+		return func(t time.Time) string {
+			return layout(t.Year(), t.Day())
+		}
+	case opts.Era != EraUnd && opts.Year == YearUnd && opts.Month == MonthUnd && opts.Day != DayUnd:
+		layout := fmtEraDayGregorian(locale, digits, opts)
+
+		return func(t time.Time) string {
+			return layout(t.Day())
+		}
+	case opts.Era != EraUnd && opts.Year == YearUnd && opts.Month != MonthUnd && opts.Day != DayUnd:
+		layout := fmtEraMonthDayGregorian(locale, digits, opts)
+
+		return func(t time.Time) string {
+			return layout(t.Month(), t.Day())
 		}
 	case opts.Year != YearUnd && opts.Month != MonthUnd && opts.Day != DayUnd:
 		layout := fmtYearMonthDayGregorian(locale, digits, opts)
@@ -484,6 +593,12 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 	default:
 		return func(_ time.Time) string {
 			return ""
+		}
+	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month == MonthUnd && opts.Day == DayUnd:
+		layout := fmtEraYearPersian(locale, digits, opts)
+
+		return func(t time.Time) string {
+			return layout(ptime.New(t).Year())
 		}
 	case opts.Year != YearUnd && opts.Month != MonthUnd && opts.Day != DayUnd:
 		layout := fmtYearMonthDayPersian(locale, digits, opts)
@@ -545,6 +660,14 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 		return func(_ time.Time) string {
 			return ""
 		}
+	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month == MonthUnd && opts.Day == DayUnd:
+		layout := fmtEraYearBuddhist(locale, digits, opts)
+
+		return (func(v time.Time) string {
+			v = v.AddDate(543, 0, 0) //nolint:mnd
+
+			return layout(v.Year())
+		})
 	case opts.Year != YearUnd && opts.Month != MonthUnd && opts.Day != DayUnd:
 		layout := fmtYearMonthDayBuddhist(locale, digits, opts)
 
