@@ -15,7 +15,7 @@ func fmtEraYearMonth(locale language.Tag, digits digits, opts Options) func(y in
 
 	switch lang {
 	default:
-		return func(y int, m time.Month) string {
+		return func(_ int, _ time.Month) string {
 			return era
 		}
 	case lv:

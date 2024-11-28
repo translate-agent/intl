@@ -112,7 +112,8 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y,
 	name := dayName(locale)
 
 	return func(y, d int) string {
-		return fmtEra(locale, EraNarrow) + " " + layoutYear(fmtYear(y, opts.Year)) + " (" + name + ": " + fmtDay(d, opts.Day) + ")"
+		return fmtEra(locale, EraNarrow) + " " + layoutYear(fmtYear(y, opts.Year)) +
+			" (" + name + ": " + fmtDay(d, opts.Day) + ")"
 	}
 }
 

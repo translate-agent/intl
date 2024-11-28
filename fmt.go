@@ -253,6 +253,7 @@ var (
 	arab = language.MustParseScript("Arab")
 	cyrl = language.MustParseScript("Cyrl")
 	deva = language.MustParseScript("Deva")
+	dsrt = language.MustParseScript("Dsrt")
 	hans = language.MustParseScript("Hans")
 	hant = language.MustParseScript("Hant")
 	latn = language.MustParseScript("Latn")
@@ -274,11 +275,13 @@ var (
 	regionAG  = language.MustParseRegion("AG")
 	regionAI  = language.MustParseRegion("AI")
 	regionAR  = language.MustParseRegion("AR")
+	regionAS  = language.MustParseRegion("AS")
 	regionAT  = language.MustParseRegion("AT")
 	regionAU  = language.MustParseRegion("AU")
 	regionBA  = language.MustParseRegion("BA")
 	regionBB  = language.MustParseRegion("BB")
 	regionBE  = language.MustParseRegion("BE")
+	regionBI  = language.MustParseRegion("BI")
 	regionBM  = language.MustParseRegion("BM")
 	regionBS  = language.MustParseRegion("BS")
 	regionBW  = language.MustParseRegion("BW")
@@ -317,6 +320,7 @@ var (
 	regionIM  = language.MustParseRegion("IM")
 	regionIN  = language.MustParseRegion("IN")
 	regionIO  = language.MustParseRegion("IO")
+	regionIQ  = language.MustParseRegion("IQ")
 	regionIR  = language.MustParseRegion("IR")
 	regionJE  = language.MustParseRegion("JE")
 	regionJM  = language.MustParseRegion("JM")
@@ -386,6 +390,7 @@ var (
 	regionZA  = language.MustParseRegion("ZA")
 	regionZM  = language.MustParseRegion("ZM")
 	regionZW  = language.MustParseRegion("ZW")
+	regionZZ  = language.Region{}
 )
 
 func defaultNumberingSystem(locale language.Tag) numberingSystem {

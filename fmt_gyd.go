@@ -12,7 +12,7 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fu
 
 	switch lang {
 	default:
-		return func(y, d int) string {
+		return func(_, d int) string {
 			return era + fmtDay(d, opts.Day)
 		}
 	case lv:

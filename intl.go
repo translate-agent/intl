@@ -442,8 +442,6 @@ func fmtMonth(digits digits) func(v time.Month, opt Month) string {
 //
 // TODO(jhorsts): ensure this is rectified before release v0.1.0 - when formatting of date is complete.
 // The "context" is always "stand-alone".
-//
-//nolint:unparam
 func fmtMonthName(locale string, context, width string) func(v time.Month, opt Month) string {
 	indexes := monthLookup[locale]
 
@@ -594,6 +592,13 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 		return func(_ time.Time) string {
 			return ""
 		}
+	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month != MonthUnd && opts.Day != DayUnd:
+		layout := fmtEraYearMonthDayPersian(locale, digits, opts)
+
+		return func(v time.Time) string {
+			t := ptime.New(v)
+			return layout(t.Year(), time.Month(t.Month()), t.Day())
+		}
 	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month == MonthUnd && opts.Day == DayUnd:
 		layout := fmtEraYearPersian(locale, digits, opts)
 
@@ -660,6 +665,14 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 		return func(_ time.Time) string {
 			return ""
 		}
+	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month != MonthUnd && opts.Day != DayUnd:
+		layout := fmtEraYearMonthDayBuddhist(locale, digits, opts)
+
+		return (func(v time.Time) string {
+			v = v.AddDate(543, 0, 0) //nolint:mnd
+
+			return layout(v.Year(), v.Month(), v.Day())
+		})
 	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month == MonthUnd && opts.Day == DayUnd:
 		layout := fmtEraYearBuddhist(locale, digits, opts)
 

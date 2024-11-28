@@ -151,7 +151,7 @@ func (g *Generator) saveMerged(out string) error {
 	return nil
 }
 
-//nolint:gocognit
+//nolint:cyclop,gocognit
 func (g *Generator) filterApproved() {
 	for _, locale := range g.cldr.Locales() {
 		ldml := g.cldr.RawLDML(locale)
@@ -210,6 +210,7 @@ func (g *Generator) filterApproved() {
 				}
 			}
 
+			//nolint:nestif
 			if eras := calendar.Eras; eras != nil {
 				if v := eras.EraAbbr; v != nil {
 					for i := len(v.Era) - 1; i >= 0; i-- {
@@ -638,68 +639,68 @@ func (g *Generator) months() Months { //nolint:gocognit
 			continue
 		}
 
-		for calendar := range supportedCalendars(ldml.Dates.Calendars.Calendar) {
-			// month names are available only in gregorian calendars (default)
-			if calendar.Months == nil || calendar.Type != "gregorian" {
-				continue
-			}
+		// month names are available only in gregorian calendars (default)
+		calendar := findCalendar(ldml, "gregorian")
 
-			for _, monthContext := range calendar.Months.MonthContext {
-				for _, monthWidth := range monthContext.MonthWidth {
-					if len(monthWidth.Month) == 0 {
-						continue
-					}
+		if calendar.Months == nil {
+			continue
+		}
 
-					month := monthWidth.Month[0]
-
-					// skip months with the same digits
-					if month.Type == month.CharData && month.CharData == "1" {
-						continue
-					}
-
-					var monthNames MonthNames
-
-					for _, month = range monthWidth.Month {
-						i, err := strconv.Atoi(month.Type)
-						if err != nil {
-							panic(err)
-						}
-
-						i--
-
-						monthNames[i] = month.CharData
-					}
-
-					// skip empty names
-					if monthNames[0] == "" {
-						continue
-					}
-
-					i := slices.IndexFunc(months.List, func(names MonthNames) bool {
-						for i, v := range names {
-							if v != monthNames[i] {
-								return false
-							}
-						}
-
-						return true
-					})
-
-					if i == -1 {
-						months.List = append(months.List, monthNames)
-						i = len(months.List) - 1
-					}
-
-					indexes := months.Lookup[locale]
-					indexes.Set(monthWidth.Type, monthContext.Type, i)
-
-					// NOTE: fallback "format" context when "stand-alone" not defined
-					if monthContext.Type == "format" {
-						indexes.Set(monthWidth.Type, "stand-alone", i)
-					}
-
-					months.Lookup[locale] = indexes
+		for _, monthContext := range calendar.Months.MonthContext {
+			for _, monthWidth := range monthContext.MonthWidth {
+				if len(monthWidth.Month) == 0 {
+					continue
 				}
+
+				month := monthWidth.Month[0]
+
+				// skip months with the same digits
+				if month.Type == month.CharData && month.CharData == "1" {
+					continue
+				}
+
+				var monthNames MonthNames
+
+				for _, month = range monthWidth.Month {
+					i, err := strconv.Atoi(month.Type)
+					if err != nil {
+						panic(err)
+					}
+
+					i--
+
+					monthNames[i] = month.CharData
+				}
+
+				// skip empty names
+				if monthNames[0] == "" {
+					continue
+				}
+
+				i := slices.IndexFunc(months.List, func(names MonthNames) bool {
+					for i, v := range names {
+						if v != monthNames[i] {
+							return false
+						}
+					}
+
+					return true
+				})
+
+				if i == -1 {
+					months.List = append(months.List, monthNames)
+					i = len(months.List) - 1
+				}
+
+				indexes := months.Lookup[locale]
+				indexes.Set(monthWidth.Type, monthContext.Type, i)
+
+				// NOTE: fallback "format" context when "stand-alone" not defined
+				if monthContext.Type == "format" {
+					indexes.Set(monthWidth.Type, "stand-alone", i)
+				}
+
+				months.Lookup[locale] = indexes
 			}
 		}
 	}
@@ -1062,7 +1063,7 @@ type Field struct {
 	Day string
 }
 
-// Era contains current era and default calendar only
+// Era contains current era and default calendar only.
 type Era struct {
 	Narrow, Short, Long string
 }

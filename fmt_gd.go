@@ -10,7 +10,7 @@ func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) func(d
 
 	switch lang {
 	default:
-		return func(d int) string { return "?" }
+		return func(_ int) string { return "?" }
 	case lv:
 		// era=long,day=numeric,out=mūsu ērā 2
 		// era=long,day=2-digit,out=mūsu ērā (diena: 02)
