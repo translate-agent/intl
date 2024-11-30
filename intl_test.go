@@ -152,7 +152,7 @@ func TestDateTime_Format(t *testing.T) {
 				}
 
 				if !(test.Options.Era != EraUnd &&
-					test.Options.Year != YearUnd &&
+					test.Options.Year == YearUnd &&
 					test.Options.Month != MonthUnd &&
 					test.Options.Day != DayUnd) {
 					continue

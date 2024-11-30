@@ -599,6 +599,13 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 			t := ptime.New(v)
 			return layout(t.Year(), time.Month(t.Month()), t.Day())
 		}
+	case opts.Era != EraUnd && opts.Year == YearUnd && opts.Month != MonthUnd && opts.Day != DayUnd:
+		layout := fmtEraMonthDayPersian(locale, digits, opts)
+
+		return func(v time.Time) string {
+			t := ptime.New(v)
+			return layout(time.Month(t.Month()), t.Day())
+		}
 	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month == MonthUnd && opts.Day == DayUnd:
 		layout := fmtEraYearPersian(locale, digits, opts)
 
@@ -672,6 +679,14 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 			v = v.AddDate(543, 0, 0) //nolint:mnd
 
 			return layout(v.Year(), v.Month(), v.Day())
+		})
+	case opts.Era != EraUnd && opts.Year == YearUnd && opts.Month != MonthUnd && opts.Day != DayUnd:
+		layout := fmtEraMonthDayBuddhist(locale, digits, opts)
+
+		return (func(v time.Time) string {
+			v = v.AddDate(543, 0, 0) //nolint:mnd
+
+			return layout(v.Month(), v.Day())
 		})
 	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month == MonthUnd && opts.Day == DayUnd:
 		layout := fmtEraYearBuddhist(locale, digits, opts)
