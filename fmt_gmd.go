@@ -459,16 +459,15 @@ func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) fun
 	era := fmtEra(locale, opts.Era)
 	fmtMonth := fmtMonth(digits)
 	fmtDay := fmtDay(digits)
+	separator := "-"
 
 	switch lang {
 	case fa, ps:
-		return func(m time.Month, d int) string {
-			return era + " " + fmtMonth(m, opts.Month) + "/" + fmtDay(d, opts.Day)
-		}
+		separator = "/"
 	}
 
 	return func(m time.Month, d int) string {
-		return era + " " + fmtMonth(m, opts.Month) + "-" + fmtDay(d, opts.Day)
+		return era + " " + fmtMonth(m, opts.Month) + separator + fmtDay(d, opts.Day)
 	}
 }
 

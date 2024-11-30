@@ -197,23 +197,22 @@ func BenchmarkNewDateTime(b *testing.B) {
 }
 
 func BenchmarkDateTime_Format(b *testing.B) {
-	var v1, v2, v3, v4, v5, v6, v7 string
+	var v1, v2, v3, v4, v5 string
 
 	now := time.Now()
 
 	for _, s := range locales {
 		locale := language.MustParse(s)
-		f1 := NewDateTimeFormat(locale, Options{}).Format
-		f2 := NewDateTimeFormat(locale, Options{Year: YearNumeric}).Format
-		f3 := NewDateTimeFormat(locale, Options{Year: Year2Digit}).Format
-		f4 := NewDateTimeFormat(locale, Options{Month: MonthNumeric}).Format
-		f5 := NewDateTimeFormat(locale, Options{Month: Month2Digit}).Format
-		f6 := NewDateTimeFormat(locale, Options{Day: DayNumeric}).Format
-		f7 := NewDateTimeFormat(locale, Options{Day: Day2Digit}).Format
+		f1 := NewDateTimeFormat(locale, Options{Era: EraLong}).Format
+		f2 := NewDateTimeFormat(locale, Options{Year: Year2Digit}).Format
+		f3 := NewDateTimeFormat(locale, Options{Month: Month2Digit}).Format
+		f4 := NewDateTimeFormat(locale, Options{Day: Day2Digit}).Format
+		f5 := NewDateTimeFormat(locale, Options{Era: EraShort, Year: YearNumeric, Month: MonthNumeric, Day: DayNumeric}).
+			Format
 
 		b.Run(s, func(b *testing.B) {
 			for range b.N {
-				v1, v2, v3, v4, v5, v6, v7 = f1(now), f2(now), f3(now), f4(now), f5(now), f6(now), f7(now)
+				v1, v2, v3, v4, v5 = f1(now), f2(now), f3(now), f4(now), f5(now)
 			}
 		})
 	}
@@ -223,6 +222,4 @@ func BenchmarkDateTime_Format(b *testing.B) {
 	runtime.KeepAlive(v3)
 	runtime.KeepAlive(v4)
 	runtime.KeepAlive(v5)
-	runtime.KeepAlive(v6)
-	runtime.KeepAlive(v7)
 }
