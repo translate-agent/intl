@@ -487,7 +487,7 @@ func defaultCalendar(locale language.Tag) calendarType {
 	}
 }
 
-func dayName(locale language.Tag) string {
+func unitName(locale language.Tag) fields {
 	lang, _ := locale.Base()
 	s := lang.String()
 
@@ -496,7 +496,7 @@ func dayName(locale language.Tag) string {
 
 		v, ok := fieldsLookup[s]
 		if ok {
-			return v.Day
+			return v
 		}
 	}
 
@@ -506,13 +506,20 @@ func dayName(locale language.Tag) string {
 
 	v, ok := fieldsLookup[s]
 	if ok {
-		return v.Day
+		return v
 	}
 
 	v, ok = fieldsLookup[lang.String()]
 	if ok {
-		return v.Day
+		return v
 	}
 
-	return "Day"
+	return fields{
+		Month: "Month",
+		Day:   "Day",
+	}
+}
+
+func dayName(locale language.Tag) string {
+	return unitName(locale).Day
 }

@@ -153,10 +153,13 @@ func TestDateTime_Format(t *testing.T) {
 
 				if !(test.Options.Era != EraUnd &&
 					test.Options.Year == YearUnd &&
-					test.Options.Month != MonthUnd &&
+					test.Options.Month == MonthUnd &&
 					test.Options.Day != DayUnd) {
 					continue
 				}
+				// if test.Options.Day == DayUnd {
+				// 	continue
+				// }
 
 				got := NewDateTimeFormat(locale, test.Options).Format(tests.Date)
 

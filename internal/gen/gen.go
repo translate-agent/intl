@@ -253,6 +253,15 @@ func (g *Generator) filterApproved() {
 				}
 			}
 		}
+
+		if ldml.Dates.Fields != nil {
+			for i := len(ldml.Dates.Fields.Field) - 1; i >= 0; i-- {
+				field := ldml.Dates.Fields.Field[i]
+				if len(field.DisplayName) == 0 || !isContributedOrApproved(field.DisplayName[0].Draft) {
+					ldml.Dates.Fields.Field = slices.Delete(ldml.Dates.Fields.Field, i, i+1)
+				}
+			}
+		}
 	}
 }
 
@@ -727,11 +736,29 @@ func (g *Generator) fields() Fields {
 
 		if ldml.Dates.Fields != nil {
 			for _, field := range ldml.Dates.Fields.Field {
-				if field.Type == "day" && len(field.DisplayName) > 0 {
-					f := fields[locale]
-					f.Day = field.DisplayName[0].CharData
-					fields[locale] = f
+				if len(field.DisplayName) == 0 {
+					continue
 				}
+
+				f := fields[locale]
+				v := field.DisplayName[0].CharData
+
+				switch field.Type {
+				case "month":
+					f.Month = v
+				case "day":
+					f.Day = v
+				}
+
+				if f.Month == "" {
+					f.Month = "Month"
+				}
+
+				if f.Day == "" {
+					f.Day = "Day"
+				}
+
+				fields[locale] = f
 			}
 		}
 	}
@@ -765,21 +792,19 @@ func (g *Generator) fields() Fields {
 	// Correct the naming! The naming is different in Node.js.
 
 	// year, day formatting
-	for _, locale := range []string{} { //  "en-Dsrt", "en-Shaw"
+	for _, locale := range []string{"en-Dsrt", "en-Shaw"} {
 		f := fields[locale]
 		f.Day = "day"
 		fields[locale] = f
 	}
 
-	// for _, locale := range []string{
-	// 	"ckb", "ckb-IQ", "ckb-IR", "eo", "ie", "kl", "kw", "lij", "mn-Mong-MN", "ms-Arab", "nds", "oc", "oc-ES", "prg",
-	// 	"szl", "za",
-	// } {
-	// 	delete(fields, locale)
-	// }
-
-	for _, locale := range []string{"az-Cyrl", "kxv-Deva", "kxv-Orya", "kxv-Telu", "uz-Arab"} {
+	for _, locale := range []string{
+		"az-Cyrl",
+		"kxv-Deva", "kxv-Orya", "kxv-Telu",
+		"uz-Arab",
+	} {
 		f := fields[locale]
+		f.Month = "Month"
 		f.Day = "Day"
 		fields[locale] = f
 	}
@@ -787,6 +812,10 @@ func (g *Generator) fields() Fields {
 	f := fields["nn"]
 	f.Day = "dag"
 	fields["nn"] = f
+
+	f = fields["mn-Mong-MN"]
+	f.Day = "өдөр"
+	fields["mn-Mong-MN"] = f
 
 	for locale, v := range fields {
 		// NOTE! all "Day" values at language level can be deleted (manually verified).
@@ -868,6 +897,8 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 			era.Long = "Anno Domini"
 		case "bg", "bg-BG":
 			era.Long = "след Христа"
+		case "cy", "cy-GB":
+			era.Long = "Oed Crist"
 		case "es-419":
 			era.Long = "después de Cristo"
 		case "es-DO":
@@ -1060,7 +1091,7 @@ func (n MonthNames) String() string {
 type Fields map[string]Field
 
 type Field struct {
-	Day string
+	Month, Day string
 }
 
 // Era contains current era and default calendar only.

@@ -8,31 +8,49 @@ import (
 
 func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
 	lang, _ := locale.Base()
-
 	era := fmtEra(locale, opts.Era)
 	fmtMonth := fmtMonth(digits)
+	withName := opts.Era == EraShort || opts.Era == EraLong && opts.Month == Month2Digit
+	monthName := unitName(locale).Month
+
+	prefix := era + " "
+	suffix := ""
+
+	if withName {
+		prefix = era + " (" + monthName + ": "
+		suffix = ")"
+	}
 
 	switch lang {
-	default:
-		return func(m time.Month) string {
-			return era + " " + fmtMonth(m, opts.Month)
+	case bg:
+		prefix = era + " "
+		if withName {
+			prefix = era + " (" + monthName + ": "
 		}
-	case lv:
-		// era=long,month=numeric,out=mūsu ērā 1
-		// era=long,month=2-digit,out=mūsu ērā (mēnesis: 01)
-		// era=short,month=numeric,out=m.ē. (mēnesis: 1)
-		// era=short,month=2-digit,out=m.ē. (mēnesis: 01)
-		// era=narrow,month=numeric,out=m.ē. 1
-		// era=narrow,month=2-digit,out=m.ē. 01
-		if opts.Era == EraShort ||
-			opts.Era == EraLong && opts.Month == Month2Digit {
-			return func(m time.Month) string {
-				return era + " (mēnesis: " + fmtMonth(m, opts.Month) + ")"
-			}
-		}
+	case br:
+		opts.Month = Month2Digit
+	}
 
-		return func(m time.Month) string {
-			return era + " " + fmtMonth(m, opts.Month)
-		}
+	return func(m time.Month) string {
+		return prefix + fmtMonth(m, opts.Month) + suffix
+	}
+}
+
+func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
+	era := fmtEra(locale, opts.Era)
+	fmtMonth := fmtMonth(digits)
+	monthName := unitName(locale).Month
+	withName := opts.Era == EraShort || opts.Era == EraLong && opts.Month == Month2Digit
+
+	prefix := era + " "
+	suffix := ""
+
+	if withName {
+		prefix = era + " (" + monthName + ": "
+		suffix = ")"
+	}
+
+	return func(m time.Month) string {
+		return prefix + fmtMonth(m, opts.Month) + suffix
 	}
 }
