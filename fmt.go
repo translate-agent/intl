@@ -488,6 +488,10 @@ func defaultCalendar(locale language.Tag) calendarType {
 }
 
 func unitName(locale language.Tag) fields {
+	if v, ok := fieldsLookup[locale.String()]; ok {
+		return v
+	}
+
 	lang, _ := locale.Base()
 	s := lang.String()
 

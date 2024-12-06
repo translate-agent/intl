@@ -708,6 +708,14 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 
 			return layout(v.Year(), v.Month(), v.Day())
 		})
+	case opts.Era != EraUnd && opts.Year == YearUnd && opts.Month != MonthUnd && opts.Day == DayUnd:
+		layout := fmtEraMonthBuddhist(locale, digits, opts)
+
+		return (func(v time.Time) string {
+			v = v.AddDate(543, 0, 0) //nolint:mnd
+
+			return layout(v.Month())
+		})
 	case opts.Era != EraUnd && opts.Year == YearUnd && opts.Month == MonthUnd && opts.Day != DayUnd:
 		layout := fmtEraDayBuddhist(locale, digits, opts)
 

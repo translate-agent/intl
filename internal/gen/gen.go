@@ -744,18 +744,14 @@ func (g *Generator) fields() Fields {
 				v := field.DisplayName[0].CharData
 
 				switch field.Type {
+				default:
+					continue
 				case "month":
 					f.Month = v
+				case "month-short":
+					f.MonthShort = v
 				case "day":
 					f.Day = v
-				}
-
-				if f.Month == "" {
-					f.Month = "Month"
-				}
-
-				if f.Day == "" {
-					f.Day = "Day"
 				}
 
 				fields[locale] = f
@@ -783,17 +779,34 @@ func (g *Generator) fields() Fields {
 			}
 
 			if lang == strings.Split(k2, "-")[0] &&
-				v.Day == f2.Day {
+				v.Month == f2.Month && v.Day == f2.Day {
 				delete(fields, k2)
 			}
 		}
 	}
 
+	for locale, f := range fields {
+		if f.Month == "" && f.MonthShort != "" {
+			f.Month = f.MonthShort
+		}
+
+		if f.Month == "" {
+			f.Month = "Day"
+		}
+
+		if f.Day == "" {
+			f.Day = "Day"
+		}
+
+		fields[locale] = f
+	}
+
 	// Correct the naming! The naming is different in Node.js.
 
 	// year, day formatting
-	for _, locale := range []string{"en-Dsrt", "en-Shaw"} {
+	for _, locale := range []string{"en-Dsrt", "en-Dsrt-US", "en-Shaw", "en-Shaw-GB"} {
 		f := fields[locale]
+		f.Month = "month"
 		f.Day = "day"
 		fields[locale] = f
 	}
@@ -814,6 +827,7 @@ func (g *Generator) fields() Fields {
 	fields["nn"] = f
 
 	f = fields["mn-Mong-MN"]
+	f.Month = "сар"
 	f.Day = "өдөр"
 	fields["mn-Mong-MN"] = f
 
@@ -1091,7 +1105,7 @@ func (n MonthNames) String() string {
 type Fields map[string]Field
 
 type Field struct {
-	Month, Day string
+	Month, MonthShort, Day string
 }
 
 // Era contains current era and default calendar only.
