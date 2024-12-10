@@ -586,6 +586,7 @@ func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) f
 	}
 }
 
+//nolint:cyclop
 func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
 	switch {
 	default:
@@ -694,19 +695,37 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 	}
 }
 
+//nolint:cyclop
 func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
 	switch {
 	default:
 		return func(_ time.Time) string {
 			return ""
 		}
-	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month != MonthUnd && opts.Day != DayUnd:
+	case opts.Era != EraUnd && (opts.Year != YearUnd && opts.Month != MonthUnd && opts.Day != DayUnd ||
+		opts.Year == YearUnd && opts.Month == MonthUnd && opts.Day == DayUnd):
 		layout := fmtEraYearMonthDayBuddhist(locale, digits, opts)
 
 		return (func(v time.Time) string {
 			v = v.AddDate(543, 0, 0) //nolint:mnd
 
 			return layout(v.Year(), v.Month(), v.Day())
+		})
+	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month != MonthUnd && opts.Day == DayUnd:
+		layout := fmtEraYearMonthBuddhist(locale, digits, opts)
+
+		return (func(v time.Time) string {
+			v = v.AddDate(543, 0, 0) //nolint:mnd
+
+			return layout(v.Year(), v.Month())
+		})
+	case opts.Era != EraUnd && opts.Year != YearUnd && opts.Month == MonthUnd && opts.Day != DayUnd:
+		layout := fmtEraYearDayBuddhist(locale, digits, opts)
+
+		return (func(v time.Time) string {
+			v = v.AddDate(543, 0, 0) //nolint:mnd
+
+			return layout(v.Year(), v.Day())
 		})
 	case opts.Era != EraUnd && opts.Year == YearUnd && opts.Month != MonthUnd && opts.Day == DayUnd:
 		layout := fmtEraMonthBuddhist(locale, digits, opts)
@@ -773,7 +792,7 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 			return layout(v.Month(), v.Day())
 		}
 	case opts.Year != YearUnd:
-		layout := fmtYearBuddhist(locale)
+		layout := fmtYearBuddhist(locale, EraNarrow)
 		fmt := fmtYear(digits)
 
 		return func(v time.Time) string {

@@ -138,6 +138,10 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		return func(m time.Month, d int) string {
 			return era + " " + fmtDay(d, opts.Day) + "." + fmtMonth(m, Month2Digit)
 		}
+	case cy:
+		return func(m time.Month, d int) string {
+			return era + " " + fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month)
+		}
 	case pl:
 		return func(m time.Month, d int) string {
 			return era + " " + fmtDay(d, opts.Day) + "." + fmtMonth(m, Month2Digit)
@@ -309,10 +313,6 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		return func(m time.Month, d int) string {
 			return era + " " + fmtDay(d, opts.Day) + separator + fmtMonth(m, opts.Month)
 		}
-	case ti:
-		return func(m time.Month, d int) string {
-			return era + " " + fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month)
-		}
 	case kea, pt:
 		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
 			opts.Month = Month2Digit
@@ -459,15 +459,17 @@ func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) fun
 	era := fmtEra(locale, opts.Era)
 	fmtMonth := fmtMonth(digits)
 	fmtDay := fmtDay(digits)
+	prefix := era + " "
 	separator := "-"
 
 	switch lang {
 	case fa, ps:
+		prefix = era + " "
 		separator = "/"
 	}
 
 	return func(m time.Month, d int) string {
-		return era + " " + fmtMonth(m, opts.Month) + separator + fmtDay(d, opts.Day)
+		return prefix + fmtMonth(m, opts.Month) + separator + fmtDay(d, opts.Day)
 	}
 }
 

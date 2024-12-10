@@ -919,10 +919,10 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 			era.Narrow = "d.C."
 			era.Short = "d.C."
 			era.Long = "después de Cristo"
-		case "fa":
+		case "fa", "fa-AF", "fa-IR":
 			era.Narrow = "ه‍.ش."
 			era.Short = "ه‍.ش."
-			era.Long = "هجری شمسی"
+			era.Long = "هجری شمسی"
 		case "hi-Latn", "hi-Latn-IN":
 			era.Narrow = "A"
 			era.Short = "AD"

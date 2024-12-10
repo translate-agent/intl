@@ -151,16 +151,6 @@ func TestDateTime_Format(t *testing.T) {
 					t.Skip(reason)
 				}
 
-				if !(test.Options.Era != EraUnd &&
-					test.Options.Year == YearUnd &&
-					test.Options.Month == MonthUnd &&
-					test.Options.Day != DayUnd) {
-					continue
-				}
-				// if test.Options.Day == DayUnd {
-				// 	continue
-				// }
-
 				got := NewDateTimeFormat(locale, test.Options).Format(tests.Date)
 
 				// replace space with non-breaking space. Latest CLDR uses non-breaking space.

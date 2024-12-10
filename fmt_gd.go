@@ -56,19 +56,19 @@ func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) func(d
 func fmtEraDayPersian(locale language.Tag, digits digits, opts Options) func(d int) string {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
-	prefix, suffix := era+" ", ""
 	fmtDay := fmtDay(digits)
+	prefix, suffix := era+" ", ""
 	withName := opts.Era == EraShort || opts.Era == EraLong && opts.Day == Day2Digit
 
 	if withName {
-		name := dayName(locale)
-		prefix, suffix = era+" ("+name+": ", ")"
+		prefix, suffix = era+" ("+dayName(locale)+": ", ")"
 	}
 
-	switch lang {
-	case fa:
-		if !withName {
-			prefix, suffix = era+" ", ""
+	if lang == fa {
+		if withName {
+			prefix = era + " (" + dayName(locale) + ": "
+		} else {
+			prefix = era + " "
 		}
 	}
 
@@ -87,5 +87,4 @@ func fmtEraDayBuddhist(locale language.Tag, digits digits, opts Options) func(d 
 	}
 
 	return func(d int) string { return prefix + fmtDay(d, opts.Day) + suffix }
-
 }

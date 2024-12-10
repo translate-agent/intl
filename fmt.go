@@ -265,8 +265,6 @@ var (
 // Regions.
 //
 // TODO(jhorsts): temporary disable linter "unused". TIDY before release v0.1.0.
-//
-//nolint:unused
 var (
 	region001 = language.MustParseRegion("001")
 	region150 = language.MustParseRegion("150")
@@ -292,6 +290,7 @@ var (
 	regionCK  = language.MustParseRegion("CK")
 	regionCL  = language.MustParseRegion("CL")
 	regionCM  = language.MustParseRegion("CM")
+	regionCO  = language.MustParseRegion("CO")
 	regionCX  = language.MustParseRegion("CX")
 	regionCY  = language.MustParseRegion("CY")
 	regionDE  = language.MustParseRegion("DE")

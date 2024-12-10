@@ -118,7 +118,7 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y,
 }
 
 func fmtYearDayBuddhist(locale language.Tag, digits digits, opts Options) func(y, d int) string {
-	layoutYear := fmtYearBuddhist(locale)
+	layoutYear := fmtYearBuddhist(locale, EraNarrow)
 	fmtYear := fmtYear(digits)
 	fmtDay := fmtDayBuddhist(locale, digits)
 

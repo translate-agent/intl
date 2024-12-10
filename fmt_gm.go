@@ -70,6 +70,7 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func
 }
 
 func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
+	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	fmtMonth := fmtMonth(digits)
 	monthName := unitName(locale).Month
@@ -81,6 +82,16 @@ func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m
 	if withName {
 		prefix = era + " (" + monthName + ": "
 		suffix = ")"
+	}
+
+	switch lang {
+	case fa:
+		prefix = era + " "
+
+		if withName {
+			prefix = era + " (" + monthName + ": "
+			suffix = ")"
+		}
 	}
 
 	return func(m time.Month) string {

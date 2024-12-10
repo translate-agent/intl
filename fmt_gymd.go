@@ -283,6 +283,7 @@ func fmtEraYearMonthDayPersian(
 	fmtDay := fmtDay(digits)
 	layout := eraMonthDayYear
 	separator := "/"
+	suffix := " " + era
 
 	switch lang {
 	case ckb:
@@ -299,12 +300,14 @@ func fmtEraYearMonthDayPersian(
 		if opts.Era != EraNarrow {
 			separator = "-"
 		}
+	case fa:
+		suffix = " " + era
 	}
 
 	switch layout {
 	default: // eraMonthDayYear
 		return func(y int, m time.Month, d int) string {
-			return fmtMonth(m, opts.Month) + separator + fmtDay(d, opts.Day) + separator + fmtYear(y, opts.Year) + " " + era
+			return fmtMonth(m, opts.Month) + separator + fmtDay(d, opts.Day) + separator + fmtYear(y, opts.Year) + suffix
 		}
 	case eraYearMonthDay:
 		return func(y int, m time.Month, d int) string {
