@@ -12,13 +12,13 @@ var fieldsLookup = map[string]fields{
 {{- end }}
 }
 
-type era struct {
-  narrow, short, long string
-}
+// era contains era names: 0 - narrow, 1 - short, 2 - long.
+// The index is the value of iota [Era].
+type era [3]string
 
 var eraLookup = map[string]era{
 {{-  range $locale, $era := .Eras }}
-  "{{ $locale }}": {narrow: "{{ $era.Narrow }}", short: "{{ $era.Short }}", long: "{{ $era.Long }}"},
+  "{{ $locale }}": {"{{ $era.Narrow }}", "{{ $era.Short }}", "{{ $era.Long }}"},
 {{- end }}
 }
 

@@ -7,32 +7,22 @@ import "golang.org/x/text/language"
 //
 // [era]: https://github.com/translate-agent/intl/issues/25
 func fmtEra(locale language.Tag, opt Era) string {
-	f := func(v era) string {
-		switch opt {
-		default:
-			return v.narrow
-		case EraLong:
-			return v.long
-		case EraShort:
-			return v.short
-		}
-	}
-
 	era, ok := eraLookup[locale.String()]
-	if ok {
-		return f(era)
+	if ok && opt > 0 && int(opt) <= len(era) { // isInBounds()
+		return era[opt-1]
 	}
 
 	lang, _ := locale.Base()
 
 	if script, confidence := locale.Script(); confidence == language.Exact {
-		if era, ok := eraLookup[lang.String()+"-"+script.String()]; ok {
-			return f(era)
+		era, ok := eraLookup[lang.String()+"-"+script.String()]
+		if ok && opt > 0 && int(opt) <= len(era) {
+			return era[opt-1]
 		}
 	}
 
-	if era, ok := eraLookup[lang.String()]; ok {
-		return f(era)
+	if era, ok := eraLookup[lang.String()]; ok && opt > 0 && int(opt) <= len(era) {
+		return era[opt-1]
 	}
 
 	return "CE"
