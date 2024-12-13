@@ -22,9 +22,12 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 	fmtYear := fmtYear(digits)
 	layoutYear := fmtYearGregorian(locale)
 	fmtMonth := fmtMonth(digits)
-	prefix, middle, suffix := "", " ", " "+era
-	layout := eraMonthYear
 	monthName := unitName(locale).Month
+
+	layout := eraMonthYear
+	prefix := ""
+	middle := " "
+	suffix := " " + era
 
 	switch lang {
 	case az, qu, te, tk, tr:
@@ -62,29 +65,23 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 		prefix = era + " "
 		suffix = ""
 	case se:
-		if region == regionFI {
-			break
+		if region != regionFI {
+			layout = eraYearMonth
+			prefix = era + " "
+			suffix = ""
 		}
-
-		layout = eraYearMonth
-		prefix = era + " "
-		suffix = ""
 	case sd:
-		if script == deva {
-			break
-		}
-
-		layout = eraYearMonth
-		prefix = era + " "
-		suffix = ""
-	case ks:
 		if script != deva {
-			break
+			layout = eraYearMonth
+			prefix = era + " "
+			suffix = ""
 		}
-
-		layout = eraYearMonth
-		prefix = era + " "
-		suffix = ""
+	case ks:
+		if script == deva {
+			layout = eraYearMonth
+			prefix = era + " "
+			suffix = ""
+		}
 	case ig, mai, mr, sa, xnr:
 		middle = " " + era + " "
 		suffix = ""
@@ -118,16 +115,14 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 	case gl, pt:
 		middle = " de "
 	case kxv:
+		suffix = ""
+
 		if script == deva || script == orya || script == telu {
 			layout = eraYearMonth
 			prefix = era + " "
-			suffix = ""
-
-			break
+		} else {
+			middle = " " + era + " "
 		}
-
-		middle = " " + era + " "
-		suffix = ""
 	case yue, zh:
 		opts.Month = MonthNumeric
 		layout = eraYearMonth
@@ -151,13 +146,11 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 		middle = ". urteko "
 		suffix = ""
 	case ff:
-		if script == adlm {
-			break
+		if script != adlm {
+			layout = eraYearMonth
+			prefix = era + " "
+			suffix = ""
 		}
-
-		layout = eraYearMonth
-		prefix = era + " "
-		suffix = ""
 	case hy:
 		layout = eraYearMonth
 		prefix = era + " "
@@ -214,6 +207,7 @@ func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) fu
 	fmtYear := fmtYear(digits)
 	layoutYear := fmtYearPersian(locale)
 	fmtMonth := fmtMonth(digits)
+
 	layout := eraYearMonth
 	prefix := era + " "
 	middle := " "

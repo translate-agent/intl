@@ -7,7 +7,9 @@ func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) func(
 	era := fmtEra(locale, opts.Era)
 	fmtYear := fmtYear(digits)
 	layoutYear := fmtYearGregorian(locale)
-	prefix, suffix := "", " "+era
+
+	prefix := ""
+	suffix := " " + era
 
 	switch lang {
 	case agq, ak, as, asa, az, bas, bem, bez, bgc, bho, bm, bo, ce, cgg, ckb, csw, dav, dje, doi, dua, dz, dyo, ebu,
@@ -31,26 +33,20 @@ func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) func(
 			suffix = ""
 		}
 	case sd:
-		if script == deva {
-			break
+		if script != deva {
+			prefix = era + " "
+			suffix = ""
 		}
-
-		prefix = era + " "
-		suffix = ""
 	case ff:
-		if script == adlm {
-			break
+		if script != adlm {
+			prefix = era + " "
+			suffix = ""
 		}
-
-		prefix = era + " "
-		suffix = ""
 	case se:
-		if region == regionFI {
-			break
+		if region != regionFI {
+			prefix = era + " "
+			suffix = ""
 		}
-
-		prefix = era + " "
-		suffix = ""
 	case be, ru:
 		suffix = " г. " + era
 	case bg, cy:
@@ -78,15 +74,14 @@ func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) func(
 		suffix = ""
 	}
 
-	return func(y int) string {
-		return prefix + layoutYear(fmtYear(y, opts.Year)) + suffix
-	}
+	return func(y int) string { return prefix + layoutYear(fmtYear(y, opts.Year)) + suffix }
 }
 
 func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) func(y int) string {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	fmtYear := fmtYear(digits)
+
 	prefix := ""
 	suffix := " " + era
 

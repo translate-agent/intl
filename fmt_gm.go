@@ -30,16 +30,18 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func
 			suffix = " " + era
 		}
 	case bg, cy:
-		prefix = era + " "
 		if withName {
 			prefix = era + " (" + monthName + ": "
+		} else {
+			prefix = era + " "
 		}
 	case br, fo, ga, lt, uk, uz:
 		opts.Month = Month2Digit
 	case hr, nb, nn, no, sk:
-		suffix = "."
 		if withName {
 			suffix = ".)"
+		} else {
+			suffix = "."
 		}
 	case hi:
 		if script != latn {
@@ -55,17 +57,15 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func
 	case wae:
 		fmtMonth = fmtMonthName(locale.String(), "format", "abbreviated")
 	case ja, ko, zh, yue:
-		suffix = monthName
-
 		if withName {
 			prefix = era + " (" + monthName + ": "
 			suffix = monthName + ")"
+		} else {
+			suffix = monthName
 		}
 	}
 
-	return func(m time.Month) string {
-		return prefix + fmtMonth(m, opts.Month) + suffix
-	}
+	return func(m time.Month) string { return prefix + fmtMonth(m, opts.Month) + suffix }
 }
 
 func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
@@ -84,16 +84,14 @@ func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m
 	}
 
 	if lang == fa {
-		prefix = era + " "
-
 		if withName {
 			prefix = era + " (" + monthName + ": "
+		} else {
+			prefix = era + " "
 		}
 	}
 
-	return func(m time.Month) string {
-		return prefix + fmtMonth(m, opts.Month) + suffix
-	}
+	return func(m time.Month) string { return prefix + fmtMonth(m, opts.Month) + suffix }
 }
 
 func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
@@ -110,7 +108,5 @@ func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) func(
 		suffix = ")"
 	}
 
-	return func(m time.Month) string {
-		return prefix + fmtMonth(m, opts.Month) + suffix
-	}
+	return func(m time.Month) string { return prefix + fmtMonth(m, opts.Month) + suffix }
 }

@@ -17,17 +17,16 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fu
 	fmtYear := fmtYear(digits)
 	fmtDay := fmtDay(digits)
 	dayName := unitName(locale).Day
+
+	layout := eraYearDay
 	prefix := ""
 	middle := " " + era + " (" + dayName + ": "
 	suffix := ")"
-	layout := eraYearDay
 
 	switch lang {
 	case be, ru:
-		prefix = ""
 		middle = " г. " + era + " (" + dayName + ": "
 	case cv:
-		prefix = ""
 		middle = " ҫ. " + era + " (" + dayName + ": "
 	case kk:
 		prefix = era + " "
@@ -47,12 +46,8 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fu
 		opts.Day = Day2Digit
 		middle = " m. " + era + " (" + dayName + ": "
 	case bg, cy:
-		prefix = ""
 		middle = " " + era + " (" + dayName + ": "
 	case bs:
-		prefix = ""
-		middle = " " + era + " (" + dayName + ": "
-
 		if script != cyrl {
 			suffix = ".)"
 		}
@@ -65,47 +60,35 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fu
 		prefix = era + " "
 		middle = " (" + dayName + ": "
 	case uz:
-		if script == arab {
-			break
+		if script != arab {
+			prefix = era + " "
+			middle = " (" + dayName + ": "
 		}
-
-		prefix = era + " "
-		middle = " (" + dayName + ": "
 	case brx:
 		prefix = era
 		middle = " (" + dayName + ": "
 	case cs, da, dsb, fo, hr, hsb, nb, nn, no, sk, sl:
-		prefix = ""
-		middle = " " + era + " (" + dayName + ": "
 		suffix = ".)"
 	case ff:
-		if script == adlm {
-			break
+		if script != adlm {
+			prefix = era + " "
+			middle = " (" + dayName + ": "
 		}
-
-		prefix = era + " "
-		middle = " (" + dayName + ": "
 	case hi:
-		if script != latn {
-			break
+		if script == latn {
+			prefix = era + " "
+			middle = " (" + dayName + ": "
 		}
-
-		prefix = era + " "
-		middle = " (" + dayName + ": "
 	case ks:
-		if script != deva {
-			break
-		}
-
-		prefix = era + " "
-		middle = " (" + dayName + ": "
-	case sd:
 		if script == deva {
-			break
+			prefix = era + " "
+			middle = " (" + dayName + ": "
 		}
-
-		prefix = era + " "
-		middle = " (" + dayName + ": "
+	case sd:
+		if script != deva {
+			prefix = era + " "
+			middle = " (" + dayName + ": "
+		}
 	case ja, yue, zh:
 		prefix = era
 		middle = " (" + dayName + ": "
@@ -115,19 +98,15 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fu
 		middle = " (" + dayName + ": "
 		suffix = dayName + ")"
 	case kxv:
-		if script != deva && script != orya && script != telu {
-			break
+		if script == deva || script == orya || script == telu {
+			prefix = era + " "
+			middle = " (" + dayName + ": "
 		}
-
-		prefix = era + " "
-		middle = " (" + dayName + ": "
 	case se:
-		if region == regionFI {
-			break
+		if region != regionFI {
+			prefix = era + " "
+			middle = " (" + dayName + ": "
 		}
-
-		prefix = era + " "
-		middle = " (" + dayName + ": "
 	}
 
 	switch layout {
@@ -149,12 +128,14 @@ func fmtEraYearDayPersian(locale language.Tag, digits digits, opts Options) func
 	fmtYear := fmtYear(digits)
 	fmtDay := fmtDay(digits)
 	dayName := unitName(locale).Day
-	prefix, middle, suffix := era+" ", " ("+dayName+": ", ")"
+
+	prefix := era + " "
+	middle := " (" + dayName + ": "
+	suffix := ")"
 
 	if lang == fa {
 		prefix = ""
 		middle = " " + era + " (" + dayName + ": "
-		suffix = ")"
 	}
 
 	return func(y, d int) string {

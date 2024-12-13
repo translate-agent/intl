@@ -30,7 +30,9 @@ func fmtEraYearMonthDayGregorian(
 
 	month, day := Month2Digit, Day2Digit
 	layout := eraYearMonthDay
-	prefix, suffix, separator := era+" ", "", "-"
+	prefix := era + " "
+	suffix := ""
+	separator := "-"
 
 	switch lang {
 	case en:
