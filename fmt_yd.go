@@ -16,10 +16,10 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(
 			}
 		}
 
-		name := dayName(locale)
+		dayName := unitName(locale).Day
 
 		return func(y, d int) string {
-			return layoutYear(fmtYear(y, opts.Year)) + " (" + name + ": " + fmtDay(d, opts.Day) + ")"
+			return layoutYear(fmtYear(y, opts.Year)) + " (" + dayName + ": " + fmtDay(d, opts.Day) + ")"
 		}
 	case en:
 		if opts.Year == Year2Digit && opts.Day == DayNumeric {
@@ -28,10 +28,10 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(
 			}
 		}
 
-		name := dayName(locale)
+		dayName := unitName(locale).Day
 
 		return func(y, d int) string {
-			return layoutYear(fmtYear(y, opts.Year)) + " (" + name + ": " + fmtDay(d, opts.Day) + ")"
+			return layoutYear(fmtYear(y, opts.Year)) + " (" + dayName + ": " + fmtDay(d, opts.Day) + ")"
 		}
 	case hi:
 		if opts.Year == Year2Digit && opts.Day == DayNumeric {
@@ -46,10 +46,10 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(
 			}
 		}
 
-		name := dayName(locale)
+		dayName := unitName(locale).Day
 
 		return func(y, d int) string {
-			return layoutYear(fmtYear(y, opts.Year)) + " (" + name + ": " + fmtDay(d, opts.Day) + ")"
+			return layoutYear(fmtYear(y, opts.Year)) + " (" + dayName + ": " + fmtDay(d, opts.Day) + ")"
 		}
 	}
 
@@ -59,10 +59,10 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(
 		}
 	}
 
-	name := dayName(locale)
+	dayName := unitName(locale).Day
 
 	return func(y, d int) string {
-		return layoutYear(fmtYear(y, opts.Year)) + " (" + name + ": " + fmtDay(d, opts.Day) + ")"
+		return layoutYear(fmtYear(y, opts.Year)) + " (" + dayName + ": " + fmtDay(d, opts.Day) + ")"
 	}
 }
 
@@ -80,10 +80,10 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y,
 			}
 		}
 
-		name := dayName(locale)
+		dayName := unitName(locale).Day
 
 		return func(y, d int) string {
-			return layoutYear(fmtYear(y, opts.Year)) + " (" + name + ": " + fmtDay(d, opts.Day) + ")"
+			return layoutYear(fmtYear(y, opts.Year)) + " (" + dayName + ": " + fmtDay(d, opts.Day) + ")"
 		}
 	case uz:
 		if region != regionAF {
@@ -96,10 +96,10 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y,
 			}
 		}
 
-		name := dayName(locale)
+		dayName := unitName(locale).Day
 
 		return func(y, d int) string {
-			return layoutYear(fmtYear(y, opts.Year)) + " (" + name + ": " + fmtDay(d, opts.Day) + ")"
+			return layoutYear(fmtYear(y, opts.Year)) + " (" + dayName + ": " + fmtDay(d, opts.Day) + ")"
 		}
 	}
 
@@ -109,11 +109,11 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y,
 		}
 	}
 
-	name := dayName(locale)
+	dayName := unitName(locale).Day
 
 	return func(y, d int) string {
 		return fmtEra(locale, EraNarrow) + " " + layoutYear(fmtYear(y, opts.Year)) +
-			" (" + name + ": " + fmtDay(d, opts.Day) + ")"
+			" (" + dayName + ": " + fmtDay(d, opts.Day) + ")"
 	}
 }
 
@@ -128,9 +128,9 @@ func fmtYearDayBuddhist(locale language.Tag, digits digits, opts Options) func(y
 		}
 	}
 
-	name := dayName(locale)
+	dayName := unitName(locale).Day
 
 	return func(y, d int) string {
-		return layoutYear(fmtYear(y, opts.Year)) + " (" + name + ": " + fmtDay(d, opts.Day) + ")"
+		return layoutYear(fmtYear(y, opts.Year)) + " (" + dayName + ": " + fmtDay(d, opts.Day) + ")"
 	}
 }

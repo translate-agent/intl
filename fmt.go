@@ -522,7 +522,3 @@ func unitName(locale language.Tag) fields {
 		Day:   "Day",
 	}
 }
-
-func dayName(locale language.Tag) string {
-	return unitName(locale).Day
-}
