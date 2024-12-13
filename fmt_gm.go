@@ -23,12 +23,11 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func
 
 	switch lang {
 	case en:
-		prefix = ""
-		suffix = " " + era
-
 		if withName {
 			prefix = era + " (" + monthName + ": "
-			suffix = ")"
+		} else {
+			prefix = ""
+			suffix = " " + era
 		}
 	case bg, cy:
 		prefix = era + " "
@@ -84,13 +83,11 @@ func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m
 		suffix = ")"
 	}
 
-	switch lang {
-	case fa:
+	if lang == fa {
 		prefix = era + " "
 
 		if withName {
 			prefix = era + " (" + monthName + ": "
-			suffix = ")"
 		}
 	}
 
