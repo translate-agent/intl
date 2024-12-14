@@ -63,9 +63,9 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 
 		fallthrough
 	case agq, ak, am, asa, ast, bas, bem, bez, blo, bm, brx, ca, ceb, cgg, chr, ckb, cs, cy, dav, dje, doi, dua, dyo, ebu,
-		ee, el, ewo, fil, fur, gd, gl, guz, ha, haw, id, ig, jmc, kab, kam, kde, khq, ki, kln, km, ksb, ksf, kxv, lag, lg,
-		ln, lo, lu, luo, luy, mai, mas, mer, mfe, mg, mgh, mni, mua, naq, nd, nmg, nus, nyn, om, pcm, rn, rof, rwk, sa, saq,
-		sbp, ses, sg, shi, sk, sl, so, su, sw, teo, twq, tzm, ur, vai, vun, xh, xnr, xog, yav, yo, zgh:
+		ee, el, ewo, fil, fur, gd, gl, guz, ha, haw, id, ig, jmc, kaa, kab, kam, kde, khq, ki, kln, km, ksb, ksf, kxv, lag,
+		lg, ln, lo, lu, luo, luy, mai, mas, mer, mfe, mg, mgh, mhn, mni, mua, naq, nd, nmg, nus, nyn, om, pcm, rn, rof, rwk,
+		sa, saq, sbp, ses, sg, shi, sk, sl, so, su, sw, teo, twq, tzm, ur, vai, vun, xh, xnr, xog, yav, yo, zgh:
 		return func(y int, m time.Month) string {
 			return fmtMonth(m, opts.Month) + "/" + fmtYear(y, opts.Year)
 		}

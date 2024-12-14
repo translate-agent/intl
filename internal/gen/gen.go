@@ -804,7 +804,7 @@ func (g *Generator) fields() Fields {
 	// Correct the naming! The naming is different in Node.js.
 
 	// year, day formatting
-	for _, locale := range []string{"en-Dsrt", "en-Dsrt-US", "en-Shaw", "en-Shaw-GB"} {
+	for _, locale := range []string{"en-Dsrt", "en-Dsrt-US", "en-Shaw", "en-Shaw-GB", "kaa", "mhn", "mhn-IT"} {
 		f := fields[locale]
 		f.Month = "month"
 		f.Day = "day"
@@ -904,7 +904,8 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 		}
 
 		switch locale {
-		case "en-Dsrt", "en-Dsrt-US", "en-Shaw", "en-Shaw-GB":
+		case "en-Dsrt", "en-Dsrt-US", "en-Shaw", "en-Shaw-GB", "kaa", "kaa-Cyrl", "kaa-Cyrl-UZ", "kaa-Latn", "kaa-Latn-UZ",
+			"mhn", "mhn-IT":
 			era.Narrow = "A"
 			era.Short = "AD"
 			era.Long = "Anno Domini"

@@ -57,7 +57,7 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		}
 
 		fallthrough
-	case fy, kok, ug:
+	case fy, ug:
 		separator = "-"
 	case or:
 		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
@@ -361,6 +361,14 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		layout = layoutMonthDay
 		separator = "ꆪ-"
 		suffix = "ꑍ"
+	case kok:
+		if script != latn {
+			separator = "-"
+		}
+	case kaa, mhn:
+		layout = layoutMonthDay
+		prefix = ""
+		suffix = " " + era
 	}
 
 	if layout == layoutDayMonth {

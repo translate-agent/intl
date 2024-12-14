@@ -24,7 +24,7 @@ func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) func(d
 		}
 
 		fallthrough
-	case en:
+	case kaa, en, mhn:
 		if !withName {
 			prefix = ""
 			suffix = " " + era

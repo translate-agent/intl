@@ -438,7 +438,7 @@ func fmtYearMonthDayGregorian(
 		}
 
 		fallthrough
-	case blo, ceb, chr, ee, fil, om, or, ti, xh:
+	case blo, ceb, chr, ee, fil, kaa, mhn, om, or, ti, xh:
 		// year=numeric,month=numeric,day=numeric,out=1/2/2024
 		// year=numeric,month=numeric,day=2-digit,out=1/02/2024
 		// year=numeric,month=2-digit,day=numeric,out=01/2/2024

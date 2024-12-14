@@ -22,7 +22,7 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func
 	}
 
 	switch lang {
-	case en:
+	case en, kaa, mhn:
 		if withName {
 			prefix = era + " (" + monthName + ": "
 		} else {

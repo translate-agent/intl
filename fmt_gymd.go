@@ -135,7 +135,7 @@ func fmtEraYearMonthDayGregorian(
 		separator = "/"
 		prefix = ""
 		suffix = " " + era
-	case ceb, chr, blo, fil, ml, ne, or, ps, sd, so, ti, xh, zu:
+	case ceb, chr, blo, fil, kaa, mhn, ml, ne, or, ps, sd, so, ti, xh, zu:
 		month, day = opts.Month, opts.Day
 		layout = eraMonthDayYear
 		separator = "/"
@@ -256,6 +256,14 @@ func fmtEraYearMonthDayGregorian(
 			month, day = opts.Month, opts.Day
 			layout = dayMonthEraYear
 			separator = "/"
+		}
+	case kok:
+		if script == latn {
+			month = opts.Month
+			day = opts.Day
+			layout = eraDayMonthYear
+			prefix = ""
+			suffix = " " + era
 		}
 	}
 
