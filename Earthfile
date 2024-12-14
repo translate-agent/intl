@@ -1,5 +1,5 @@
 VERSION 0.8
-ARG golang_version=1.23.3
+ARG golang_version=1.23.4
 FROM golang:$golang_version-alpine
 WORKDIR /intl
 
@@ -12,7 +12,7 @@ init:
 # cldr saves CLDR files to .cldr
 cldr:
   WORKDIR /cldr
-  ARG cldr_version=45.0
+  ARG cldr_version=46.0
   ARG out=.cldr
   RUN wget https://unicode.org/Public/cldr/$( printf "%.0f" $cldr_version )/cldr-common-$cldr_version.zip
   RUN unzip cldr-common-$cldr_version.zip
@@ -21,7 +21,7 @@ cldr:
 
 # testdata generates test cases and saves to tests.json
 testdata:
-  FROM node:22.9.0-alpine
+  FROM node:23.4.0-alpine
   WORKDIR /intl
   COPY testdata.js .
   COPY --dir +cldr/cldr/common/main .cldr/common/main

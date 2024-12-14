@@ -12,18 +12,16 @@ func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) func(
 	suffix := " " + era
 
 	switch lang {
-	case agq, ak, as, asa, az, bas, bem, bez, bgc, bho, bm, bo, ce, cgg, ckb, csw, dav, dje, doi, dua, dz, dyo, ebu,
-		eo, eu, ewo, fur, fy, gsw, gu, guz, gv, ha, hu, ie, ig, ii, jmc, jgo, kab, kam, kde, khq, ki, kl, kln, kn, ko,
-		kok, ksb, ksf, ksh, ku, kw, lag, lg, lij, lkt, lmo, ln, lo, lrc, lv, lu, luo, luy, mas, mer, mfe, mg, mgh, mgo, ml,
-		mn, mni, mr, mt, mua, my, naq, nd, nds, ne, nmg, nnh, nqo, nus, nyn, oc, om, os, pa, pcm, prg, ps, qu, raj, rn, rof,
-		rw, rwk, saq, sat, sbp, seh, ses, sg, shi, si, sn, szl, ta, te, teo, tk, tok, tr, twq, tzm, uz, vai, vmw, vun, wae,
-		xog, yav, yi, yo, za, zgh, zu:
+	case agq, ak, as, asa, az, bas, bem, bez, bgc, bho, bm, bo, ce, cgg, ckb, csw, dav, dje, doi, dua, dz, dyo, ebu, eo,
+		eu, ewo, fur, fy, gsw, gu, guz, gv, ha, hu, ig, ii, jmc, jgo, kab, kam, kde, khq, ki, kl, kln, kn, ko, kok, ksb, ksf,
+		ksh, ku, kw, lag, lg, lij, lkt, lmo, ln, lo, lrc, lv, lu, luo, luy, mas, mer, mfe, mg, mgh, mgo, ml, mn, mni, mr, mt,
+		mua, my, naq, nd, nds, ne, nmg, nnh, nqo, nus, nyn, oc, om, os, pa, pcm, prg, ps, qu, raj, rn, rof, rw, rwk, saq, sat,
+		sbp, seh, ses, sg, shi, si, sn, szl, ta, te, teo, tk, tok, tr, twq, tzm, uz, vai, vmw, vun, wae, xog, yav, yi, yo, za,
+		zgh, zu:
 		prefix = era + " "
 		suffix = ""
-	case ks, kxv:
-		// ks-deva
-		// kxv-deva, kxv-orya, kxv-telu
-		if script == deva || script == orya || script == telu {
+	case ks:
+		if script == deva {
 			prefix = era + " "
 			suffix = ""
 		}
@@ -49,7 +47,7 @@ func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) func(
 		}
 	case be, ru:
 		suffix = " г. " + era
-	case bg, cy:
+	case bg, cy, mk:
 		suffix = " " + era
 	case cv:
 		suffix = " ҫ. " + era

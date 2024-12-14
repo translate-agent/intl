@@ -74,8 +74,8 @@ func fmtYearMonthDayGregorian(
 
 		fallthrough
 	case agq, am, asa, ast, bas, bem, bez, bm, bn, ca, ccp, cgg, cy, dav, dje, doi, dua, dyo, ebu, el, ewo, gd, gl, gu,
-		haw, hi, id, ig, km, kn, ksf, ln, lo, lu, mai, mgh, ml, mni, mr, ms, mua, my, nmg, nnh, nus, pcm, rn, sa, su, sw,
-		ta, tg, ti, to, twq, ur, vi, xnr, yav:
+		haw, hi, id, ig, km, kn, ksf, kxv, ln, lo, lu, mai, mgh, ml, mni, mr, ms, mua, my, nmg, nnh, nus, pcm, rn, sa, su,
+		sw, ta, to, twq, ur, vi, xnr, yav:
 		// year=numeric,month=numeric,day=numeric,out=2/1/2024
 		// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 		// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -88,45 +88,6 @@ func fmtYearMonthDayGregorian(
 			return fmtDay(d, opts.Day) + "/" +
 				fmtMonth(m, opts.Month) + "/" +
 				fmtYear(y, opts.Year)
-		}
-	case kxv:
-		switch script {
-		default:
-			// year=numeric,month=numeric,day=numeric,out=2/1/2024
-			// year=numeric,month=numeric,day=2-digit,out=02/1/2024
-			// year=numeric,month=2-digit,day=numeric,out=2/01/2024
-			// year=numeric,month=2-digit,day=2-digit,out=02/01/2024
-			// year=2-digit,month=numeric,day=numeric,out=2/1/24
-			// year=2-digit,month=numeric,day=2-digit,out=02/1/24
-			// year=2-digit,month=2-digit,day=numeric,out=2/01/24
-			// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
-			return func(y int, m time.Month, d int) string {
-				return fmtDay(d, opts.Day) + "/" +
-					fmtMonth(m, opts.Month) + "/" +
-					fmtYear(y, opts.Year)
-			}
-		case deva, orya, telu:
-			// year=numeric,month=numeric,day=numeric,out=2/1/2024
-			// year=numeric,month=numeric,day=2-digit,out=2024-1-02
-			// year=numeric,month=2-digit,day=numeric,out=2024-01-2
-			// year=numeric,month=2-digit,day=2-digit,out=2024-01-02
-			// year=2-digit,month=numeric,day=numeric,out=2/1/24
-			// year=2-digit,month=numeric,day=2-digit,out=24-1-02
-			// year=2-digit,month=2-digit,day=numeric,out=24-01-2
-			// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
-				return func(y int, m time.Month, d int) string {
-					return fmtDay(d, opts.Day) + "/" +
-						fmtMonth(m, opts.Month) + "/" +
-						fmtYear(y, opts.Year)
-				}
-			}
-
-			return func(y int, m time.Month, d int) string {
-				return fmtYear(y, opts.Year) + "-" +
-					fmtMonth(m, opts.Month) + "-" +
-					fmtDay(d, opts.Day)
-			}
 		}
 	case pa:
 		if script == arab {
@@ -166,7 +127,25 @@ func fmtYearMonthDayGregorian(
 				fmtMonth(m, opts.Month) + "/" +
 				fmtYear(y, opts.Year)
 		}
-	case ak, eu, ja, yue:
+	case ak:
+		// year=numeric,month=numeric,day=numeric,out=2024/1/2
+		// year=numeric,month=numeric,day=2-digit,out=2024/1/02
+		// year=numeric,month=2-digit,day=numeric,out=2024/01/2
+		// year=numeric,month=2-digit,day=2-digit,out=2024/01/02
+		// year=2-digit,month=numeric,day=numeric,out=1/2/24
+		// year=2-digit,month=numeric,day=2-digit,out=1/02/24
+		// year=2-digit,month=2-digit,day=numeric,out=01/2/24
+		// year=2-digit,month=2-digit,day=2-digit,out=01/02/24
+		if opts.Year == Year2Digit {
+			return func(y int, m time.Month, d int) string {
+				return fmtMonth(m, opts.Month) + "/" +
+					fmtDay(d, opts.Day) + "/" +
+					fmtYear(y, opts.Year)
+			}
+		}
+
+		fallthrough
+	case eu, ja, yue:
 		// year=numeric,month=numeric,day=numeric,out=2024/1/2
 		// year=numeric,month=numeric,day=2-digit,out=2024/1/02
 		// year=numeric,month=2-digit,day=numeric,out=2024/01/2
@@ -233,7 +212,7 @@ func fmtYearMonthDayGregorian(
 				fmtMonth(m, opts.Month) + "." +
 				fmtYear(y, opts.Year)
 		}
-	case be, da, de, dsb, et, fi, he, hsb, is, ka, lb, mk, nb, nn, no, smn, sq:
+	case be, da, de, dsb, et, fi, he, hsb, ie, is, ka, lb, nb, nn, no, smn, sq:
 		// year=numeric,month=numeric,day=numeric,out=2.1.2024
 		// year=numeric,month=numeric,day=2-digit,out=02.1.2024
 		// year=numeric,month=2-digit,day=numeric,out=2.01.2024
@@ -259,6 +238,20 @@ func fmtYearMonthDayGregorian(
 		return func(y int, m time.Month, d int) string {
 			return fmtDay(d, opts.Day) + "." +
 				fmtMonth(m, Month2Digit) + "." +
+				fmtYear(y, opts.Year) + " г."
+		}
+	case mk:
+		// year=numeric,month=numeric,day=numeric,out=2.1.2024 г.
+		// year=numeric,month=numeric,day=2-digit,out=02.1.2024 г.
+		// year=numeric,month=2-digit,day=numeric,out=2.01.2024 г.
+		// year=numeric,month=2-digit,day=2-digit,out=02.01.2024 г.
+		// year=2-digit,month=numeric,day=numeric,out=2.1.24 г.
+		// year=2-digit,month=numeric,day=2-digit,out=02.1.24 г.
+		// year=2-digit,month=2-digit,day=numeric,out=2.01.24 г.
+		// year=2-digit,month=2-digit,day=2-digit,out=02.01.24 г.
+		return func(y int, m time.Month, d int) string {
+			return fmtDay(d, opts.Day) + "." +
+				fmtMonth(m, opts.Month) + "." +
 				fmtYear(y, opts.Year) + " г."
 		}
 	case en:
@@ -445,7 +438,7 @@ func fmtYearMonthDayGregorian(
 		}
 
 		fallthrough
-	case blo, ceb, chr, ee, fil, or, xh:
+	case blo, ceb, chr, ee, fil, om, or, ti, xh:
 		// year=numeric,month=numeric,day=numeric,out=1/2/2024
 		// year=numeric,month=numeric,day=2-digit,out=1/02/2024
 		// year=numeric,month=2-digit,day=numeric,out=01/2/2024
@@ -517,6 +510,8 @@ func fmtYearMonthDayGregorian(
 				fmtYear(y, opts.Year)
 		}
 	case bs:
+		separator := ". "
+
 		if script == cyrl {
 			// year=numeric,month=numeric,day=numeric,out=02.01.2024.
 			// year=numeric,month=numeric,day=2-digit,out=02.1.2024.
@@ -527,6 +522,7 @@ func fmtYearMonthDayGregorian(
 			// year=2-digit,month=2-digit,day=numeric,out=2.01.24.
 			// year=2-digit,month=2-digit,day=2-digit,out=02.01.24.
 			day := opts.Day
+			separator = "."
 
 			if opts.Month == MonthNumeric {
 				opts.Day = Day2Digit
@@ -537,17 +533,17 @@ func fmtYearMonthDayGregorian(
 			}
 		}
 
-		// year=numeric,month=numeric,day=numeric,out=2.1.2024.
-		// year=numeric,month=numeric,day=2-digit,out=02.1.2024.
-		// year=numeric,month=2-digit,day=numeric,out=2.01.2024.
-		// year=numeric,month=2-digit,day=2-digit,out=02.01.2024.
-		// year=2-digit,month=numeric,day=numeric,out=2.1.24.
-		// year=2-digit,month=numeric,day=2-digit,out=02.1.24.
-		// year=2-digit,month=2-digit,day=numeric,out=2.01.24.
-		// year=2-digit,month=2-digit,day=2-digit,out=02.01.24.
+		// year=numeric,month=numeric,day=numeric,out=2. 1. 2024.
+		// year=numeric,month=numeric,day=2-digit,out=02. 1. 2024.
+		// year=numeric,month=2-digit,day=numeric,out=2. 01. 2024.
+		// year=numeric,month=2-digit,day=2-digit,out=02. 01. 2024.
+		// year=2-digit,month=numeric,day=numeric,out=2. 1. 24.
+		// year=2-digit,month=numeric,day=2-digit,out=02. 1. 24.
+		// year=2-digit,month=2-digit,day=numeric,out=2. 01. 24.
+		// year=2-digit,month=2-digit,day=2-digit,out=02. 01. 24.
 		return func(y int, m time.Month, d int) string {
-			return fmtDay(d, opts.Day) + "." +
-				fmtMonth(m, opts.Month) + "." +
+			return fmtDay(d, opts.Day) + separator +
+				fmtMonth(m, opts.Month) + separator +
 				fmtYear(y, opts.Year) + "."
 		}
 	case ckb:
@@ -946,7 +942,7 @@ func fmtYearMonthDayGregorian(
 				fmtMonth(m, opts.Month) + ". " +
 				fmtDay(d, opts.Day) + "."
 		}
-	case ie, nds, prg:
+	case nds, prg:
 		// year=numeric,month=numeric,day=numeric,out=2.1.2024
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -1173,6 +1169,28 @@ func fmtYearMonthDayGregorian(
 				fmtMonth(m, opts.Month) + "-" +
 				fmtYear(y, opts.Year)
 		}
+	case rw:
+		// year=numeric,month=numeric,day=numeric,out=02-01-2024
+		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
+		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
+		// year=numeric,month=2-digit,day=2-digit,out=2024-01-02
+		// year=2-digit,month=numeric,day=numeric,out=02-01-24
+		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
+		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
+		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
+		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			return func(y int, m time.Month, d int) string {
+				return fmtDay(d, Day2Digit) + "-" +
+					fmtMonth(m, Month2Digit) + "-" +
+					fmtYear(y, opts.Year)
+			}
+		}
+
+		return func(y int, m time.Month, d int) string {
+			return fmtYear(y, opts.Year) + "-" +
+				fmtMonth(m, opts.Month) + "-" +
+				fmtDay(d, opts.Day)
+		}
 	case mn:
 		// year=numeric,month=numeric,day=numeric,out=2024.01.02
 		// year=numeric,month=numeric,day=2-digit,out=2024.1.02
@@ -1279,29 +1297,6 @@ func fmtYearMonthDayGregorian(
 			return fmtYear(y, opts.Year) + "-" +
 				fmtMonth(m, opts.Month) + "-" +
 				fmtDay(d, opts.Day)
-		}
-	case om:
-		// year=numeric,month=numeric,day=numeric,out=2024-01-02
-		// year=numeric,month=numeric,day=2-digit,out=2024-01-02
-		// year=numeric,month=2-digit,day=numeric,out=2024-01-02
-		// year=numeric,month=2-digit,day=2-digit,out=02/01/2024
-		// year=2-digit,month=numeric,day=numeric,out=24-01-02
-		// year=2-digit,month=numeric,day=2-digit,out=02/1/24
-		// year=2-digit,month=2-digit,day=numeric,out=2/01/24
-		// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
-		if opts.Year == YearNumeric && !(opts.Month == Month2Digit && opts.Day == Day2Digit) ||
-			opts.Month == MonthNumeric && opts.Day == DayNumeric {
-			return func(y int, m time.Month, d int) string {
-				return fmtYear(y, opts.Year) + "-" +
-					fmtMonth(m, Month2Digit) + "-" +
-					fmtDay(d, Day2Digit)
-			}
-		}
-
-		return func(y int, m time.Month, d int) string {
-			return fmtDay(d, opts.Day) + "/" +
-				fmtMonth(m, opts.Month) + "/" +
-				fmtYear(y, opts.Year)
 		}
 	case os:
 		// year=numeric,month=numeric,day=numeric,out=2024-01-02
@@ -1715,6 +1710,27 @@ func fmtYearMonthDayGregorian(
 					fmtMonth(m, opts.Month) + "/" +
 					fmtYear(y, opts.Year)
 			}
+		}
+	case tg:
+		// year=numeric,month=numeric,day=numeric,out=2.1.2024
+		// year=numeric,month=numeric,day=2-digit,out=02.1.2024
+		// year=numeric,month=2-digit,day=numeric,out=2.01.2024
+		// year=numeric,month=2-digit,day=2-digit,out=02/01/2024
+		// year=2-digit,month=numeric,day=numeric,out=2.1.24
+		// year=2-digit,month=numeric,day=2-digit,out=02/1/24
+		// year=2-digit,month=2-digit,day=numeric,out=2/01/24
+		// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
+		separator := "."
+
+		if opts.Year == YearNumeric && opts.Month == Month2Digit && opts.Day == Day2Digit ||
+			opts.Year == Year2Digit && !(opts.Month == MonthNumeric && opts.Day == DayNumeric) {
+			separator = "/"
+		}
+
+		return func(y int, m time.Month, d int) string {
+			return fmtDay(d, opts.Day) + separator +
+				fmtMonth(m, opts.Month) + separator +
+				fmtYear(y, opts.Year)
 		}
 	}
 }

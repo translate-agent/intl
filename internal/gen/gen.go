@@ -813,7 +813,6 @@ func (g *Generator) fields() Fields {
 
 	for _, locale := range []string{
 		"az-Cyrl",
-		"kxv-Deva", "kxv-Orya", "kxv-Telu",
 		"uz-Arab",
 	} {
 		f := fields[locale]
@@ -864,7 +863,7 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 		}
 
 		locale = strings.ReplaceAll(locale, "_", "-")
-		lang, _, region := language.MustParse(locale).Raw()
+		lang, _, region := language.Make(locale).Raw()
 
 		var era Era
 
@@ -927,14 +926,14 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 			era.Narrow = "A"
 			era.Short = "AD"
 			era.Long = "Anno Domini"
-		case "kxv-Deva", "kxv-Deva-IN", "kxv-Orya", "kxv-Orya-IN", "kxv-Telu", "kxv-Telu-IN":
-			era.Narrow = "CE"
-			era.Short = "CE"
-			era.Long = "CE"
 		case "lrc":
 			era.Narrow = "AP"
 			era.Short = "AP"
 			era.Long = "AP"
+		case "mk", "mk-MK":
+			era.Narrow = "н. е."
+			era.Short = "н. е."
+			era.Long = "од нашата ера"
 		case "mn-Mong-MN":
 			era.Narrow = "МЭ"
 			era.Short = "МЭ"
@@ -1118,7 +1117,7 @@ type Eras map[string]Era
 type CalendarPreferences []CalendarPreference
 
 func (c CalendarPreferences) FindCalendarType(locale string) string {
-	lang, _, region := language.MustParse(locale).Raw()
+	lang, _, region := language.Make(locale).Raw()
 
 	if lang.String() == "az" {
 		return "gregorian"

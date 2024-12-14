@@ -29,26 +29,11 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		}
 
 		fallthrough
-	case agq, ast, bas, bm, ca, cy, dje, doi, dua, dyo, el, ewo, fur, gd, gl, haw, id, ig, kab, kgp, khq, km, ksf, ln,
-		lo, lu, mai, mfe, mg, mgh, ml, mni, mua, my, nmg, nus, pa, rn, sa, seh, ses, sg, shi, su, sw, to, tr, twq, ur,
+	case am, agq, ast, bas, bm, ca, cy, dje, doi, dua, dyo, el, ewo, fur, gd, gl, haw, id, ig, kab, kgp, khq, km, ksf, kxv,
+		ln, lo, lu, mai, mfe, mg, mgh, ml, mni, mua, my, nmg, nus, pa, rn, sa, seh, ses, sg, shi, su, sw, to, tr, twq, ur,
 		xnr, yav, yo, yrl, zgh:
 		return func(m time.Month, d int) string {
 			return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month)
-		}
-	case kxv:
-		switch script {
-		default:
-			return func(m time.Month, d int) string {
-				return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month)
-			}
-		case deva, orya, telu:
-			// month=numeric,day=numeric,out=01-02
-			// month=numeric,day=2-digit,out=01-02
-			// month=2-digit,day=numeric,out=01-02
-			// month=2-digit,day=2-digit,out=01-02
-			return func(m time.Month, d int) string {
-				return fmtMonth(m, Month2Digit) + "-" + fmtDay(d, Day2Digit)
-			}
 		}
 	case en:
 		switch region {
@@ -120,8 +105,8 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		}
 
 		fallthrough
-	case ak, am, asa, bem, bez, blo, brx, ceb, cgg, chr, dav, ebu, ee, eu, fil, guz, ha, ja, jmc, kam, kde, ki, kln,
-		ksb, lag, lg, luo, luy, mas, mer, naq, nd, nyn, rof, rwk, saq, sbp, so, teo, tzm, vai, vun, xh, xog, yue:
+	case ak, asa, bem, bez, blo, brx, ceb, cgg, chr, dav, ebu, ee, eu, fil, guz, ha, ja, jmc, kam, kde, ki, kln, ksb, lag,
+		lg, luo, luy, mas, mer, naq, nd, nyn, rof, rwk, saq, sbp, so, teo, tzm, vai, vun, xh, xog, yue:
 		return func(m time.Month, d int) string {
 			return fmtMonth(m, opts.Month) + "/" + fmtDay(d, opts.Day)
 		}
@@ -145,7 +130,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		}
 	case az, cv, fo, hy, kk, ku, os, tk, tt, uk:
 		return func(m time.Month, d int) string { return fmtDay(d, Day2Digit) + "." + fmtMonth(m, Month2Digit) }
-	case be, da, et, he, jgo, ka:
+	case be, da, et, he, ie, jgo, ka:
 		return func(m time.Month, d int) string {
 			return fmtDay(d, opts.Day) + "." + fmtMonth(m, opts.Month)
 		}
@@ -176,12 +161,10 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			}
 		}
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
-			return func(m time.Month, d int) string {
-				return fmtDay(d, DayNumeric) + "." + fmtMonth(m, MonthNumeric) + "."
-			}
-		}
-
+		// month=numeric,day=numeric,out=2. 1.
+		// month=numeric,day=2-digit,out=2. 1.
+		// month=2-digit,day=numeric,out=2. 1.
+		// month=2-digit,day=2-digit,out=2. 1.
 		return func(m time.Month, d int) string {
 			return fmtDay(d, DayNumeric) + ". " + fmtMonth(m, MonthNumeric) + "."
 		}
@@ -464,6 +447,14 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			return func(m time.Month, d int) string {
 				return fmtMonth(m, opts.Month) + "-" + fmtDay(d, opts.Day)
 			}
+		}
+	case ii:
+		// month=numeric,day=numeric,out=01ꆪ-02ꑍ
+		// month=numeric,day=2-digit,out=01ꆪ-02ꑍ
+		// month=2-digit,day=numeric,out=01ꆪ-02ꑍ
+		// month=2-digit,day=2-digit,out=01ꆪ-02ꑍ
+		return func(m time.Month, d int) string {
+			return fmtMonth(m, Month2Digit) + "ꆪ-" + fmtDay(d, Day2Digit) + "ꑍ"
 		}
 	}
 }

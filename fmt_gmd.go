@@ -36,19 +36,12 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		}
 
 		fallthrough
-	case bgc, bho, bo, ce, ckb, csw, eo, gv, ie, ii, kl, ksh, kw, lij, lkt, lmo, mgo, mt, nds, nnh, ne, nqo, oc, prg, ps,
-		qu, raj, rw, sah, sat, sn, szl, tok, vmw, yi, za, zu:
+	case bgc, bho, bo, ce, ckb, csw, eo, gv, kl, ksh, kw, lij, lkt, lmo, mgo, mt, nds, nnh, ne, nqo, oc, prg, ps, qu, raj,
+		rw, sah, sat, sn, szl, tok, vmw, yi, za, zu:
 		opts.Month = Month2Digit
 		opts.Day = Day2Digit
 		layout = layoutMonthDay
 		separator = "-"
-	case kxv:
-		if script == deva || script == orya || script == telu {
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
-			layout = layoutMonthDay
-			separator = "-"
-		}
 	case lt:
 		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
 			opts.Month = Month2Digit
@@ -119,10 +112,11 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 	case pl:
 		opts.Month = Month2Digit
 		separator = "."
-	case be, da, et, he, jgo, ka:
+	case be, da, et, he, ie, jgo, ka:
 		separator = "."
 	case mk:
 		opts.Day = DayNumeric
+		prefix = era + " "
 		separator = "."
 	case nb, nn, no:
 		opts.Month = MonthNumeric
@@ -169,22 +163,19 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		fmtMonth = fmtMonthName(locale.String(), "format", "abbreviated")
 		separator = ". "
 	case bs:
-		separator = "."
 		suffix = "."
 
 		if script == cyrl {
+			separator = "."
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 
 			break
 		}
 
-		if opts.Month != MonthNumeric || opts.Day != DayNumeric {
-			separator = ". "
-		}
-
 		opts.Month = MonthNumeric
 		opts.Day = DayNumeric
+		separator = ". "
 	case om:
 		if opts.Month == Month2Digit || opts.Day == Day2Digit {
 			break
@@ -205,8 +196,8 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		}
 
 		fallthrough
-	case ak, am, asa, bem, blo, bez, brx, ceb, cgg, chr, dav, ebu, ee, eu, fil, guz, ha, kam, kde, kln, teo, vai, ja, jmc,
-		ki, ksb, lag, lg, luo, luy, mas, mer, naq, nd, nyn, rof, rwk, saq, sbp, so, tzm, vun, xh, xog, yue:
+	case ak, asa, bem, blo, bez, brx, ceb, cgg, chr, dav, ebu, ee, eu, fil, guz, ha, kam, kde, kln, teo, vai, ja, jmc, ki,
+		ksb, lag, lg, luo, luy, mas, mer, naq, nd, nyn, rof, rwk, saq, sbp, so, tzm, vun, xh, xog, yue:
 		layout = layoutMonthDay
 	case mn:
 		fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow")
@@ -364,6 +355,12 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		opts.Day = DayNumeric
 	breakES:
 		break
+	case ii:
+		opts.Month = Month2Digit
+		opts.Day = Day2Digit
+		layout = layoutMonthDay
+		separator = "ꆪ-"
+		suffix = "ꑍ"
 	}
 
 	if layout == layoutDayMonth {

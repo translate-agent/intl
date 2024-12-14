@@ -1,6 +1,6 @@
 # intl
 
-CLDR v45.0 based date and number formatting in Golang.
+[CLDR v46.0](https://cldr.unicode.org/downloads/cldr-46) based date formatting in Golang. The formatting output is identical to the [Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat) by the [Node.js v23.4.0](https://nodejs.org/docs/v23.4.0/api/intl.html).
 
 ## DateTimeFormat
 
@@ -27,7 +27,7 @@ The project uses [Earthly](https://earthly.dev) to automate all development task
 TARGETS:
   +init
       init prepares the project for local development
-  +cldr [--cldr_version=45.0] [--out=.cldr]
+  +cldr [--cldr_version=46.0] [--out=.cldr]
       cldr saves CLDR files to .cldr
   +testdata
       testdata generates test cases and saves to tests.json

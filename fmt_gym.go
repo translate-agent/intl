@@ -42,7 +42,7 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 		if opts.Month == MonthNumeric {
 			opts.Month = Month2Digit
 		}
-	case cy:
+	case cy, mk:
 		middle = " "
 		suffix = " " + era
 	case cv:
@@ -57,10 +57,10 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 
 		fallthrough
 	case agq, ak, as, asa, bas, bem, bez, bgc, bho, bm, bo, brx, ce, cgg, ckb, csw, dav, dje, doi, dua, dyo, ebu, eo, ewo,
-		fur, gsw, guz, gv, ha, hu, ie, ii, jgo, jmc, kab, kam, kde, khq, ki, kl, kln, kn, ko, kok, ksb, ksf, ksh, kw, lag, lg,
+		fur, gsw, guz, gv, ha, hu, ii, jgo, jmc, kab, kam, kde, khq, ki, kl, kln, kn, ko, kok, ksb, ksf, ksh, kw, lag, lg,
 		lij, lkt, lmo, ln, lrc, lu, luo, luy, lv, mas, mg, nmg, mer, mfe, mgh, ml, mgo, mni, mua, my, naq, nd, nds, ne, nnh,
-		nqo, nus, nyn, oc, om, os, pcm, prg, ps, raj, rn, rof, rw, rwk, sah, saq, sat, sbp, seh, ses, sg, shi, si, sn, szl,
-		ta, teo, tok, twq, tzm, vai, vmw, vun, wae, xog, yav, yi, yo, za, zgh, zu:
+		nqo, nus, nyn, oc, os, pcm, prg, ps, raj, rn, rof, rw, rwk, sah, saq, sat, sbp, seh, ses, sg, shi, si, sn, szl, ta,
+		teo, tok, twq, tzm, vai, vmw, vun, wae, xog, yav, yi, yo, za, zgh, zu:
 		layout = eraYearMonth
 		prefix = era + " "
 		suffix = ""
@@ -82,7 +82,7 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 			prefix = era + " "
 			suffix = ""
 		}
-	case ig, mai, mr, sa, xnr:
+	case ig, kxv, mai, mr, sa, xnr:
 		middle = " " + era + " "
 		suffix = ""
 	case pa:
@@ -114,15 +114,6 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 		fallthrough
 	case gl, pt:
 		middle = " de "
-	case kxv:
-		suffix = ""
-
-		if script == deva || script == orya || script == telu {
-			layout = eraYearMonth
-			prefix = era + " "
-		} else {
-			middle = " " + era + " "
-		}
 	case yue, zh:
 		opts.Month = MonthNumeric
 		layout = eraYearMonth

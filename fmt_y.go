@@ -6,7 +6,7 @@ func fmtYearGregorian(locale language.Tag) func(y string) string {
 	switch lang, _ := locale.Base(); lang {
 	default:
 		return func(y string) string { return y }
-	case bg:
+	case bg, mk:
 		return func(y string) string { return y + " г." }
 	case bs, hr, hu, sr:
 		return func(y string) string { return y + "." }

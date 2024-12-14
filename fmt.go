@@ -409,7 +409,7 @@ func defaultNumberingSystem(locale language.Tag) numberingSystem {
 		switch region {
 		default:
 			return numberingSystemArab
-		case regionAE, regionDZ, regionEH, regionLY, regionMA, regionTN:
+		case region001, regionAE, regionDZ, regionEH, regionLY, regionMA, regionTN, regionZZ:
 			return numberingSystemLatn
 		}
 	case ckb, sdh:

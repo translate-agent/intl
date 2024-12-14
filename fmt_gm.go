@@ -29,7 +29,7 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func
 			prefix = ""
 			suffix = " " + era
 		}
-	case bg, cy:
+	case bg, cy, mk:
 		if withName {
 			prefix = era + " (" + monthName + ": "
 		} else {
