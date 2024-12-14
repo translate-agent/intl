@@ -44,6 +44,8 @@ async function getLocales() {
             "ken",
             "kpe",
             "la",
+            "lld",
+            "ltg",
             "mdf",
             "mic",
             "moh",

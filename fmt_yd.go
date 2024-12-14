@@ -9,7 +9,7 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(
 	fmtDay := fmtDayGregorian(locale, digits)
 
 	switch lang {
-	case bg:
+	case bg, mk:
 		if opts.Year == Year2Digit && opts.Day == DayNumeric {
 			return func(y, d int) string {
 				return layoutYear(fmtYear(y, opts.Year)) + " " + fmtDay(d, opts.Day)
@@ -21,7 +21,7 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(
 		return func(y, d int) string {
 			return layoutYear(fmtYear(y, opts.Year)) + " (" + dayName + ": " + fmtDay(d, opts.Day) + ")"
 		}
-	case en:
+	case kaa, en, mhn:
 		if opts.Year == Year2Digit && opts.Day == DayNumeric {
 			return func(y, d int) string {
 				return fmtDay(d, opts.Day) + " " + layoutYear(fmtYear(y, opts.Year))
@@ -41,6 +41,30 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(
 				}
 			}
 
+			return func(y, d int) string {
+				return layoutYear(fmtYear(y, opts.Year)) + " " + fmtDay(d, opts.Day)
+			}
+		}
+
+		dayName := unitName(locale).Day
+
+		return func(y, d int) string {
+			return layoutYear(fmtYear(y, opts.Year)) + " (" + dayName + ": " + fmtDay(d, opts.Day) + ")"
+		}
+	case ie:
+		dayName := unitName(locale).Day
+
+		if opts.Year == Year2Digit && opts.Day == DayNumeric {
+			return func(y, d int) string {
+				return layoutYear(fmtYear(y, opts.Year)) + " " + fmtDay(d, opts.Day)
+			}
+		}
+
+		return func(y, d int) string {
+			return layoutYear(fmtYear(y, opts.Year)) + " (" + dayName + ": " + fmtDay(d, opts.Day) + ")"
+		}
+	case ii:
+		if opts.Year == Year2Digit && opts.Day == DayNumeric {
 			return func(y, d int) string {
 				return layoutYear(fmtYear(y, opts.Year)) + " " + fmtDay(d, opts.Day)
 			}

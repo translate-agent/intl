@@ -177,7 +177,7 @@ func BenchmarkNewDateTime(b *testing.B) {
 	var v DateTimeFormat
 
 	for _, s := range locales {
-		locale := language.MustParse(s)
+		locale := language.Make(s)
 
 		b.Run(s, func(b *testing.B) {
 			for range b.N {
@@ -195,7 +195,7 @@ func BenchmarkDateTime_Format(b *testing.B) {
 	now := time.Now()
 
 	for _, s := range locales {
-		locale := language.MustParse(s)
+		locale := language.Make(s)
 		f1 := NewDateTimeFormat(locale, Options{Era: EraLong}).Format
 		f2 := NewDateTimeFormat(locale, Options{Year: Year2Digit}).Format
 		f3 := NewDateTimeFormat(locale, Options{Month: Month2Digit}).Format

@@ -24,12 +24,12 @@ func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) func(d
 		}
 
 		fallthrough
-	case en:
+	case kaa, en, mhn:
 		if !withName {
 			prefix = ""
 			suffix = " " + era
 		}
-	case bg, cy:
+	case bg, cy, mk:
 		if withName {
 			prefix = era + " (" + dayName + ": "
 		} else {
@@ -41,7 +41,7 @@ func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) func(d
 		}
 
 		fallthrough
-	case cs, da, dsb, fo, hr, hsb, nb, nn, no, sk, sl:
+	case cs, da, dsb, fo, hr, hsb, ie, nb, nn, no, sk, sl:
 		if withName {
 			suffix = ".)"
 		} else {
@@ -55,6 +55,12 @@ func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) func(d
 		}
 	case lt:
 		opts.Day = Day2Digit
+	case ii:
+		if withName {
+			suffix = "ꑍ)"
+		} else {
+			suffix = "ꑍ"
+		}
 	}
 
 	return func(d int) string { return prefix + fmtDay(d, opts.Day) + suffix }
