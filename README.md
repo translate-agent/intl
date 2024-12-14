@@ -6,7 +6,7 @@ CLDR v45.0 based date and number formatting in Golang.
 
 | Option                 | Supported |
 | ---------------------- | :-------: |
-| era                    |    ❌     |
+| era                    |    ✅︎    |
 | year                   |    ✅︎    |
 | month                  |    ✅︎    |
 | day                    |    ✅︎    |

@@ -19,8 +19,8 @@ func fmtYearGregorian(locale language.Tag) func(y string) string {
 	}
 }
 
-func fmtYearBuddhist(locale language.Tag) func(y string) string {
-	return func(y string) string { return fmtEra(locale) + " " + y }
+func fmtYearBuddhist(locale language.Tag, era Era) func(y string) string {
+	return func(y string) string { return fmtEra(locale, era) + " " + y }
 }
 
 func fmtYearPersian(locale language.Tag) func(y string) string {
@@ -36,6 +36,6 @@ func fmtYearPersian(locale language.Tag) func(y string) string {
 
 		fallthrough
 	default:
-		return func(y string) string { return fmtEra(locale) + " " + y }
+		return func(y string) string { return fmtEra(locale, EraNarrow) + " " + y }
 	}
 }

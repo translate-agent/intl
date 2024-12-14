@@ -20,7 +20,16 @@ type Test struct {
 func (t *Test) String() string {
 	var sb strings.Builder
 
+	if t.Options.Era != EraUnd {
+		sb.WriteString("era=")
+		sb.WriteString(t.Options.Era.String())
+	}
+
 	if t.Options.Year != YearUnd {
+		if sb.Len() > 0 {
+			sb.WriteRune(',')
+		}
+
 		sb.WriteString("year=")
 		sb.WriteString(t.Options.Year.String())
 	}
@@ -84,31 +93,20 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 	test := Test{Output: out}
 
 	if o, ok := data[0].(map[string]any); ok {
-		if v, ok := o["year"].(string); ok {
-			switch v {
-			case "numeric":
-				test.Options.Year = YearNumeric
-			case "2-digit":
-				test.Options.Year = Year2Digit
-			}
+		if v, ok := o["era"].(string); ok {
+			test.Options.Era = MustParseEra(v)
 		}
 
-		if v, ok := o["day"].(string); ok {
-			switch v {
-			case "numeric":
-				test.Options.Day = DayNumeric
-			case "2-digit":
-				test.Options.Day = Day2Digit
-			}
+		if v, ok := o["year"].(string); ok {
+			test.Options.Year = MustParseYear(v)
 		}
 
 		if v, ok := o["month"].(string); ok {
-			switch v {
-			case "numeric":
-				test.Options.Month = MonthNumeric
-			case "2-digit":
-				test.Options.Month = Month2Digit
-			}
+			test.Options.Month = MustParseMonth(v)
+		}
+
+		if v, ok := o["day"].(string); ok {
+			test.Options.Day = MustParseDay(v)
 		}
 	}
 
@@ -192,23 +190,22 @@ func BenchmarkNewDateTime(b *testing.B) {
 }
 
 func BenchmarkDateTime_Format(b *testing.B) {
-	var v1, v2, v3, v4, v5, v6, v7 string
+	var v1, v2, v3, v4, v5 string
 
 	now := time.Now()
 
 	for _, s := range locales {
 		locale := language.MustParse(s)
-		f1 := NewDateTimeFormat(locale, Options{}).Format
-		f2 := NewDateTimeFormat(locale, Options{Year: YearNumeric}).Format
-		f3 := NewDateTimeFormat(locale, Options{Year: Year2Digit}).Format
-		f4 := NewDateTimeFormat(locale, Options{Month: MonthNumeric}).Format
-		f5 := NewDateTimeFormat(locale, Options{Month: Month2Digit}).Format
-		f6 := NewDateTimeFormat(locale, Options{Day: DayNumeric}).Format
-		f7 := NewDateTimeFormat(locale, Options{Day: Day2Digit}).Format
+		f1 := NewDateTimeFormat(locale, Options{Era: EraLong}).Format
+		f2 := NewDateTimeFormat(locale, Options{Year: Year2Digit}).Format
+		f3 := NewDateTimeFormat(locale, Options{Month: Month2Digit}).Format
+		f4 := NewDateTimeFormat(locale, Options{Day: Day2Digit}).Format
+		f5 := NewDateTimeFormat(locale, Options{Era: EraShort, Year: YearNumeric, Month: MonthNumeric, Day: DayNumeric}).
+			Format
 
 		b.Run(s, func(b *testing.B) {
 			for range b.N {
-				v1, v2, v3, v4, v5, v6, v7 = f1(now), f2(now), f3(now), f4(now), f5(now), f6(now), f7(now)
+				v1, v2, v3, v4, v5 = f1(now), f2(now), f3(now), f4(now), f5(now)
 			}
 		})
 	}
@@ -218,6 +215,4 @@ func BenchmarkDateTime_Format(b *testing.B) {
 	runtime.KeepAlive(v3)
 	runtime.KeepAlive(v4)
 	runtime.KeepAlive(v5)
-	runtime.KeepAlive(v6)
-	runtime.KeepAlive(v7)
 }

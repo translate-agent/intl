@@ -26,16 +26,19 @@ var (
 	blo = language.MustParseBase("blo")
 	bm  = language.MustParseBase("bm")
 	bn  = language.MustParseBase("bn")
+	bo  = language.MustParseBase("bo")
 	br  = language.MustParseBase("br")
 	brx = language.MustParseBase("brx")
 	bs  = language.MustParseBase("bs")
 	ca  = language.MustParseBase("ca")
 	ccp = language.MustParseBase("ccp")
+	ce  = language.MustParseBase("ce")
 	ceb = language.MustParseBase("ceb")
 	cgg = language.MustParseBase("cgg")
 	chr = language.MustParseBase("chr")
 	ckb = language.MustParseBase("ckb")
 	cs  = language.MustParseBase("cs")
+	csw = language.MustParseBase("csw")
 	cv  = language.MustParseBase("cv")
 	cy  = language.MustParseBase("cy")
 	da  = language.MustParseBase("da")
@@ -70,6 +73,7 @@ var (
 	gsw = language.MustParseBase("gsw")
 	gu  = language.MustParseBase("gu")
 	guz = language.MustParseBase("guz")
+	gv  = language.MustParseBase("gv")
 	ha  = language.MustParseBase("ha")
 	haw = language.MustParseBase("haw")
 	he  = language.MustParseBase("he")
@@ -83,6 +87,7 @@ var (
 	id  = language.MustParseBase("id")
 	ie  = language.MustParseBase("ie")
 	ig  = language.MustParseBase("ig")
+	ii  = language.MustParseBase("ii")
 	is  = language.MustParseBase("is")
 	it  = language.MustParseBase("it")
 	iu  = language.MustParseBase("iu")
@@ -99,6 +104,7 @@ var (
 	khq = language.MustParseBase("khq")
 	ki  = language.MustParseBase("ki")
 	kk  = language.MustParseBase("kk")
+	kl  = language.MustParseBase("kl")
 	kkj = language.MustParseBase("kkj")
 	kln = language.MustParseBase("kln")
 	km  = language.MustParseBase("km")
@@ -110,6 +116,7 @@ var (
 	ksf = language.MustParseBase("ksf")
 	ksh = language.MustParseBase("ksh")
 	ku  = language.MustParseBase("ku")
+	kw  = language.MustParseBase("kw")
 	kxv = language.MustParseBase("kxv")
 	ky  = language.MustParseBase("ky")
 	lag = language.MustParseBase("lag")
@@ -117,6 +124,7 @@ var (
 	lg  = language.MustParseBase("lg")
 	lij = language.MustParseBase("lij")
 	lkt = language.MustParseBase("lkt")
+	lmo = language.MustParseBase("lmo")
 	ln  = language.MustParseBase("ln")
 	lo  = language.MustParseBase("lo")
 	lrc = language.MustParseBase("lrc")
@@ -131,6 +139,7 @@ var (
 	mfe = language.MustParseBase("mfe")
 	mg  = language.MustParseBase("mg")
 	mgh = language.MustParseBase("mgh")
+	mgo = language.MustParseBase("mgo")
 	mi  = language.MustParseBase("mi")
 	mk  = language.MustParseBase("mk")
 	ml  = language.MustParseBase("ml")
@@ -172,6 +181,7 @@ var (
 	ro  = language.MustParseBase("ro")
 	rof = language.MustParseBase("rof")
 	ru  = language.MustParseBase("ru")
+	rw  = language.MustParseBase("rw")
 	rwk = language.MustParseBase("rwk")
 	sa  = language.MustParseBase("sa")
 	sah = language.MustParseBase("sah")
@@ -190,6 +200,7 @@ var (
 	sk  = language.MustParseBase("sk")
 	sl  = language.MustParseBase("sl")
 	smn = language.MustParseBase("smn")
+	sn  = language.MustParseBase("sn")
 	so  = language.MustParseBase("so")
 	sq  = language.MustParseBase("sq")
 	sr  = language.MustParseBase("sr")
@@ -242,6 +253,7 @@ var (
 	arab = language.MustParseScript("Arab")
 	cyrl = language.MustParseScript("Cyrl")
 	deva = language.MustParseScript("Deva")
+	dsrt = language.MustParseScript("Dsrt")
 	hans = language.MustParseScript("Hans")
 	hant = language.MustParseScript("Hant")
 	latn = language.MustParseScript("Latn")
@@ -253,8 +265,6 @@ var (
 // Regions.
 //
 // TODO(jhorsts): temporary disable linter "unused". TIDY before release v0.1.0.
-//
-//nolint:unused
 var (
 	region001 = language.MustParseRegion("001")
 	region150 = language.MustParseRegion("150")
@@ -263,11 +273,13 @@ var (
 	regionAG  = language.MustParseRegion("AG")
 	regionAI  = language.MustParseRegion("AI")
 	regionAR  = language.MustParseRegion("AR")
+	regionAS  = language.MustParseRegion("AS")
 	regionAT  = language.MustParseRegion("AT")
 	regionAU  = language.MustParseRegion("AU")
 	regionBA  = language.MustParseRegion("BA")
 	regionBB  = language.MustParseRegion("BB")
 	regionBE  = language.MustParseRegion("BE")
+	regionBI  = language.MustParseRegion("BI")
 	regionBM  = language.MustParseRegion("BM")
 	regionBS  = language.MustParseRegion("BS")
 	regionBW  = language.MustParseRegion("BW")
@@ -278,6 +290,7 @@ var (
 	regionCK  = language.MustParseRegion("CK")
 	regionCL  = language.MustParseRegion("CL")
 	regionCM  = language.MustParseRegion("CM")
+	regionCO  = language.MustParseRegion("CO")
 	regionCX  = language.MustParseRegion("CX")
 	regionCY  = language.MustParseRegion("CY")
 	regionDE  = language.MustParseRegion("DE")
@@ -306,6 +319,7 @@ var (
 	regionIM  = language.MustParseRegion("IM")
 	regionIN  = language.MustParseRegion("IN")
 	regionIO  = language.MustParseRegion("IO")
+	regionIQ  = language.MustParseRegion("IQ")
 	regionIR  = language.MustParseRegion("IR")
 	regionJE  = language.MustParseRegion("JE")
 	regionJM  = language.MustParseRegion("JM")
@@ -375,6 +389,7 @@ var (
 	regionZA  = language.MustParseRegion("ZA")
 	regionZM  = language.MustParseRegion("ZM")
 	regionZW  = language.MustParseRegion("ZW")
+	regionZZ  = language.Region{}
 )
 
 func defaultNumberingSystem(locale language.Tag) numberingSystem {
@@ -471,7 +486,11 @@ func defaultCalendar(locale language.Tag) calendarType {
 	}
 }
 
-func dayName(locale language.Tag) string {
+func unitName(locale language.Tag) fields {
+	if v, ok := fieldsLookup[locale.String()]; ok {
+		return v
+	}
+
 	lang, _ := locale.Base()
 	s := lang.String()
 
@@ -480,7 +499,7 @@ func dayName(locale language.Tag) string {
 
 		v, ok := fieldsLookup[s]
 		if ok {
-			return v.Day
+			return v
 		}
 	}
 
@@ -490,13 +509,16 @@ func dayName(locale language.Tag) string {
 
 	v, ok := fieldsLookup[s]
 	if ok {
-		return v.Day
+		return v
 	}
 
 	v, ok = fieldsLookup[lang.String()]
 	if ok {
-		return v.Day
+		return v
 	}
 
-	return "Day"
+	return fields{
+		Month: "Month",
+		Day:   "Day",
+	}
 }

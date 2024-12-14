@@ -495,7 +495,7 @@ func fmtYearMonthBuddhist(locale language.Tag, digits digits, opts Options) func
 	}
 
 	return func(y int, m time.Month) string {
-		return fmtEra(locale) + " " + fmtYear(y, opts.Year) + "-" + fmtMonth(m, Month2Digit)
+		return fmtEra(locale, EraNarrow) + " " + fmtYear(y, opts.Year) + "-" + fmtMonth(m, Month2Digit)
 	}
 }
 
@@ -519,7 +519,7 @@ func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) func(
 		}
 	case ps:
 		return func(y int, m time.Month) string {
-			return fmtEra(locale) + " " +
+			return fmtEra(locale, EraNarrow) + " " +
 				fmtYear(y, opts.Year) + "/" +
 				fmtMonth(m, opts.Month)
 		}
@@ -537,7 +537,7 @@ func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) func(
 		fallthrough
 	default:
 		return func(y int, m time.Month) string {
-			return fmtEra(locale) + " " + fmtYear(y, opts.Year) + "-" + fmtMonth(m, Month2Digit)
+			return fmtEra(locale, EraNarrow) + " " + fmtYear(y, opts.Year) + "-" + fmtMonth(m, Month2Digit)
 		}
 	}
 }

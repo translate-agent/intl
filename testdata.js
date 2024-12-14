@@ -94,20 +94,27 @@ function generateTests(locales) {
   const tests = locales.reduce((r, locale) => {
     const result = [];
 
-    [undefined, "numeric", "2-digit"].forEach((year) => {
-      [undefined, "numeric", "2-digit"].forEach((month) => {
-        [undefined, "numeric", "2-digit"].forEach((day) => {
-          // TODO(jhorsts): skip default formatting for now. It can be resolved when formatting is fully implemented.
-          if (year === undefined && month === undefined && day == undefined) {
-            return;
-          }
+    [undefined, "long", "short", "narrow"].forEach((era) => {
+      [undefined, "numeric", "2-digit"].forEach((year) => {
+        [undefined, "numeric", "2-digit"].forEach((month) => {
+          [undefined, "numeric", "2-digit"].forEach((day) => {
+            // TODO(jhorsts): skip default formatting for now. It can be resolved when formatting is fully implemented.
+            if (
+              era == undefined &&
+              year === undefined &&
+              month === undefined &&
+              day == undefined
+            ) {
+              return;
+            }
 
-          const options = { year, month, day };
+            const options = { era, year, month, day };
 
-          result.push([
-            options,
-            new Intl.DateTimeFormat(locale, options).format(date),
-          ]);
+            result.push([
+              options,
+              new Intl.DateTimeFormat(locale, options).format(date),
+            ]);
+          });
         });
       });
     });
