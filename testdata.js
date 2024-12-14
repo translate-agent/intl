@@ -1,93 +1,39 @@
 const fs = require("fs").promises;
+const util = require("util");
+const exec = util.promisify(require("child_process").exec);
 
 async function getLocales() {
-  return (
-    (await fs.readdir(".cldr/common/main"))
-      .map((v) => v.slice(0, -4))
-      .filter((v) => !["root"].includes(v))
-      .map((v) => v.replaceAll("_", "-"))
-      // Skip the tests for the following locales - ICU does not support them (it falls back to system LANG).
-      .filter(
-        (locale) =>
-          ![
-            "aa",
-            "ab",
-            "an",
-            "ann",
-            "apc",
-            "arn",
-            "ba",
-            "bal",
-            "bew",
-            "bgn",
-            "blt",
-            "bss",
-            "byn",
-            "cad",
-            "cch",
-            "cho",
-            "cic",
-            "co",
-            "cu",
-            "dv",
-            "frr",
-            "gaa",
-            "gez",
-            "gn",
-            "hnj",
-            "ife",
-            "io",
-            "iu",
-            "jbo",
-            "kaj",
-            "kcg",
-            "ken",
-            "kpe",
-            "la",
-            "lld",
-            "ltg",
-            "mdf",
-            "mic",
-            "moh",
-            "mus",
-            "myv",
-            "nr",
-            "nso",
-            "nv",
-            "ny",
-            "osa",
-            "pap",
-            "pis",
-            "quc",
-            "rhg",
-            "rif",
-            "scn",
-            "sdh",
-            "shn",
-            "sid",
-            "skr",
-            "sma",
-            "smj",
-            "sms",
-            "ss",
-            "ssy",
-            "st",
-            "tig",
-            "tn",
-            "tpi",
-            "trv",
-            "trw",
-            "ts",
-            "tyv",
-            "ve",
-            "vo",
-            "wa",
-            "wal",
-            "wbp",
-          ].some((v) => locale === v || locale.startsWith(v + "-"))
-      )
-      .sort()
+  const locales = (await fs.readdir(".cldr/common/main"))
+    .map((v) => v.slice(0, -4))
+    .filter((v) => !["root"].includes(v))
+    .map((v) => v.replaceAll("_", "-"));
+
+  // Skip the tests for the following locales - ICU does not support them (it falls back to system LANG).
+  const supported = await Promise.all(
+    locales.map(async (locale) => {
+      const a = await exec(
+        `LANG=en_US node -e "console.log(new Intl.DateTimeFormat('${locale}', {month: 'numeric', day: 'numeric'}).format(new Date()))"`
+      );
+
+      if (a.stderr) {
+        console.error(a.stderr);
+        process.exit(1);
+      }
+
+      const b = await exec(
+        `LANG=en_GB node -e "console.log(new Intl.DateTimeFormat('${locale}', {month: 'numeric', day: 'numeric'}).format(new Date()))"`
+      );
+
+      if (b.stderr) {
+        console.error(b.stderr);
+        process.exit(1);
+      }
+
+      return a.stdout === b.stdout;
+    })
   );
+
+  return locales.filter((_, i) => supported[i]);
 }
 
 function generateTests(locales) {

@@ -36,8 +36,8 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		}
 
 		fallthrough
-	case bgc, bho, bo, ce, ckb, csw, eo, gv, kl, ksh, kw, lij, lkt, lmo, mgo, mt, nds, nnh, ne, nqo, oc, prg, ps, qu, raj,
-		rw, sah, sat, sn, szl, tok, vmw, yi, za, zu:
+	case bgc, bho, bo, ce, ckb, csw, eo, gaa, gv, kl, ksh, kw, lij, lkt, lmo, mgo, mt, nds, nnh, ne, nqo, nso, oc, prg,
+		ps, qu, raj, rw, sah, sat, sn, st, szl, tn, tok, vmw, yi, za, zu:
 		opts.Month = Month2Digit
 		opts.Day = Day2Digit
 		layout = layoutMonthDay
