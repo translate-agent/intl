@@ -17,7 +17,6 @@ func fmtEraYearMonthDayGregorian(
 	era := fmtEra(locale, opts.Era)
 	fmtYear := fmtYear(digits)
 	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits)
 
 	const (
 		eraYearMonthDay = iota
@@ -265,22 +264,24 @@ func fmtEraYearMonthDayGregorian(
 		}
 	}
 
+	fmtDay := fmtDay(digits, day)
+
 	switch layout {
 	default: // eraYearMonthDay
 		return func(y int, m time.Month, d int) string {
-			return prefix + fmtYear(y, opts.Year) + separator + fmtMonth(m, month) + separator + fmtDay(d, day) + suffix
+			return prefix + fmtYear(y, opts.Year) + separator + fmtMonth(m, month) + separator + fmtDay(d) + suffix
 		}
 	case eraMonthDayYear:
 		return func(y int, m time.Month, d int) string {
-			return prefix + fmtMonth(m, month) + separator + fmtDay(d, day) + separator + fmtYear(y, opts.Year) + suffix
+			return prefix + fmtMonth(m, month) + separator + fmtDay(d) + separator + fmtYear(y, opts.Year) + suffix
 		}
 	case eraDayMonthYear:
 		return func(y int, m time.Month, d int) string {
-			return prefix + fmtDay(d, day) + separator + fmtMonth(m, month) + separator + fmtYear(y, opts.Year) + suffix
+			return prefix + fmtDay(d) + separator + fmtMonth(m, month) + separator + fmtYear(y, opts.Year) + suffix
 		}
 	case dayMonthEraYear:
 		return func(y int, m time.Month, d int) string {
-			return fmtDay(d, day) + separator + fmtMonth(m, month) + separator + era + " " + fmtYear(y, opts.Year)
+			return fmtDay(d) + separator + fmtMonth(m, month) + separator + era + " " + fmtYear(y, opts.Year)
 		}
 	}
 }
@@ -295,7 +296,6 @@ func fmtEraYearMonthDayPersian(
 	era := fmtEra(locale, opts.Era)
 	fmtYear := fmtYear(digits)
 	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits)
 
 	const (
 		eraYearMonthDay = iota
@@ -325,14 +325,16 @@ func fmtEraYearMonthDayPersian(
 		suffix = " " + era
 	}
 
+	fmtDay := fmtDay(digits, opts.Day)
+
 	switch layout {
 	default: // eraMonthDayYear
 		return func(y int, m time.Month, d int) string {
-			return fmtMonth(m, opts.Month) + separator + fmtDay(d, opts.Day) + separator + fmtYear(y, opts.Year) + suffix
+			return fmtMonth(m, opts.Month) + separator + fmtDay(d) + separator + fmtYear(y, opts.Year) + suffix
 		}
 	case eraYearMonthDay:
 		return func(y int, m time.Month, d int) string {
-			return era + " " + fmtYear(y, opts.Year) + separator + fmtMonth(m, opts.Month) + separator + fmtDay(d, opts.Day)
+			return era + " " + fmtYear(y, opts.Year) + separator + fmtMonth(m, opts.Month) + separator + fmtDay(d)
 		}
 	}
 }
@@ -345,9 +347,9 @@ func fmtEraYearMonthDayBuddhist(
 	era := fmtEra(locale, opts.Era)
 	fmtYear := fmtYear(digits)
 	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits)
+	fmtDay := fmtDay(digits, opts.Day)
 
 	return func(y int, m time.Month, d int) string {
-		return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month) + "/" + era + " " + fmtYear(y, opts.Year)
+		return fmtDay(d) + "/" + fmtMonth(m, opts.Month) + "/" + era + " " + fmtYear(y, opts.Year)
 	}
 }

@@ -16,7 +16,6 @@ func fmtYearMonthDayGregorian(
 
 	fmtYear := fmtYear(digits)
 	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits)
 
 	const (
 		layoutYearMonthDay = iota
@@ -831,8 +830,10 @@ func fmtYearMonthDayGregorian(
 			opts.Day = Day2Digit
 		}
 
+		fmtDay := fmtDay(digits, opts.Day)
+
 		return func(y int, m time.Month, d int) string {
-			return fmtDay(d, opts.Day) + "/" +
+			return fmtDay(d) + "/" +
 				fmtMonth(m, opts.Month) + " " +
 				fmtYear(y, opts.Year)
 		}
@@ -1295,10 +1296,12 @@ func fmtYearMonthDayGregorian(
 				// year=2-digit,month=numeric,day=2-digit,out=24年1月02日
 				// year=2-digit,month=2-digit,day=numeric,out=24年01月2日
 				// year=2-digit,month=2-digit,day=2-digit,out=24年01月02日
+				fmtDay := fmtDay(digits, opts.Day)
+
 				return func(y int, m time.Month, d int) string {
 					return fmtYear(y, opts.Year) + "年" +
 						fmtMonth(m, opts.Month) + "月" +
-						fmtDay(d, opts.Day) + "日"
+						fmtDay(d) + "日"
 				}
 			}
 
@@ -1347,29 +1350,31 @@ func fmtYearMonthDayGregorian(
 		}
 	}
 
+	fmtDay := fmtDay(digits, opts.Day)
+
 	switch layout {
 	default: // layoutYearMonthDay
 		return func(y int, m time.Month, d int) string {
 			return prefix + fmtYear(y, opts.Year) + separator +
 				fmtMonth(m, opts.Month) + separator +
-				fmtDay(d, opts.Day) + suffix
+				fmtDay(d) + suffix
 		}
 	case layoutDayMonthYear:
 		return func(y int, m time.Month, d int) string {
-			return fmtDay(d, opts.Day) + separator +
+			return fmtDay(d) + separator +
 				fmtMonth(m, opts.Month) + separator +
 				fmtYear(y, opts.Year) + suffix
 		}
 	case layoutMonthDayYear:
 		return func(y int, m time.Month, d int) string {
 			return fmtMonth(m, opts.Month) + separator +
-				fmtDay(d, opts.Day) + separator +
+				fmtDay(d) + separator +
 				fmtYear(y, opts.Year) + suffix
 		}
 	case layoutYearDayMonth:
 		return func(y int, m time.Month, d int) string {
 			return fmtYear(y, opts.Year) + separator +
-				fmtDay(d, opts.Day) + separator +
+				fmtDay(d) + separator +
 				fmtMonth(m, opts.Month) + suffix
 		}
 	}
@@ -1384,7 +1389,13 @@ func fmtYearMonthDayPersian(
 
 	fmtYear := fmtYear(digits)
 	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits)
+
+	const (
+		layoutYearMonthDay = iota
+		layoutDayMonthYear
+	)
+
+	layout := layoutYearMonthDay
 
 	// "lrc", "mzn", "ps", "uz"
 	// year=numeric,month=numeric,day=numeric,out=AP ۱۴۰۲-۱۰-۱۲
@@ -1412,11 +1423,8 @@ func fmtYearMonthDayPersian(
 		// year=2-digit,month=numeric,day=2-digit,out=١٢/١٠/٠٢
 		// year=2-digit,month=2-digit,day=numeric,out=١٢/١٠/٠٢
 		// year=2-digit,month=2-digit,day=2-digit,out=١٢/١٠/٠٢
-		return func(y int, m time.Month, d int) string {
-			return fmtDay(d, opts.Day) + "/" +
-				fmtMonth(m, opts.Month) + "/" +
-				fmtYear(y, opts.Year)
-		}
+		layout = layoutDayMonthYear
+		separator = "/"
 	case fa: // fa-IR
 		// year=numeric,month=numeric,day=numeric,out=۱۴۰۲/۱۰/۱۲
 		// year=numeric,month=numeric,day=2-digit,out=۱۴۰۲/۱۰/۱۲
@@ -1433,11 +1441,21 @@ func fmtYearMonthDayPersian(
 		}
 	}
 
+	fmtDay := fmtDay(digits, opts.Day)
+
+	if layout == layoutDayMonthYear {
+		return func(y int, m time.Month, d int) string {
+			return fmtDay(d) + "/" +
+				fmtMonth(m, opts.Month) + "/" +
+				fmtYear(y, opts.Year)
+		}
+	}
+
 	return func(y int, m time.Month, d int) string {
 		return prefix +
 			fmtYear(y, opts.Year) + separator +
 			fmtMonth(m, opts.Month) + separator +
-			fmtDay(d, opts.Day)
+			fmtDay(d)
 	}
 }
 
@@ -1448,7 +1466,7 @@ func fmtYearMonthDayBuddhist(
 ) func(y int, m time.Month, d int) string {
 	fmtYear := fmtYear(digits)
 	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits)
+	fmtDay := fmtDay(digits, opts.Day)
 
 	// th-TH
 	// year=numeric,month=numeric,day=numeric,out=2/1/2024
@@ -1460,7 +1478,7 @@ func fmtYearMonthDayBuddhist(
 	// year=2-digit,month=2-digit,day=numeric,out=2/01/24
 	// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
 	return func(y int, m time.Month, d int) string {
-		return fmtDay(d, opts.Day) + "/" +
+		return fmtDay(d) + "/" +
 			fmtMonth(m, opts.Month) + "/" +
 			fmtYear(y, opts.Year)
 	}

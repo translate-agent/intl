@@ -8,7 +8,6 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(
 	lang, script, _ := locale.Raw()
 	layoutYear := fmtYearGregorian(locale)
 	fmtYear := fmtYear(digits)
-	fmtDay := fmtDayGregorian(locale, digits)
 
 	const (
 		layoutYearDay = iota
@@ -43,15 +42,17 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(
 		}
 	}
 
+	fmtDay := fmtDayGregorian(locale, digits, opts.Day)
+
 	if layout == layoutDayYear {
 		return func(y, d int) string {
-			return fmtDay(d, opts.Day) + middle + layoutYear(fmtYear(y, opts.Year)) + suffix
+			return fmtDay(d) + middle + layoutYear(fmtYear(y, opts.Year)) + suffix
 		}
 	}
 
 	// layoutYearDay
 	return func(y, d int) string {
-		return layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d, opts.Day) + suffix
+		return layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d) + suffix
 	}
 }
 
@@ -59,7 +60,6 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y,
 	lang, _, region := locale.Raw()
 	layoutYear := fmtYearGregorian(locale)
 	fmtYear := fmtYear(digits)
-	fmtDay := fmtDayGregorian(locale, digits)
 
 	prefix := ""
 	middle := " "
@@ -75,15 +75,16 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y,
 		prefix = fmtEra(locale, EraNarrow) + " "
 	}
 
+	fmtDay := fmtDayGregorian(locale, digits, opts.Day)
+
 	return func(y, d int) string {
-		return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d, opts.Day) + suffix
+		return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d) + suffix
 	}
 }
 
 func fmtYearDayBuddhist(locale language.Tag, digits digits, opts Options) func(y, d int) string {
 	layoutYear := fmtYearBuddhist(locale, EraNarrow)
 	fmtYear := fmtYear(digits)
-	fmtDay := fmtDayBuddhist(locale, digits)
 
 	middle := " "
 	suffix := ""
@@ -94,7 +95,9 @@ func fmtYearDayBuddhist(locale language.Tag, digits digits, opts Options) func(y
 		suffix = ")"
 	}
 
+	fmtDay := fmtDayBuddhist(locale, digits, opts.Day)
+
 	return func(y, d int) string {
-		return layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d, opts.Day) + suffix
+		return layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d) + suffix
 	}
 }

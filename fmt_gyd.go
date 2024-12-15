@@ -8,7 +8,6 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fu
 	era := fmtEra(locale, opts.Era)
 	layoutYear := fmtYearGregorian(locale)
 	fmtYear := fmtYear(digits)
-	fmtDay := fmtDay(digits)
 	dayName := unitName(locale).Day
 
 	const (
@@ -116,14 +115,16 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fu
 		}
 	}
 
+	fmtDay := fmtDay(digits, opts.Day)
+
 	switch layout {
 	default: // eraYearDay
 		return func(y, d int) string {
-			return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d, opts.Day) + suffix
+			return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d) + suffix
 		}
 	case eraDayYear:
 		return func(y, d int) string {
-			return prefix + fmtDay(d, opts.Day) + middle + layoutYear(fmtYear(y, opts.Year)) + suffix
+			return prefix + fmtDay(d) + middle + layoutYear(fmtYear(y, opts.Year)) + suffix
 		}
 	}
 }
@@ -133,7 +134,6 @@ func fmtEraYearDayPersian(locale language.Tag, digits digits, opts Options) func
 	era := fmtEra(locale, opts.Era)
 	layoutYear := fmtYearGregorian(locale)
 	fmtYear := fmtYear(digits)
-	fmtDay := fmtDay(digits)
 	dayName := unitName(locale).Day
 
 	prefix := era + " "
@@ -145,8 +145,10 @@ func fmtEraYearDayPersian(locale language.Tag, digits digits, opts Options) func
 		middle = " " + era + " (" + dayName + ": "
 	}
 
+	fmtDay := fmtDay(digits, opts.Day)
+
 	return func(y, d int) string {
-		return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d, opts.Day) + suffix
+		return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d) + suffix
 	}
 }
 
@@ -154,11 +156,11 @@ func fmtEraYearDayBuddhist(locale language.Tag, digits digits, opts Options) fun
 	era := fmtEra(locale, opts.Era)
 	layoutYear := fmtYearGregorian(locale)
 	fmtYear := fmtYear(digits)
-	fmtDay := fmtDay(digits)
+	fmtDay := fmtDay(digits, opts.Day)
 	dayName := unitName(locale).Day
 	prefix, middle, suffix := era+" ", " ("+dayName+": ", ")"
 
 	return func(y, d int) string {
-		return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d, opts.Day) + suffix
+		return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d) + suffix
 	}
 }

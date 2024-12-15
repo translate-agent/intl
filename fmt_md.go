@@ -11,7 +11,6 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 	lang, script, region := locale.Raw()
 
 	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits)
 
 	const (
 		layoutMonthDay = iota
@@ -455,33 +454,48 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		}
 	}
 
+	fmtDay := fmtDay(digits, opts.Day)
+
 	if layout == layoutDayMonth {
 		return func(m time.Month, d int) string {
-			return fmtDay(d, opts.Day) + middle + fmtMonth(m, opts.Month) + suffix
+			return fmtDay(d) + middle + fmtMonth(m, opts.Month) + suffix
 		}
 	}
 
 	return func(m time.Month, d int) string {
-		return fmtMonth(m, opts.Month) + middle + fmtDay(d, opts.Day) + suffix
+		return fmtMonth(m, opts.Month) + middle + fmtDay(d) + suffix
 	}
 }
 
 func fmtMonthDayBuddhist(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
 	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits)
+
+	const (
+		layoutMonthDay = iota
+		layoutDayMonth
+	)
+
+	layout := layoutMonthDay
 
 	if lang, _ := locale.Base(); lang == th {
+		layout = layoutDayMonth
+	} else {
+		opts.Day = Day2Digit
+	}
+
+	fmtDay := fmtDay(digits, opts.Day)
+
+	if layout == layoutDayMonth {
 		return func(m time.Month, d int) string {
-			return fmtDay(d, opts.Day) + "/" + fmtMonth(m, opts.Month)
+			return fmtDay(d) + "/" + fmtMonth(m, opts.Month)
 		}
 	}
 
-	return func(m time.Month, d int) string { return fmtMonth(m, Month2Digit) + "-" + fmtDay(d, Day2Digit) }
+	return func(m time.Month, d int) string { return fmtMonth(m, Month2Digit) + "-" + fmtDay(d) }
 }
 
 func fmtMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
 	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits)
 
 	middle := "-"
 
@@ -493,7 +507,9 @@ func fmtMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m
 		middle = "/"
 	}
 
+	fmtDay := fmtDay(digits, opts.Day)
+
 	return func(m time.Month, d int) string {
-		return fmtMonth(m, opts.Month) + middle + fmtDay(d, opts.Day)
+		return fmtMonth(m, opts.Month) + middle + fmtDay(d)
 	}
 }
