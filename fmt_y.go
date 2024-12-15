@@ -3,39 +3,36 @@ package intl
 import "golang.org/x/text/language"
 
 func fmtYearGregorian(locale language.Tag) func(y string) string {
+	var suffix string
+
 	switch lang, _ := locale.Base(); lang {
-	default:
-		return func(y string) string { return y }
 	case bg, mk:
-		return func(y string) string { return y + " г." }
+		suffix = " г."
 	case bs, hr, hu, sr:
-		return func(y string) string { return y + "." }
+		suffix = "."
 	case ja, yue, zh:
-		return func(y string) string { return y + "年" }
+		suffix = "年"
 	case ko:
-		return func(y string) string { return y + "년" }
+		suffix = "년"
 	case lv:
-		return func(y string) string { return y + ". g." }
+		suffix = ". g."
 	}
+
+	return func(y string) string { return y + suffix }
 }
 
 func fmtYearBuddhist(locale language.Tag, era Era) func(y string) string {
-	return func(y string) string { return fmtEra(locale, era) + " " + y }
+	prefix := fmtEra(locale, era) + " "
+	return func(y string) string { return prefix + y }
 }
 
 func fmtYearPersian(locale language.Tag) func(y string) string {
 	lang, _, region := locale.Raw()
+	prefix := ""
 
-	switch lang {
-	case fa:
-		return func(y string) string { return y }
-	case uz:
-		if region == regionAF {
-			return func(y string) string { return y }
-		}
-
-		fallthrough
-	default:
-		return func(y string) string { return fmtEra(locale, EraNarrow) + " " + y }
+	if !(lang == fa || lang == uz && region == regionAF) {
+		prefix = fmtEra(locale, EraNarrow) + " "
 	}
+
+	return func(y string) string { return prefix + y }
 }
