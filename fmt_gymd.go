@@ -6,15 +6,6 @@ import (
 	"golang.org/x/text/language"
 )
 
-type EraYearMonthDay int
-
-const (
-	eraYearMonthDay EraYearMonthDay = iota
-	eraMonthDayYear
-	eraDayMonthYear
-	dayMonthEraYear
-)
-
 //nolint:cyclop,gocognit
 func fmtEraYearMonthDayGregorian(
 	locale language.Tag,
@@ -27,6 +18,13 @@ func fmtEraYearMonthDayGregorian(
 	fmtYear := fmtYear(digits)
 	fmtMonth := fmtMonth(digits)
 	fmtDay := fmtDay(digits)
+
+	const (
+		eraYearMonthDay = iota
+		eraMonthDayYear
+		eraDayMonthYear
+		dayMonthEraYear
+	)
 
 	month, day := Month2Digit, Day2Digit
 	layout := eraYearMonthDay
@@ -298,6 +296,12 @@ func fmtEraYearMonthDayPersian(
 	fmtYear := fmtYear(digits)
 	fmtMonth := fmtMonth(digits)
 	fmtDay := fmtDay(digits)
+
+	const (
+		eraYearMonthDay = iota
+		eraMonthDayYear
+	)
+
 	layout := eraMonthDayYear
 	separator := "/"
 	suffix := " " + era

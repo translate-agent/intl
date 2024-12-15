@@ -6,15 +6,6 @@ import (
 	"golang.org/x/text/language"
 )
 
-type EraYearMonth int
-
-const (
-	// eraYearMonth includes "era year month" and "year month era".
-	eraYearMonth EraYearMonth = iota
-	// eraMonthYear includes "era month year" and "month year era".
-	eraMonthYear
-)
-
 //nolint:cyclop
 func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
 	lang, script, region := locale.Raw()
@@ -23,6 +14,13 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 	layoutYear := fmtYearGregorian(locale)
 	fmtMonth := fmtMonth(digits)
 	monthName := unitName(locale).Month
+
+	const (
+		// eraYearMonth includes "era year month" and "year month era".
+		eraYearMonth = iota
+		// eraMonthYear includes "era month year" and "month year era".
+		eraMonthYear
+	)
 
 	layout := eraMonthYear
 	prefix := ""
@@ -204,6 +202,13 @@ func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) fu
 	fmtYear := fmtYear(digits)
 	layoutYear := fmtYearPersian(locale)
 	fmtMonth := fmtMonth(digits)
+
+	const (
+		// eraYearMonth includes "era year month" and "year month era".
+		eraYearMonth = iota
+		// eraMonthYear includes "era month year" and "month year era".
+		eraMonthYear
+	)
 
 	layout := eraYearMonth
 	prefix := era + " "

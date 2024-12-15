@@ -2,13 +2,6 @@ package intl
 
 import "golang.org/x/text/language"
 
-type EraYearDay int
-
-const (
-	eraYearDay EraYearDay = iota
-	eraDayYear
-)
-
 //nolint:cyclop
 func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) func(y, d int) string {
 	lang, script, region := locale.Raw()
@@ -17,6 +10,11 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fu
 	fmtYear := fmtYear(digits)
 	fmtDay := fmtDay(digits)
 	dayName := unitName(locale).Day
+
+	const (
+		eraYearDay = iota
+		eraDayYear
+	)
 
 	layout := eraYearDay
 	prefix := ""
