@@ -1732,6 +1732,28 @@ func fmtYearMonthDayGregorian(
 				fmtMonth(m, opts.Month) + separator +
 				fmtYear(y, opts.Year)
 		}
+	case gaa:
+		// year=numeric,month=numeric,day=numeric,out=1/2/2024
+		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
+		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
+		// year=numeric,month=2-digit,day=2-digit,out=2024-01-02
+		// year=2-digit,month=numeric,day=numeric,out=1/2/24
+		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
+		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
+		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
+		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			return func(y int, m time.Month, d int) string {
+				return fmtMonth(m, opts.Month) + "/" +
+					fmtDay(d, opts.Day) + "/" +
+					fmtYear(y, opts.Year)
+			}
+		}
+
+		return func(y int, m time.Month, d int) string {
+			return fmtYear(y, opts.Year) + "-" +
+				fmtMonth(m, opts.Month) + "-" +
+				fmtDay(d, opts.Day)
+		}
 	}
 }
 
