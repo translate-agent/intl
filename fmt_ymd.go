@@ -12,10 +12,10 @@ func fmtYearMonthDayGregorian(
 	digits digits,
 	opts Options,
 ) func(y int, m time.Month, d int) string {
-	lang, script, region := locale.Raw()
+	var month func(time.Month) string
 
-	fmtYear := fmtYear(digits)
-	fmtMonth := fmtMonth(digits)
+	lang, script, region := locale.Raw()
+	year := fmtYear(digits)
 
 	const (
 		layoutYearMonthDay = iota
@@ -830,12 +830,13 @@ func fmtYearMonthDayGregorian(
 			opts.Day = Day2Digit
 		}
 
-		fmtDay := fmtDay(digits, opts.Day)
+		month = fmtMonth(digits, opts.Month)
+		day := fmtDay(digits, opts.Day)
 
 		return func(y int, m time.Month, d int) string {
-			return fmtDay(d) + "/" +
-				fmtMonth(m, opts.Month) + " " +
-				fmtYear(y, opts.Year)
+			return day(d) + "/" +
+				month(m) + " " +
+				year(y, opts.Year)
 		}
 	case ko:
 		// year=numeric,month=numeric,day=numeric,out=2024. 1. 2.
@@ -1296,12 +1297,13 @@ func fmtYearMonthDayGregorian(
 				// year=2-digit,month=numeric,day=2-digit,out=24年1月02日
 				// year=2-digit,month=2-digit,day=numeric,out=24年01月2日
 				// year=2-digit,month=2-digit,day=2-digit,out=24年01月02日
-				fmtDay := fmtDay(digits, opts.Day)
+				month = fmtMonth(digits, opts.Month)
+				day := fmtDay(digits, opts.Day)
 
 				return func(y int, m time.Month, d int) string {
-					return fmtYear(y, opts.Year) + "年" +
-						fmtMonth(m, opts.Month) + "月" +
-						fmtDay(d) + "日"
+					return year(y, opts.Year) + "年" +
+						month(m) + "月" +
+						day(d) + "日"
 				}
 			}
 
@@ -1350,32 +1352,36 @@ func fmtYearMonthDayGregorian(
 		}
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	if month == nil {
+		month = fmtMonth(digits, opts.Month)
+	}
+
+	day := fmtDay(digits, opts.Day)
 
 	switch layout {
 	default: // layoutYearMonthDay
 		return func(y int, m time.Month, d int) string {
-			return prefix + fmtYear(y, opts.Year) + separator +
-				fmtMonth(m, opts.Month) + separator +
-				fmtDay(d) + suffix
+			return prefix + year(y, opts.Year) + separator +
+				month(m) + separator +
+				day(d) + suffix
 		}
 	case layoutDayMonthYear:
 		return func(y int, m time.Month, d int) string {
-			return fmtDay(d) + separator +
-				fmtMonth(m, opts.Month) + separator +
-				fmtYear(y, opts.Year) + suffix
+			return day(d) + separator +
+				month(m) + separator +
+				year(y, opts.Year) + suffix
 		}
 	case layoutMonthDayYear:
 		return func(y int, m time.Month, d int) string {
-			return fmtMonth(m, opts.Month) + separator +
-				fmtDay(d) + separator +
-				fmtYear(y, opts.Year) + suffix
+			return month(m) + separator +
+				day(d) + separator +
+				year(y, opts.Year) + suffix
 		}
 	case layoutYearDayMonth:
 		return func(y int, m time.Month, d int) string {
-			return fmtYear(y, opts.Year) + separator +
-				fmtDay(d) + separator +
-				fmtMonth(m, opts.Month) + suffix
+			return year(y, opts.Year) + separator +
+				day(d) + separator +
+				month(m) + suffix
 		}
 	}
 }
@@ -1387,8 +1393,7 @@ func fmtYearMonthDayPersian(
 ) func(y int, m time.Month, d int) string {
 	lang, _, region := locale.Raw()
 
-	fmtYear := fmtYear(digits)
-	fmtMonth := fmtMonth(digits)
+	year := fmtYear(digits)
 
 	const (
 		layoutYearMonthDay = iota
@@ -1441,21 +1446,22 @@ func fmtYearMonthDayPersian(
 		}
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	month := fmtMonth(digits, opts.Month)
+	day := fmtDay(digits, opts.Day)
 
 	if layout == layoutDayMonthYear {
 		return func(y int, m time.Month, d int) string {
-			return fmtDay(d) + "/" +
-				fmtMonth(m, opts.Month) + "/" +
-				fmtYear(y, opts.Year)
+			return day(d) + "/" +
+				month(m) + "/" +
+				year(y, opts.Year)
 		}
 	}
 
 	return func(y int, m time.Month, d int) string {
 		return prefix +
-			fmtYear(y, opts.Year) + separator +
-			fmtMonth(m, opts.Month) + separator +
-			fmtDay(d)
+			year(y, opts.Year) + separator +
+			month(m) + separator +
+			day(d)
 	}
 }
 
@@ -1464,9 +1470,9 @@ func fmtYearMonthDayBuddhist(
 	digits digits,
 	opts Options,
 ) func(y int, m time.Month, d int) string {
-	fmtYear := fmtYear(digits)
-	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits, opts.Day)
+	year := fmtYear(digits)
+	month := fmtMonth(digits, opts.Month)
+	day := fmtDay(digits, opts.Day)
 
 	// th-TH
 	// year=numeric,month=numeric,day=numeric,out=2/1/2024
@@ -1478,8 +1484,8 @@ func fmtYearMonthDayBuddhist(
 	// year=2-digit,month=2-digit,day=numeric,out=2/01/24
 	// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
 	return func(y int, m time.Month, d int) string {
-		return fmtDay(d) + "/" +
-			fmtMonth(m, opts.Month) + "/" +
-			fmtYear(y, opts.Year)
+		return day(d) + "/" +
+			month(m) + "/" +
+			year(y, opts.Year)
 	}
 }

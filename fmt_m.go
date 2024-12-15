@@ -6,13 +6,12 @@ import (
 	"golang.org/x/text/language"
 )
 
-func fmtMonthGregorian(locale language.Tag, digits digits) func(m time.Month, opt Month) string {
-	fmt := fmtMonth(digits)
+func fmtMonthGregorian(locale language.Tag, digits digits, opt Month) func(m time.Month) string {
 	suffix := ""
 
 	switch lang, _ := locale.Base(); lang {
 	case br, fo, ga, lt, uk, uz:
-		return func(m time.Month, _ Month) string { return fmt(m, Month2Digit) }
+		opt = Month2Digit
 	case hr, nb, nn, no, sk:
 		suffix = "."
 	case ja, yue, zh, ko:
@@ -23,13 +22,15 @@ func fmtMonthGregorian(locale language.Tag, digits digits) func(m time.Month, op
 		return fmtMonthName(locale.String(), "stand-alone", "abbreviated")
 	}
 
-	return func(m time.Month, opt Month) string { return fmt(m, opt) + suffix }
+	month := fmtMonth(digits, opt)
+
+	return func(m time.Month) string { return month(m) + suffix }
 }
 
-func fmtMonthBuddhist(_ language.Tag, digits digits) func(m time.Month, opt Month) string {
-	return fmtMonth(digits)
+func fmtMonthBuddhist(_ language.Tag, digits digits, opt Month) func(m time.Month) string {
+	return fmtMonth(digits, opt)
 }
 
-func fmtMonthPersian(_ language.Tag, digits digits) func(m time.Month, opt Month) string {
-	return fmtMonth(digits)
+func fmtMonthPersian(_ language.Tag, digits digits, opt Month) func(m time.Month) string {
+	return fmtMonth(digits, opt)
 }

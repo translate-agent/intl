@@ -24,9 +24,9 @@ func fmtDayGregorian(locale language.Tag, digits digits, opt Day) func(d int) st
 		suffix = "ꑍ"
 	}
 
-	fmt := fmtDay(digits, opt)
+	day := fmtDay(digits, opt)
 
-	return func(d int) string { return fmt(d) + suffix }
+	return func(d int) string { return day(d) + suffix }
 }
 
 func fmtDayBuddhist(_ language.Tag, digits digits, opt Day) func(d int) string {

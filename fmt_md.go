@@ -8,9 +8,9 @@ import (
 
 //nolint:gocognit,cyclop
 func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
-	lang, script, region := locale.Raw()
+	var month func(time.Month) string
 
-	fmtMonth := fmtMonth(digits)
+	lang, script, region := locale.Raw()
 
 	const (
 		layoutMonthDay = iota
@@ -243,7 +243,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		middle = ". "
 		suffix = "."
 	case wae:
-		fmtMonth = fmtMonthName(locale.String(), "stand-alone", "abbreviated")
+		month = fmtMonthName(locale.String(), "stand-alone", "abbreviated")
 		layout = layoutDayMonth
 		middle = ". "
 	case dz, si: // noop
@@ -352,7 +352,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			opts.Month = Month2Digit
 		}
 	case mn:
-		fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow")
+		month = fmtMonthName(locale.String(), "stand-alone", "narrow")
 		opts.Day = Day2Digit
 		middle = "/"
 	case ms:
@@ -454,22 +454,24 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		}
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	if month == nil {
+		month = fmtMonth(digits, opts.Month)
+	}
+
+	day := fmtDay(digits, opts.Day)
 
 	if layout == layoutDayMonth {
 		return func(m time.Month, d int) string {
-			return fmtDay(d) + middle + fmtMonth(m, opts.Month) + suffix
+			return day(d) + middle + month(m) + suffix
 		}
 	}
 
 	return func(m time.Month, d int) string {
-		return fmtMonth(m, opts.Month) + middle + fmtDay(d) + suffix
+		return month(m) + middle + day(d) + suffix
 	}
 }
 
 func fmtMonthDayBuddhist(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
-	fmtMonth := fmtMonth(digits)
-
 	const (
 		layoutMonthDay = iota
 		layoutDayMonth
@@ -483,20 +485,19 @@ func fmtMonthDayBuddhist(locale language.Tag, digits digits, opts Options) func(
 		opts.Day = Day2Digit
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	month := fmtMonth(digits, opts.Month)
+	day := fmtDay(digits, opts.Day)
 
 	if layout == layoutDayMonth {
 		return func(m time.Month, d int) string {
-			return fmtDay(d) + "/" + fmtMonth(m, opts.Month)
+			return day(d) + "/" + month(m)
 		}
 	}
 
-	return func(m time.Month, d int) string { return fmtMonth(m, Month2Digit) + "-" + fmtDay(d) }
+	return func(m time.Month, d int) string { return month(m) + "-" + day(d) }
 }
 
 func fmtMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
-	fmtMonth := fmtMonth(digits)
-
 	middle := "-"
 
 	switch lang, _ := locale.Base(); lang {
@@ -507,9 +508,10 @@ func fmtMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m
 		middle = "/"
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	month := fmtMonth(digits, opts.Month)
+	day := fmtDay(digits, opts.Day)
 
 	return func(m time.Month, d int) string {
-		return fmtMonth(m, opts.Month) + middle + fmtDay(d)
+		return month(m) + middle + day(d)
 	}
 }
