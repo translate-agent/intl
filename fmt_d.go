@@ -2,15 +2,13 @@ package intl
 
 import "golang.org/x/text/language"
 
-func fmtDayGregorian(locale language.Tag, digits digits) func(d int, opt Day) string {
-	fmt := fmtDay(digits)
-
+func fmtDayGregorian(locale language.Tag, digits digits, opt Day) func(d int) string {
 	suffix := ""
 
 	switch lang, _ := locale.Base(); lang {
 	case bs:
 		if script, _ := locale.Script(); script == cyrl {
-			return fmt
+			break
 		}
 
 		suffix = "."
@@ -21,18 +19,20 @@ func fmtDayGregorian(locale language.Tag, digits digits) func(d int, opt Day) st
 	case ko:
 		suffix = "일"
 	case lt:
-		return func(d int, _ Day) string { return fmt(d, Day2Digit) }
+		opt = Day2Digit
 	case ii:
 		suffix = "ꑍ"
 	}
 
-	return func(d int, opt Day) string { return fmt(d, opt) + suffix }
+	fmt := fmtDay(digits, opt)
+
+	return func(d int) string { return fmt(d) + suffix }
 }
 
-func fmtDayBuddhist(_ language.Tag, digits digits) func(d int, opt Day) string {
-	return fmtDay(digits)
+func fmtDayBuddhist(_ language.Tag, digits digits, opt Day) func(d int) string {
+	return fmtDay(digits, opt)
 }
 
-func fmtDayPersian(_ language.Tag, digits digits) func(d int, opt Day) string {
-	return fmtDay(digits)
+func fmtDayPersian(_ language.Tag, digits digits, opt Day) func(d int) string {
+	return fmtDay(digits, opt)
 }

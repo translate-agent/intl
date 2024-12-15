@@ -5,7 +5,6 @@ import "golang.org/x/text/language"
 func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) func(d int) string {
 	lang, script, _ := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	fmtDay := fmtDay(digits)
 	dayName := unitName(locale).Day
 	withName := opts.Era == EraShort || opts.Era == EraLong && opts.Day == Day2Digit
 
@@ -63,13 +62,14 @@ func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) func(d
 		}
 	}
 
-	return func(d int) string { return prefix + fmtDay(d, opts.Day) + suffix }
+	fmtDay := fmtDay(digits, opts.Day)
+
+	return func(d int) string { return prefix + fmtDay(d) + suffix }
 }
 
 func fmtEraDayPersian(locale language.Tag, digits digits, opts Options) func(d int) string {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
-	fmtDay := fmtDay(digits)
 	withName := opts.Era == EraShort || opts.Era == EraLong && opts.Day == Day2Digit
 
 	prefix := era + " "
@@ -88,12 +88,13 @@ func fmtEraDayPersian(locale language.Tag, digits digits, opts Options) func(d i
 		}
 	}
 
-	return func(d int) string { return prefix + fmtDay(d, opts.Day) + suffix }
+	fmtDay := fmtDay(digits, opts.Day)
+
+	return func(d int) string { return prefix + fmtDay(d) + suffix }
 }
 
 func fmtEraDayBuddhist(locale language.Tag, digits digits, opts Options) func(d int) string {
 	era := fmtEra(locale, opts.Era)
-	fmtDay := fmtDay(digits)
 	prefix, suffix := era+" ", ""
 	withName := opts.Era == EraShort || opts.Era == EraLong && opts.Day == Day2Digit
 
@@ -101,5 +102,7 @@ func fmtEraDayBuddhist(locale language.Tag, digits digits, opts Options) func(d 
 		prefix, suffix = era+" ("+unitName(locale).Day+": ", ")"
 	}
 
-	return func(d int) string { return prefix + fmtDay(d, opts.Day) + suffix }
+	fmtDay := fmtDay(digits, opts.Day)
+
+	return func(d int) string { return prefix + fmtDay(d) + suffix }
 }
