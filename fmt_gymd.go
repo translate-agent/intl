@@ -12,11 +12,11 @@ func fmtEraYearMonthDayGregorian(
 	digits digits,
 	opts Options,
 ) func(y int, m time.Month, d int) string {
-	lang, script, region := locale.Raw()
+	var month func(time.Month) string
 
+	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	fmtYear := fmtYear(digits)
-	fmtMonth := fmtMonth(digits)
+	year := fmtYear(digits)
 
 	const (
 		eraYearMonthDay = iota
@@ -25,7 +25,7 @@ func fmtEraYearMonthDayGregorian(
 		dayMonthEraYear
 	)
 
-	month, day := Month2Digit, Day2Digit
+	monthOpt, monthDay := Month2Digit, Day2Digit
 	layout := eraYearMonthDay
 	prefix := era + " "
 	suffix := ""
@@ -35,7 +35,7 @@ func fmtEraYearMonthDayGregorian(
 	case en:
 		switch region {
 		default:
-			month, day = opts.Month, opts.Day
+			monthOpt, monthDay = opts.Month, opts.Day
 			separator = "/"
 			prefix = ""
 			suffix = " " + era
@@ -47,13 +47,13 @@ func fmtEraYearMonthDayGregorian(
 			}
 		case regionAE, regionAS, regionBI, regionCA, regionGU, regionMH, regionMP, regionPH, regionPR, regionUM, regionUS,
 			regionVI:
-			month, day = opts.Month, opts.Day
+			monthOpt, monthDay = opts.Month, opts.Day
 			layout = eraMonthDayYear
 			separator = "/"
 			prefix = ""
 			suffix = " " + era
 		case regionCH:
-			month, day = opts.Month, opts.Day
+			monthOpt, monthDay = opts.Month, opts.Day
 			layout = eraDayMonthYear
 			separator = "."
 			prefix = ""
@@ -64,7 +64,7 @@ func fmtEraYearMonthDayGregorian(
 			suffix = " " + era
 
 			if script == shaw {
-				month, day = opts.Month, opts.Day
+				monthOpt, monthDay = opts.Month, opts.Day
 				layout = eraMonthDayYear
 			} else {
 				layout = eraDayMonthYear
@@ -73,20 +73,20 @@ func fmtEraYearMonthDayGregorian(
 	case brx, lv, mni:
 		layout = eraDayMonthYear
 	case da, dsb, hsb, ie, ka, sq:
-		month, day = opts.Month, opts.Day
+		monthOpt, monthDay = opts.Month, opts.Day
 		layout = eraDayMonthYear
 		separator = "."
 		prefix = ""
 		suffix = " " + era
 	case mk:
-		month = opts.Month
-		day = opts.Day
+		monthOpt = opts.Month
+		monthDay = opts.Day
 		layout = eraDayMonthYear
 		prefix = ""
 		suffix = " г. " + era
 		separator = "."
 	case et, pl:
-		day = opts.Day
+		monthDay = opts.Day
 		layout = eraDayMonthYear
 		separator = "."
 		prefix = ""
@@ -97,7 +97,7 @@ func fmtEraYearMonthDayGregorian(
 		prefix = ""
 		suffix = " " + era
 	case sr:
-		day = opts.Day
+		monthDay = opts.Day
 		layout = eraDayMonthYear
 		separator = "."
 		prefix = ""
@@ -108,7 +108,7 @@ func fmtEraYearMonthDayGregorian(
 		prefix = ""
 		suffix = " г. " + era
 	case fi:
-		month, day = opts.Month, opts.Day
+		monthOpt, monthDay = opts.Month, opts.Day
 		layout = eraMonthDayYear
 		separator = "."
 		prefix = ""
@@ -122,7 +122,7 @@ func fmtEraYearMonthDayGregorian(
 			separator = "/"
 		}
 	case am, as, es, gd, gl, he, el, id, is, jv, nl, su, sw, ta, xnr, ur, vi, yo:
-		month, day = opts.Month, opts.Day
+		monthOpt, monthDay = opts.Month, opts.Day
 		layout = eraDayMonthYear
 		separator = "/"
 		prefix = ""
@@ -133,13 +133,13 @@ func fmtEraYearMonthDayGregorian(
 		prefix = ""
 		suffix = " " + era
 	case ceb, chr, blo, fil, kaa, mhn, ml, ne, or, ps, sd, so, ti, xh, zu:
-		month, day = opts.Month, opts.Day
+		monthOpt, monthDay = opts.Month, opts.Day
 		layout = eraMonthDayYear
 		separator = "/"
 		prefix = ""
 		suffix = " " + era
 	case cy:
-		month, day = opts.Month, opts.Day
+		monthOpt, monthDay = opts.Month, opts.Day
 		layout = eraMonthDayYear
 		prefix = ""
 		suffix = " " + era
@@ -153,7 +153,7 @@ func fmtEraYearMonthDayGregorian(
 		suffix = " " + era
 	case bs:
 		if script != cyrl {
-			month, day = opts.Month, opts.Day
+			monthOpt, monthDay = opts.Month, opts.Day
 			layout = eraDayMonthYear
 			separator = ". "
 			prefix = ""
@@ -161,14 +161,14 @@ func fmtEraYearMonthDayGregorian(
 		}
 	case ff:
 		if script == adlm {
-			month, day = opts.Month, opts.Day
+			monthOpt, monthDay = opts.Month, opts.Day
 			layout = eraDayMonthYear
 			prefix = ""
 			suffix = " " + era
 		}
 	case ks:
 		if script != deva {
-			month, day = opts.Month, opts.Day
+			monthOpt, monthDay = opts.Month, opts.Day
 			layout = eraMonthDayYear
 			separator = "/"
 			prefix = ""
@@ -183,8 +183,8 @@ func fmtEraYearMonthDayGregorian(
 		}
 	case az:
 		if script != cyrl {
-			fmtMonth = fmtMonthName(locale.String(), "format", "abbreviated")
-			month, day = opts.Month, opts.Day
+			month = fmtMonthName(locale.String(), "format", "abbreviated")
+			monthOpt, monthDay = opts.Month, opts.Day
 			layout = eraDayMonthYear
 			separator = " "
 		}
@@ -195,19 +195,19 @@ func fmtEraYearMonthDayGregorian(
 		separator = ". "
 		suffix = "."
 	case cs, sk, sl:
-		month, day = opts.Month, opts.Day
+		monthOpt, monthDay = opts.Month, opts.Day
 		layout = eraDayMonthYear
 		separator = ". "
 		prefix = ""
 		suffix = " " + era
 	case hr:
-		month, day = opts.Month, opts.Day
+		monthOpt, monthDay = opts.Month, opts.Day
 		layout = eraDayMonthYear
 		separator = ". "
 		prefix = ""
 		suffix = ". " + era
 	case hi:
-		month, day = opts.Month, opts.Day
+		monthOpt, monthDay = opts.Month, opts.Day
 		layout = eraDayMonthYear
 		separator = "/"
 
@@ -217,24 +217,24 @@ func fmtEraYearMonthDayGregorian(
 		}
 	case zh:
 		if script == hant {
-			month, day = opts.Month, opts.Day
+			monthOpt, monthDay = opts.Month, opts.Day
 			separator = "/"
 		}
 	case kxv:
 		if script != deva && script != orya && script != telu {
-			month, day = opts.Month, opts.Day
+			monthOpt, monthDay = opts.Month, opts.Day
 			layout = eraDayMonthYear
 			separator = "/"
 		}
 	case ja:
-		month, day = opts.Month, opts.Day
+		monthOpt, monthDay = opts.Month, opts.Day
 		separator = "/"
 		prefix = era
 	case ko, my:
-		month, day = opts.Month, opts.Day
+		monthOpt, monthDay = opts.Month, opts.Day
 		separator = "/"
 	case mr, qu:
-		month, day = opts.Month, opts.Day
+		monthOpt, monthDay = opts.Month, opts.Day
 		layout = eraDayMonthYear
 		separator = "/"
 	case to:
@@ -245,43 +245,47 @@ func fmtEraYearMonthDayGregorian(
 	case kk:
 		layout = dayMonthEraYear
 	case lo:
-		month, day = opts.Month, opts.Day
+		monthOpt, monthDay = opts.Month, opts.Day
 		layout = dayMonthEraYear
 		separator = "/"
 	case pa:
 		if script != arab {
-			month, day = opts.Month, opts.Day
+			monthOpt, monthDay = opts.Month, opts.Day
 			layout = dayMonthEraYear
 			separator = "/"
 		}
 	case kok:
 		if script == latn {
-			month = opts.Month
-			day = opts.Day
+			monthOpt = opts.Month
+			monthDay = opts.Day
 			layout = eraDayMonthYear
 			prefix = ""
 			suffix = " " + era
 		}
 	}
 
-	fmtDay := fmtDay(digits, day)
+	if month == nil {
+		month = fmtMonth(digits, monthOpt)
+	}
+
+	day := fmtDay(digits, monthDay)
 
 	switch layout {
 	default: // eraYearMonthDay
 		return func(y int, m time.Month, d int) string {
-			return prefix + fmtYear(y, opts.Year) + separator + fmtMonth(m, month) + separator + fmtDay(d) + suffix
+			return prefix + year(y, opts.Year) + separator + month(m) + separator + day(d) + suffix
 		}
 	case eraMonthDayYear:
 		return func(y int, m time.Month, d int) string {
-			return prefix + fmtMonth(m, month) + separator + fmtDay(d) + separator + fmtYear(y, opts.Year) + suffix
+			return prefix + month(m) + separator + day(d) + separator + year(y, opts.Year) + suffix
 		}
 	case eraDayMonthYear:
 		return func(y int, m time.Month, d int) string {
-			return prefix + fmtDay(d) + separator + fmtMonth(m, month) + separator + fmtYear(y, opts.Year) + suffix
+			return prefix + day(d) + separator + month(m) + separator + year(y, opts.Year) + suffix
 		}
 	case dayMonthEraYear:
 		return func(y int, m time.Month, d int) string {
-			return fmtDay(d) + separator + fmtMonth(m, month) + separator + era + " " + fmtYear(y, opts.Year)
+			return day(d) + separator + month(m) + separator + era + " " + year(y, opts.Year)
 		}
 	}
 }
@@ -294,8 +298,7 @@ func fmtEraYearMonthDayPersian(
 	lang, _, region := locale.Raw()
 
 	era := fmtEra(locale, opts.Era)
-	fmtYear := fmtYear(digits)
-	fmtMonth := fmtMonth(digits)
+	year := fmtYear(digits)
 
 	const (
 		eraYearMonthDay = iota
@@ -325,16 +328,18 @@ func fmtEraYearMonthDayPersian(
 		suffix = " " + era
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	month := fmtMonth(digits, opts.Month)
+	day := fmtDay(digits, opts.Day)
 
 	switch layout {
 	default: // eraMonthDayYear
 		return func(y int, m time.Month, d int) string {
-			return fmtMonth(m, opts.Month) + separator + fmtDay(d) + separator + fmtYear(y, opts.Year) + suffix
+			return month(m) + separator + day(d) + separator + year(y, opts.Year) + suffix
 		}
 	case eraYearMonthDay:
 		return func(y int, m time.Month, d int) string {
-			return era + " " + fmtYear(y, opts.Year) + separator + fmtMonth(m, opts.Month) + separator + fmtDay(d)
+			// TODO(jhorsts): replace with the "prefix" variable (era + " ")
+			return era + " " + year(y, opts.Year) + separator + month(m) + separator + day(d)
 		}
 	}
 }
@@ -345,11 +350,11 @@ func fmtEraYearMonthDayBuddhist(
 	opts Options,
 ) func(y int, m time.Month, d int) string {
 	era := fmtEra(locale, opts.Era)
-	fmtYear := fmtYear(digits)
-	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits, opts.Day)
+	year := fmtYear(digits)
+	month := fmtMonth(digits, opts.Month)
+	day := fmtDay(digits, opts.Day)
 
 	return func(y int, m time.Month, d int) string {
-		return fmtDay(d) + "/" + fmtMonth(m, opts.Month) + "/" + era + " " + fmtYear(y, opts.Year)
+		return day(d) + "/" + month(m) + "/" + era + " " + year(y, opts.Year)
 	}
 }

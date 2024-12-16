@@ -7,9 +7,10 @@ import (
 )
 
 func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
+	var month func(time.Month) string
+
 	lang, script, _ := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	fmtMonth := fmtMonth(digits)
 	withName := opts.Era == EraShort || opts.Era == EraLong && opts.Month == Month2Digit
 	monthName := unitName(locale).Month
 
@@ -53,9 +54,9 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func
 			suffix = " " + era
 		}
 	case mn:
-		fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow")
+		month = fmtMonthName(locale.String(), "stand-alone", "narrow")
 	case wae:
-		fmtMonth = fmtMonthName(locale.String(), "format", "abbreviated")
+		month = fmtMonthName(locale.String(), "format", "abbreviated")
 	case ja, ko, zh, yue:
 		if withName {
 			prefix = era + " (" + monthName + ": "
@@ -65,13 +66,16 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func
 		}
 	}
 
-	return func(m time.Month) string { return prefix + fmtMonth(m, opts.Month) + suffix }
+	if month == nil {
+		month = fmtMonth(digits, opts.Month)
+	}
+
+	return func(m time.Month) string { return prefix + month(m) + suffix }
 }
 
 func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
-	fmtMonth := fmtMonth(digits)
 	monthName := unitName(locale).Month
 	withName := opts.Era == EraShort || opts.Era == EraLong && opts.Month == Month2Digit
 
@@ -91,12 +95,13 @@ func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m
 		}
 	}
 
-	return func(m time.Month) string { return prefix + fmtMonth(m, opts.Month) + suffix }
+	month := fmtMonth(digits, opts.Month)
+
+	return func(m time.Month) string { return prefix + month(m) + suffix }
 }
 
 func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
 	era := fmtEra(locale, opts.Era)
-	fmtMonth := fmtMonth(digits)
 	monthName := unitName(locale).Month
 	withName := opts.Era == EraShort || opts.Era == EraLong && opts.Month == Month2Digit
 
@@ -108,5 +113,7 @@ func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) func(
 		suffix = ")"
 	}
 
-	return func(m time.Month) string { return prefix + fmtMonth(m, opts.Month) + suffix }
+	month := fmtMonth(digits, opts.Month)
+
+	return func(m time.Month) string { return prefix + month(m) + suffix }
 }

@@ -8,9 +8,10 @@ import (
 
 //nolint:cyclop,gocognit
 func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
+	var month func(time.Month) string
+
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	fmtMonth := fmtMonth(digits)
 
 	const (
 		layoutMonthDay = iota
@@ -159,7 +160,7 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		separator = ". "
 		suffix = "."
 	case wae:
-		fmtMonth = fmtMonthName(locale.String(), "format", "abbreviated")
+		month = fmtMonthName(locale.String(), "format", "abbreviated")
 		separator = ". "
 	case bs:
 		suffix = "."
@@ -199,7 +200,7 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		ksb, lag, lg, luo, luy, mas, mer, naq, nd, nyn, rof, rwk, saq, sbp, so, tzm, vun, xh, xog, yue:
 		layout = layoutMonthDay
 	case mn:
-		fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow")
+		month = fmtMonthName(locale.String(), "stand-alone", "narrow")
 		opts.Day = Day2Digit
 		layout = layoutMonthDay
 	case zh:
@@ -370,23 +371,26 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		suffix = " " + era
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	if month == nil {
+		month = fmtMonth(digits, opts.Month)
+	}
+
+	day := fmtDay(digits, opts.Day)
 
 	if layout == layoutDayMonth {
 		return func(m time.Month, d int) string {
-			return prefix + fmtDay(d) + separator + fmtMonth(m, opts.Month) + suffix
+			return prefix + day(d) + separator + month(m) + suffix
 		}
 	}
 
 	return func(m time.Month, d int) string {
-		return prefix + fmtMonth(m, opts.Month) + separator + fmtDay(d) + suffix
+		return prefix + month(m) + separator + day(d) + suffix
 	}
 }
 
 func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
-	fmtMonth := fmtMonth(digits)
 	prefix := era + " "
 	separator := "-"
 
@@ -396,19 +400,20 @@ func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) fun
 		separator = "/"
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	month := fmtMonth(digits, opts.Month)
+	day := fmtDay(digits, opts.Day)
 
 	return func(m time.Month, d int) string {
-		return prefix + fmtMonth(m, opts.Month) + separator + fmtDay(d)
+		return prefix + month(m) + separator + day(d)
 	}
 }
 
 func fmtEraMonthDayBuddhist(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
 	era := fmtEra(locale, opts.Era)
-	fmtMonth := fmtMonth(digits)
-	fmtDay := fmtDay(digits, opts.Day)
+	month := fmtMonth(digits, opts.Month)
+	day := fmtDay(digits, opts.Day)
 
 	return func(m time.Month, d int) string {
-		return era + " " + fmtDay(d) + "/" + fmtMonth(m, opts.Month)
+		return era + " " + day(d) + "/" + month(m)
 	}
 }

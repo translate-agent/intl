@@ -62,9 +62,9 @@ func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) func(d
 		}
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	day := fmtDay(digits, opts.Day)
 
-	return func(d int) string { return prefix + fmtDay(d) + suffix }
+	return func(d int) string { return prefix + day(d) + suffix }
 }
 
 func fmtEraDayPersian(locale language.Tag, digits digits, opts Options) func(d int) string {
@@ -88,9 +88,9 @@ func fmtEraDayPersian(locale language.Tag, digits digits, opts Options) func(d i
 		}
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	day := fmtDay(digits, opts.Day)
 
-	return func(d int) string { return prefix + fmtDay(d) + suffix }
+	return func(d int) string { return prefix + day(d) + suffix }
 }
 
 func fmtEraDayBuddhist(locale language.Tag, digits digits, opts Options) func(d int) string {
@@ -102,7 +102,7 @@ func fmtEraDayBuddhist(locale language.Tag, digits digits, opts Options) func(d 
 		prefix, suffix = era+" ("+unitName(locale).Day+": ", ")"
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	day := fmtDay(digits, opts.Day)
 
-	return func(d int) string { return prefix + fmtDay(d) + suffix }
+	return func(d int) string { return prefix + day(d) + suffix }
 }

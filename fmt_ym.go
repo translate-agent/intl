@@ -8,9 +8,10 @@ import (
 
 //nolint:cyclop,gocognit
 func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
+	var month func(time.Month) string
+
 	lang, script, region := locale.Raw()
-	fmtYear := fmtYear(digits)
-	fmtMonth := fmtMonth(digits)
+	year := fmtYear(digits)
 
 	const (
 		layoutYearMonth = iota
@@ -321,7 +322,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		middle = "."
 		suffix = "."
 	case mn:
-		fmtMonth = fmtMonthName(locale.String(), "stand-alone", "narrow")
+		month = fmtMonthName(locale.String(), "stand-alone", "narrow")
 		middle = " "
 	case yi:
 		if opts.Month != MonthNumeric {
@@ -417,38 +418,44 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		}
 	}
 
+	if month == nil {
+		month = fmtMonth(digits, opts.Month)
+	}
+
 	if layout == layoutMonthYear {
 		return func(y int, m time.Month) string {
-			return prefix + fmtMonth(m, opts.Month) + middle + fmtYear(y, opts.Year) + suffix
+			return prefix + month(m) + middle + year(y, opts.Year) + suffix
 		}
 	}
 
 	return func(y int, m time.Month) string {
-		return prefix + fmtYear(y, opts.Year) + middle + fmtMonth(m, opts.Month) + suffix
+		return prefix + year(y, opts.Year) + middle + month(m) + suffix
 	}
 }
 
 func fmtYearMonthBuddhist(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
-	fmtYear := fmtYear(digits)
-	fmtMonth := fmtMonth(digits)
+	year := fmtYear(digits)
 
 	if lang, _ := locale.Base(); lang == th {
+		month := fmtMonth(digits, opts.Month)
+
 		return func(y int, m time.Month) string {
-			return fmtMonth(m, opts.Month) + "/" + fmtYear(y, opts.Year)
+			return month(m) + "/" + year(y, opts.Year)
 		}
 	}
 
 	prefix := fmtEra(locale, EraNarrow) + " "
+	month := fmtMonth(digits, Month2Digit)
 
 	return func(y int, m time.Month) string {
-		return prefix + fmtYear(y, opts.Year) + "-" + fmtMonth(m, Month2Digit)
+		return prefix + year(y, opts.Year) + "-" + month(m)
 	}
 }
 
 func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
 	lang, _, region := locale.Raw()
-	fmtYear := fmtYear(digits)
-	fmtMonth := fmtMonth(digits)
+	year := fmtYear(digits)
+	month := fmtMonth(digits, Month2Digit)
 
 	prefix := ""
 	separator := "-"
@@ -460,7 +467,7 @@ func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) func(
 		// year=2-digit,month=numeric,out=١٠/٠٢
 		// year=2-digit,month=2-digit,out=١٠/٠٢
 		return func(y int, m time.Month) string {
-			return fmtMonth(m, Month2Digit) + "/" + fmtYear(y, opts.Year)
+			return month(m) + "/" + year(y, opts.Year)
 		}
 	case fa:
 		separator = "/"
@@ -482,6 +489,6 @@ func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) func(
 	}
 
 	return func(y int, m time.Month) string {
-		return prefix + fmtYear(y, opts.Year) + separator + fmtMonth(m, Month2Digit)
+		return prefix + year(y, opts.Year) + separator + month(m)
 	}
 }

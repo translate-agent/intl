@@ -7,7 +7,7 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fu
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
 	layoutYear := fmtYearGregorian(locale)
-	fmtYear := fmtYear(digits)
+	year := fmtYear(digits)
 	dayName := unitName(locale).Day
 
 	const (
@@ -115,16 +115,16 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fu
 		}
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	day := fmtDay(digits, opts.Day)
 
 	switch layout {
 	default: // eraYearDay
 		return func(y, d int) string {
-			return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d) + suffix
+			return prefix + layoutYear(year(y, opts.Year)) + middle + day(d) + suffix
 		}
 	case eraDayYear:
 		return func(y, d int) string {
-			return prefix + fmtDay(d) + middle + layoutYear(fmtYear(y, opts.Year)) + suffix
+			return prefix + day(d) + middle + layoutYear(year(y, opts.Year)) + suffix
 		}
 	}
 }
@@ -133,7 +133,7 @@ func fmtEraYearDayPersian(locale language.Tag, digits digits, opts Options) func
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	layoutYear := fmtYearGregorian(locale)
-	fmtYear := fmtYear(digits)
+	year := fmtYear(digits)
 	dayName := unitName(locale).Day
 
 	prefix := era + " "
@@ -145,22 +145,22 @@ func fmtEraYearDayPersian(locale language.Tag, digits digits, opts Options) func
 		middle = " " + era + " (" + dayName + ": "
 	}
 
-	fmtDay := fmtDay(digits, opts.Day)
+	day := fmtDay(digits, opts.Day)
 
 	return func(y, d int) string {
-		return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d) + suffix
+		return prefix + layoutYear(year(y, opts.Year)) + middle + day(d) + suffix
 	}
 }
 
 func fmtEraYearDayBuddhist(locale language.Tag, digits digits, opts Options) func(y, d int) string {
 	era := fmtEra(locale, opts.Era)
 	layoutYear := fmtYearGregorian(locale)
-	fmtYear := fmtYear(digits)
-	fmtDay := fmtDay(digits, opts.Day)
+	year := fmtYear(digits)
+	day := fmtDay(digits, opts.Day)
 	dayName := unitName(locale).Day
 	prefix, middle, suffix := era+" ", " ("+dayName+": ", ")"
 
 	return func(y, d int) string {
-		return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d) + suffix
+		return prefix + layoutYear(year(y, opts.Year)) + middle + day(d) + suffix
 	}
 }

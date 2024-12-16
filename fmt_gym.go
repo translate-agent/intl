@@ -8,11 +8,12 @@ import (
 
 //nolint:cyclop
 func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
+	var month func(time.Month) string
+
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	fmtYear := fmtYear(digits)
+	year := fmtYear(digits)
 	layoutYear := fmtYearGregorian(locale)
-	fmtMonth := fmtMonth(digits)
 	monthName := unitName(locale).Month
 
 	const (
@@ -171,7 +172,7 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 		middle = " оны "
 		suffix = ""
 	case sl:
-		fmtMonth = fmtMonthName(locale.String(), "format", "abbreviated")
+		month = fmtMonthName(locale.String(), "format", "abbreviated")
 	case ug:
 		layout = eraYearMonth
 	case uk:
@@ -184,14 +185,18 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 		}
 	}
 
+	if month == nil {
+		month = fmtMonth(digits, opts.Month)
+	}
+
 	switch layout {
 	default: // eraYearMonth
 		return func(y int, m time.Month) string {
-			return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtMonth(m, opts.Month) + suffix
+			return prefix + layoutYear(year(y, opts.Year)) + middle + month(m) + suffix
 		}
 	case eraMonthYear:
 		return func(y int, m time.Month) string {
-			return prefix + fmtMonth(m, opts.Month) + middle + layoutYear(fmtYear(y, opts.Year)) + suffix
+			return prefix + month(m) + middle + layoutYear(year(y, opts.Year)) + suffix
 		}
 	}
 }
@@ -199,9 +204,8 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
 	lang, _, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	fmtYear := fmtYear(digits)
+	year := fmtYear(digits)
 	layoutYear := fmtYearPersian(locale)
-	fmtMonth := fmtMonth(digits)
 
 	const (
 		// eraYearMonth includes "era year month" and "year month era".
@@ -229,24 +233,26 @@ func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) fu
 		prefix = ""
 	}
 
+	month := fmtMonth(digits, opts.Month)
+
 	switch layout {
 	default: // eraYearMonth
 		return func(y int, m time.Month) string {
-			return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtMonth(m, opts.Month) + suffix
+			return prefix + layoutYear(year(y, opts.Year)) + middle + month(m) + suffix
 		}
 	case eraMonthYear:
 		return func(y int, m time.Month) string {
-			return prefix + fmtMonth(m, opts.Month) + middle + layoutYear(fmtYear(y, opts.Year)) + suffix
+			return prefix + month(m) + middle + layoutYear(year(y, opts.Year)) + suffix
 		}
 	}
 }
 
 func fmtEraYearMonthBuddhist(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
-	fmtYear := fmtYear(digits)
+	year := fmtYear(digits)
 	layoutYear := fmtYearBuddhist(locale, opts.Era)
-	fmtMonth := fmtMonth(digits)
+	month := fmtMonth(digits, opts.Month)
 
 	return func(y int, m time.Month) string {
-		return fmtMonth(m, opts.Month) + " " + layoutYear(fmtYear(y, opts.Year))
+		return month(m) + " " + layoutYear(year(y, opts.Year))
 	}
 }
