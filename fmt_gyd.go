@@ -6,8 +6,8 @@ import "golang.org/x/text/language"
 func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) func(y, d int) string {
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
+	year := fmtYear(digits, opts.Year)
 	layoutYear := fmtYearGregorian(locale)
-	year := fmtYear(digits)
 	dayName := unitName(locale).Day
 
 	const (
@@ -120,11 +120,11 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fu
 	switch layout {
 	default: // eraYearDay
 		return func(y, d int) string {
-			return prefix + layoutYear(year(y, opts.Year)) + middle + day(d) + suffix
+			return prefix + layoutYear(year(y)) + middle + day(d) + suffix
 		}
 	case eraDayYear:
 		return func(y, d int) string {
-			return prefix + day(d) + middle + layoutYear(year(y, opts.Year)) + suffix
+			return prefix + day(d) + middle + layoutYear(year(y)) + suffix
 		}
 	}
 }
@@ -133,7 +133,7 @@ func fmtEraYearDayPersian(locale language.Tag, digits digits, opts Options) func
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	layoutYear := fmtYearGregorian(locale)
-	year := fmtYear(digits)
+	year := fmtYear(digits, opts.Year)
 	dayName := unitName(locale).Day
 
 	prefix := era + " "
@@ -148,19 +148,19 @@ func fmtEraYearDayPersian(locale language.Tag, digits digits, opts Options) func
 	day := fmtDay(digits, opts.Day)
 
 	return func(y, d int) string {
-		return prefix + layoutYear(year(y, opts.Year)) + middle + day(d) + suffix
+		return prefix + layoutYear(year(y)) + middle + day(d) + suffix
 	}
 }
 
 func fmtEraYearDayBuddhist(locale language.Tag, digits digits, opts Options) func(y, d int) string {
 	era := fmtEra(locale, opts.Era)
 	layoutYear := fmtYearGregorian(locale)
-	year := fmtYear(digits)
+	year := fmtYear(digits, opts.Year)
 	day := fmtDay(digits, opts.Day)
 	dayName := unitName(locale).Day
 	prefix, middle, suffix := era+" ", " ("+dayName+": ", ")"
 
 	return func(y, d int) string {
-		return prefix + layoutYear(year(y, opts.Year)) + middle + day(d) + suffix
+		return prefix + layoutYear(year(y)) + middle + day(d) + suffix
 	}
 }

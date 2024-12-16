@@ -5,7 +5,7 @@ import "golang.org/x/text/language"
 func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) func(y int) string {
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits)
+	year := fmtYear(digits, opts.Year)
 	layoutYear := fmtYearGregorian(locale)
 
 	prefix := ""
@@ -78,13 +78,13 @@ func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) func(
 		suffix = ""
 	}
 
-	return func(y int) string { return prefix + layoutYear(year(y, opts.Year)) + suffix }
+	return func(y int) string { return prefix + layoutYear(year(y)) + suffix }
 }
 
 func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) func(y int) string {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits)
+	year := fmtYear(digits, opts.Year)
 
 	prefix := ""
 	suffix := " " + era
@@ -98,15 +98,15 @@ func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) func(y 
 	}
 
 	return func(y int) string {
-		return prefix + year(y, opts.Year) + suffix
+		return prefix + year(y) + suffix
 	}
 }
 
 func fmtEraYearBuddhist(locale language.Tag, digits digits, opts Options) func(y int) string {
 	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits)
+	year := fmtYear(digits, opts.Year)
 
 	return func(y int) string {
-		return era + " " + year(y, opts.Year)
+		return era + " " + year(y)
 	}
 }

@@ -7,7 +7,7 @@ import (
 func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(y, d int) string {
 	lang, script, _ := locale.Raw()
 	layoutYear := fmtYearGregorian(locale)
-	fmtYear := fmtYear(digits)
+	fmtYear := fmtYear(digits, opts.Year)
 
 	const (
 		layoutYearDay = iota
@@ -46,20 +46,20 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(
 
 	if layout == layoutDayYear {
 		return func(y, d int) string {
-			return fmtDay(d) + middle + layoutYear(fmtYear(y, opts.Year)) + suffix
+			return fmtDay(d) + middle + layoutYear(fmtYear(y)) + suffix
 		}
 	}
 
 	// layoutYearDay
 	return func(y, d int) string {
-		return layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d) + suffix
+		return layoutYear(fmtYear(y)) + middle + fmtDay(d) + suffix
 	}
 }
 
 func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y, d int) string {
 	lang, _, region := locale.Raw()
 	layoutYear := fmtYearGregorian(locale)
-	fmtYear := fmtYear(digits)
+	fmtYear := fmtYear(digits, opts.Year)
 
 	prefix := ""
 	middle := " "
@@ -78,13 +78,13 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y,
 	fmtDay := fmtDayGregorian(locale, digits, opts.Day)
 
 	return func(y, d int) string {
-		return prefix + layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d) + suffix
+		return prefix + layoutYear(fmtYear(y)) + middle + fmtDay(d) + suffix
 	}
 }
 
 func fmtYearDayBuddhist(locale language.Tag, digits digits, opts Options) func(y, d int) string {
 	layoutYear := fmtYearBuddhist(locale, EraNarrow)
-	fmtYear := fmtYear(digits)
+	fmtYear := fmtYear(digits, opts.Year)
 
 	middle := " "
 	suffix := ""
@@ -98,6 +98,6 @@ func fmtYearDayBuddhist(locale language.Tag, digits digits, opts Options) func(y
 	fmtDay := fmtDayBuddhist(locale, digits, opts.Day)
 
 	return func(y, d int) string {
-		return layoutYear(fmtYear(y, opts.Year)) + middle + fmtDay(d) + suffix
+		return layoutYear(fmtYear(y)) + middle + fmtDay(d) + suffix
 	}
 }
