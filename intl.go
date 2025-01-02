@@ -408,12 +408,12 @@ func (f DateTimeFormat) Format(v time.Time) string {
 // fmtFunc is date time formatter for a particular calendar.
 type fmtFunc func(time.Time) string
 
-// fmtYear formats year as numeric.
-func fmtYear(digits digits) func(v int, opt Year) string {
-	return func(v int, opt Year) string {
-		s := strconv.Itoa(v)
+// fmtYear formats year.
+func fmtYear(digits digits, opt Year) func(v int) string {
+	if opt == Year2Digit {
+		return func(v int) string {
+			s := strconv.Itoa(v)
 
-		if opt == Year2Digit {
 			switch n := len(s); n {
 			default:
 				s = s[n-2:]
@@ -421,10 +421,12 @@ func fmtYear(digits digits) func(v int, opt Year) string {
 				s = "0" + s
 			case 0, 2: //nolint:mnd // noop, isSliceInBounds()
 			}
-		}
 
-		return digits.Sprint(s)
+			return digits.Sprint(s)
+		}
 	}
+
+	return func(v int) string { return digits.Sprint(strconv.Itoa(v)) }
 }
 
 // fmtMonth returns month formatting func.
@@ -578,10 +580,10 @@ func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) f
 		}
 	case opts.Year != YearUnd:
 		layout := fmtYearGregorian(locale)
-		fmt := fmtYear(digits)
+		fmt := fmtYear(digits, opts.Year)
 
 		return func(v time.Time) string {
-			return layout(fmt(v.Year(), opts.Year))
+			return layout(fmt(v.Year()))
 		}
 	case opts.Month != MonthUnd:
 		layout := fmtMonthGregorian(locale, digits, opts.Month)
@@ -687,10 +689,10 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 		}
 	case opts.Year != YearUnd:
 		layout := fmtYearPersian(locale)
-		fmt := fmtYear(digits)
+		fmt := fmtYear(digits, opts.Year)
 
 		return func(v time.Time) string {
-			return layout(fmt(ptime.New(v).Year(), opts.Year))
+			return layout(fmt(ptime.New(v).Year()))
 		}
 	case opts.Month != MonthUnd:
 		layout := fmtMonthPersian(locale, digits, opts.Month)
@@ -805,12 +807,12 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 		}
 	case opts.Year != YearUnd:
 		layout := fmtYearBuddhist(locale, EraNarrow)
-		fmt := fmtYear(digits)
+		fmt := fmtYear(digits, opts.Year)
 
 		return func(v time.Time) string {
 			v = v.AddDate(543, 0, 0) //nolint:mnd
 
-			return layout(fmt(v.Year(), opts.Year))
+			return layout(fmt(v.Year()))
 		}
 	case opts.Month != MonthUnd:
 		layout := fmtMonthBuddhist(locale, digits, opts.Month)

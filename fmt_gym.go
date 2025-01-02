@@ -12,7 +12,7 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits)
+	year := fmtYear(digits, opts.Year)
 	layoutYear := fmtYearGregorian(locale)
 	monthName := unitName(locale).Month
 
@@ -192,11 +192,11 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 	switch layout {
 	default: // eraYearMonth
 		return func(y int, m time.Month) string {
-			return prefix + layoutYear(year(y, opts.Year)) + middle + month(m) + suffix
+			return prefix + layoutYear(year(y)) + middle + month(m) + suffix
 		}
 	case eraMonthYear:
 		return func(y int, m time.Month) string {
-			return prefix + month(m) + middle + layoutYear(year(y, opts.Year)) + suffix
+			return prefix + month(m) + middle + layoutYear(year(y)) + suffix
 		}
 	}
 }
@@ -204,7 +204,7 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
 	lang, _, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits)
+	year := fmtYear(digits, opts.Year)
 	layoutYear := fmtYearPersian(locale)
 
 	const (
@@ -238,21 +238,21 @@ func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) fu
 	switch layout {
 	default: // eraYearMonth
 		return func(y int, m time.Month) string {
-			return prefix + layoutYear(year(y, opts.Year)) + middle + month(m) + suffix
+			return prefix + layoutYear(year(y)) + middle + month(m) + suffix
 		}
 	case eraMonthYear:
 		return func(y int, m time.Month) string {
-			return prefix + month(m) + middle + layoutYear(year(y, opts.Year)) + suffix
+			return prefix + month(m) + middle + layoutYear(year(y)) + suffix
 		}
 	}
 }
 
 func fmtEraYearMonthBuddhist(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
-	year := fmtYear(digits)
+	year := fmtYear(digits, opts.Year)
 	layoutYear := fmtYearBuddhist(locale, opts.Era)
 	month := fmtMonth(digits, opts.Month)
 
 	return func(y int, m time.Month) string {
-		return month(m) + " " + layoutYear(year(y, opts.Year))
+		return month(m) + " " + layoutYear(year(y))
 	}
 }
