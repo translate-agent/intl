@@ -79,20 +79,20 @@ type AllTests struct {
 }
 
 func (t *Test) UnmarshalJSON(b []byte) error {
-	var data [2]any // first options, second formatted output
+	var args [2]any // first value is options, second - formatted output
 
-	if err := json.Unmarshal(b, &data); err != nil {
+	if err := json.Unmarshal(b, &args); err != nil {
 		return fmt.Errorf("unmarshal test data: %w", err)
 	}
 
-	out, ok := data[1].(string)
+	out, ok := args[1].(string)
 	if !ok {
 		panic("want formatted string value")
 	}
 
 	test := Test{Output: out}
 
-	if o, ok := data[0].(map[string]any); ok {
+	if o, ok := args[0].(map[string]any); ok {
 		if v, ok := o["era"].(string); ok {
 			test.Options.Era = MustParseEra(v)
 		}
@@ -116,7 +116,7 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 }
 
 //go:embed tests.json
-var data []byte
+var nodeTests []byte
 
 // skipTest returns a reason to skip locale testing if formatting is not implemented yet.
 // Returns empty string if all is fine.
@@ -131,7 +131,7 @@ func TestDateTime_Format(t *testing.T) {
 
 	var tests AllTests
 
-	if err := json.Unmarshal(data, &tests); err != nil {
+	if err := json.Unmarshal(nodeTests, &tests); err != nil {
 		panic(err)
 	}
 

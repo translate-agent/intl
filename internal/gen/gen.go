@@ -103,10 +103,16 @@ func (g *Generator) process(conf Conf, log *slog.Logger) (*TemplateData, error) 
 }
 
 func (g *Generator) write(out string, data *TemplateData) error {
+	uniq := data.UniqString()
+
 	dataTpl, err := template.New("cldr_data").Funcs(template.FuncMap{
 		"join":  strings.Join,
 		"sub":   func(a, b int) int { return a - b },
 		"title": title,
+		"value": func(v string) string {
+			i := strings.Index(uniq, v)
+			return fmt.Sprintf("data[%d:%d]", i, i+len(v))
+		},
 	}).Parse(cldrDataTemplate)
 	if err != nil {
 		return fmt.Errorf("parse cldr_data: %w", err)
@@ -1031,6 +1037,7 @@ type NumberingSystem struct {
 }
 
 type TemplateData struct {
+	uniqString              string
 	Eras                    Eras
 	Months                  Months
 	Fields                  Fields
@@ -1038,6 +1045,78 @@ type TemplateData struct {
 	NumberingSystemIota     []string
 	CalendarPreferences     CalendarPreferences
 	NumberingSystems        []NumberingSystem
+}
+
+// UniqString returns a string with unique values from the template data.
+// Any text value can be looked up in the generated string value.
+//
+// In the go template, "value" function can be used to get the value.
+func (d *TemplateData) UniqString() string {
+	if d.uniqString != "" {
+		return d.uniqString
+	}
+
+	var uniq []string
+
+	for _, v := range d.Eras {
+		if !slices.Contains(uniq, v.Narrow) {
+			uniq = append(uniq, v.Narrow)
+		}
+
+		if !slices.Contains(uniq, v.Short) {
+			uniq = append(uniq, v.Short)
+		}
+
+		if !slices.Contains(uniq, v.Long) {
+			uniq = append(uniq, v.Long)
+		}
+	}
+
+	for _, v := range d.Fields {
+		if !slices.Contains(uniq, v.Month) {
+			uniq = append(uniq, v.Month)
+		}
+
+		if !slices.Contains(uniq, v.Day) {
+			uniq = append(uniq, v.Day)
+		}
+
+		if !slices.Contains(uniq, v.MonthShort) {
+			uniq = append(uniq, v.MonthShort)
+		}
+	}
+
+	for _, names := range d.Months.List {
+		for _, v := range names {
+			if !slices.Contains(uniq, v) {
+				uniq = append(uniq, v)
+			}
+		}
+	}
+
+	// shorter names last, same length sorted alphabetically
+	slices.SortFunc(uniq, func(a, b string) int {
+		i := len(b) - len(a)
+		if i == 0 {
+			return strings.Compare(a, b)
+		}
+
+		return i
+	})
+
+	// remove value if it is a substring of another value
+	for i := len(uniq) - 1; i >= 0; i-- {
+		for _, s := range uniq[:i] {
+			if strings.Contains(s, uniq[i]) {
+				uniq = slices.Delete(uniq, i, i+1)
+				break
+			}
+		}
+	}
+
+	d.uniqString = strings.Join(uniq, "")
+
+	return d.uniqString
 }
 
 // value - locales.
