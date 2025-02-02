@@ -16,9 +16,9 @@ import (
 	"text/template"
 	"time"
 
+	"go.expect.digital/intl/internal/cldr"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-	"golang.org/x/text/unicode/cldr"
 )
 
 //go:embed cldr_data.go.tmpl
@@ -57,10 +57,7 @@ func Gen(conf Conf, log *slog.Logger) error {
 }
 
 func (g *Generator) load(dir string, log *slog.Logger) error {
-	var (
-		d   cldr.Decoder
-		err error
-	)
+	var err error
 
 	now := time.Now()
 
@@ -68,9 +65,7 @@ func (g *Generator) load(dir string, log *slog.Logger) error {
 		log.Debug("loading", "duration", time.Since(now))
 	}()
 
-	d.SetDirFilter("main", "supplemental")
-
-	g.cldr, err = d.DecodePath(dir)
+	g.cldr, err = cldr.DecodePath(dir)
 	if err != nil {
 		return fmt.Errorf(`decode CLDR at path "%s": %w`, dir, err)
 	}
@@ -79,7 +74,6 @@ func (g *Generator) load(dir string, log *slog.Logger) error {
 }
 
 func (g *Generator) process(conf Conf, log *slog.Logger) (*TemplateData, error) {
-	g.filterApproved()
 	g.merge(log)
 
 	if conf.saveMerged {
@@ -157,120 +151,6 @@ func (g *Generator) saveMerged(out string) error {
 	return nil
 }
 
-//nolint:cyclop,gocognit
-func (g *Generator) filterApproved() {
-	for _, locale := range g.cldr.Locales() {
-		ldml := g.cldr.RawLDML(locale)
-
-		if ldml.Numbers != nil {
-			var defaultNumberingSystem []*cldr.Common
-
-			for _, v := range ldml.Numbers.DefaultNumberingSystem {
-				if isContributedOrApproved(v.Draft) {
-					defaultNumberingSystem = append(defaultNumberingSystem, v)
-				}
-			}
-
-			ldml.Numbers.DefaultNumberingSystem = defaultNumberingSystem
-		}
-
-		if ldml.Dates == nil || ldml.Dates.Calendars == nil {
-			continue
-		}
-
-		for _, calendar := range ldml.Dates.Calendars.Calendar {
-			if calendar.Months != nil {
-				for _, monthContext := range calendar.Months.MonthContext {
-					for _, monthWidth := range monthContext.MonthWidth {
-						var months []*struct {
-							cldr.Common
-							Yeartype string `xml:"yeartype,attr"`
-						}
-
-						for _, month := range monthWidth.Month {
-							if isContributedOrApproved(month.Draft) {
-								months = append(months, month)
-							}
-						}
-
-						monthWidth.Month = months
-					}
-				}
-			}
-
-			if calendar.DateTimeFormats != nil {
-				for _, dateTimeFormat := range calendar.DateTimeFormats.AvailableFormats {
-					var dateFormatItems []*struct {
-						cldr.Common
-						Id    string `xml:"id,attr"` //nolint:revive,stylecheck
-						Count string `xml:"count,attr"`
-					}
-
-					for _, dateFormatItem := range dateTimeFormat.DateFormatItem {
-						if isContributedOrApproved(dateFormatItem.Draft) {
-							dateFormatItems = append(dateFormatItems, dateFormatItem)
-						}
-					}
-
-					dateTimeFormat.DateFormatItem = dateFormatItems
-				}
-			}
-
-			//nolint:nestif
-			if eras := calendar.Eras; eras != nil {
-				if v := eras.EraAbbr; v != nil {
-					for i := len(v.Era) - 1; i >= 0; i-- {
-						if era := v.Era[i]; !isContributedOrApproved(era.Draft) || era.Alt != "" {
-							v.Era = slices.Delete(v.Era, i, i+1)
-						}
-					}
-
-					if len(v.Era) == 0 {
-						eras.EraAbbr = nil
-					}
-				}
-
-				if v := eras.EraNames; v != nil {
-					for i := len(v.Era) - 1; i >= 0; i-- {
-						if era := v.Era[i]; !isContributedOrApproved(era.Draft) || era.Alt != "" {
-							v.Era = slices.Delete(v.Era, i, i+1)
-						}
-					}
-
-					if len(v.Era) == 0 {
-						eras.EraNames = nil
-					}
-				}
-
-				if v := calendar.Eras.EraNarrow; v != nil {
-					for i := len(v.Era) - 1; i >= 0; i-- {
-						if era := v.Era[i]; !isContributedOrApproved(era.Draft) || era.Alt != "" {
-							v.Era = slices.Delete(v.Era, i, i+1)
-						}
-					}
-
-					if len(v.Era) == 0 {
-						eras.EraNarrow = nil
-					}
-				}
-
-				if eras.EraAbbr == nil && eras.EraNames == nil && eras.EraNarrow == nil {
-					calendar.Eras = nil
-				}
-			}
-		}
-
-		if ldml.Dates.Fields != nil {
-			for i := len(ldml.Dates.Fields.Field) - 1; i >= 0; i-- {
-				field := ldml.Dates.Fields.Field[i]
-				if len(field.DisplayName) == 0 || !isContributedOrApproved(field.DisplayName[0].Draft) {
-					ldml.Dates.Fields.Field = slices.Delete(ldml.Dates.Fields.Field, i, i+1)
-				}
-			}
-		}
-	}
-}
-
 func (g *Generator) merge(log *slog.Logger) {
 	g.mergeAliases()
 	g.mergeParent(log)
@@ -279,36 +159,36 @@ func (g *Generator) merge(log *slog.Logger) {
 	root := g.cldr.RawLDML("root")
 
 	// merge parent to child
-	for _, parentLocale := range g.cldr.Supplemental().ParentLocales.ParentLocale {
-		// ignore, cldr package does NOT have the attribute "component"
-		// <parentLocales component="collations">
-		// 	<parentLocale parent="sr_ME" locales="sr_Cyrl_ME"/>
-		// 	<parentLocale parent="zh_Hant" locales="yue yue_Hant"/>
-		// 	<parentLocale parent="zh_Hans" locales="yue_CN yue_Hans yue_Hans_CN"/>
-		// </parentLocales>
-		if slices.Contains([]string{"sr_ME", "zh_Hant", "zh_Hans"}, parentLocale.Parent) {
+	for _, parentLocales := range g.cldr.Supplemental().ParentLocales {
+		if parentLocales.Component == "collations" {
 			continue
 		}
 
-		parent := g.cldr.RawLDML(parentLocale.Parent)
-
-		// merge root to parent
-		merge(parent, root, log)
-
-		for _, locale := range strings.Split(parentLocale.Locales, " ") {
-			child := g.cldr.RawLDML(locale)
-
-			if child == nil {
+		for _, parentLocale := range parentLocales.ParentLocale {
+			if slices.Contains([]string{"sr_ME", "zh_Hant", "zh_Hans"}, parentLocale.Parent) {
 				continue
 			}
 
-			merge(child, parent, log)
+			parent := g.cldr.RawLDML(parentLocale.Parent)
+
+			// merge root to parent
+			merge(parent, root, log)
+
+			for _, locale := range strings.Split(parentLocale.Locales, " ") {
+				child := g.cldr.RawLDML(locale)
+
+				if child == nil {
+					continue
+				}
+
+				merge(child, parent, log)
+			}
 		}
 	}
 
 	// merge root to language
 
-	for _, locale := range g.cldr.Locales() {
+	for _, locale := range g.cldr.Locales()[1:] {
 		if strings.ContainsRune(locale, '_') {
 			continue
 		}
@@ -319,7 +199,7 @@ func (g *Generator) merge(log *slog.Logger) {
 	}
 
 	// merge language to territory
-	for _, locale := range g.cldr.Locales() {
+	for _, locale := range g.cldr.Locales()[1:] {
 		if !strings.ContainsRune(locale, '_') {
 			continue
 		}
@@ -367,11 +247,7 @@ func (g *Generator) mergeAliases() {
 func (g *Generator) mergeParent(log *slog.Logger) {
 	log = log.With("func", "mergeParent")
 
-	for _, locale := range g.cldr.Locales() {
-		if locale == "root" {
-			continue
-		}
-
+	for _, locale := range g.cldr.Locales()[1:] {
 		// main language, skip it
 		parts := strings.Split(locale, "_")
 		if len(parts) == 1 {
@@ -424,10 +300,10 @@ func (g *Generator) mergeParent(log *slog.Logger) {
 }
 
 func (g *Generator) mergeLocal(log *slog.Logger) {
-	for _, locale := range g.cldr.Locales() {
+	for _, locale := range g.cldr.Locales()[1:] {
 		ldml := g.cldr.RawLDML(locale)
 
-		if ldml.Identity.Language.Type == "root" || ldml.Dates == nil || ldml.Dates.Calendars == nil {
+		if ldml.Dates == nil || ldml.Dates.Calendars == nil {
 			continue
 		}
 
@@ -466,7 +342,7 @@ func findCalendar(ldml *cldr.LDML, calendarType string) *cldr.Calendar {
 // containsDateFormatItem returns true if calendar contains dateFormatItem with given id.
 func containsDateFormatItem(calendar *cldr.Calendar, id string) bool {
 	for _, v := range calendar.DateTimeFormats.AvailableFormats[0].DateFormatItem {
-		if v.Id == id {
+		if v.ID == id {
 			return true
 		}
 	}
@@ -533,7 +409,7 @@ func mergeCalendar(dst, src *cldr.Calendar, log *slog.Logger) {
 		if src.DateTimeFormats != nil {
 			for _, availableFormats := range src.DateTimeFormats.AvailableFormats {
 				for _, dateFormatItem := range availableFormats.DateFormatItem {
-					if containsDateFormatItem(dst, dateFormatItem.Id) {
+					if containsDateFormatItem(dst, dateFormatItem.ID) {
 						continue
 					}
 
@@ -622,10 +498,10 @@ func (g *Generator) calendarPreferences() CalendarPreferences {
 func (g *Generator) defaultNumberingSystems() LocaleLookup {
 	defaultNumberingSystems := make(LocaleLookup)
 
-	for _, locale := range g.cldr.Locales() {
+	for _, locale := range g.cldr.Locales()[1:] {
 		ldml := g.cldr.RawLDML(locale)
 
-		if ldml.Numbers == nil || locale == "root" {
+		if ldml.Numbers == nil {
 			continue
 		}
 
@@ -727,11 +603,7 @@ func (g *Generator) months() Months { //nolint:gocognit
 func (g *Generator) fields() Fields {
 	fields := make(Fields)
 
-	for _, locale := range g.cldr.Locales() {
-		if locale == "root" {
-			continue
-		}
-
+	for _, locale := range g.cldr.Locales()[1:] {
 		ldml := g.cldr.RawLDML(locale)
 
 		if ldml.Dates == nil {
@@ -851,11 +723,7 @@ func (g *Generator) fields() Fields {
 func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 	eras := make(Eras)
 
-	for _, locale := range g.cldr.Locales() {
-		if locale == "root" {
-			continue
-		}
-
+	for _, locale := range g.cldr.Locales()[1:] {
 		ldml := g.cldr.RawLDML(locale)
 		calendar := findCalendar(ldml, calendarPreferences.FindCalendarType(locale))
 
@@ -991,24 +859,17 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 	return eras
 }
 
-// CLDRDateFormatItem is a copy of CLDR DateFormatItem.
-type CLDRDateFormatItem struct {
-	cldr.Common
-	Id    string //nolint:revive,stylecheck
-	Count string
-}
-
 func (g *Generator) numberingSystems(defaultNumberingSystems LocaleLookup) []NumberingSystem {
 	numberingSystems := make([]NumberingSystem, 0, 12) //nolint:mnd
 
 	ids := slices.Collect(maps.Keys(defaultNumberingSystems))
 
 	for _, v := range g.cldr.Supplemental().NumberingSystems.NumberingSystem {
-		if v.Type != "numeric" || !slices.Contains(ids, v.Id) {
+		if v.Type != "numeric" || !slices.Contains(ids, v.ID) {
 			continue
 		}
 
-		numberingSystem := NumberingSystem{ID: v.Id}
+		numberingSystem := NumberingSystem{ID: v.ID}
 
 		var i int
 
@@ -1245,10 +1106,6 @@ func deepCopy[T any](v T) T {
 	}
 
 	return r
-}
-
-func isContributedOrApproved(draft string) bool {
-	return draft == "" || draft == "contributed"
 }
 
 func title(s string) string {

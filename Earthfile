@@ -33,7 +33,7 @@ generate:
   RUN go install mvdan.cc/gofumpt@latest
   COPY --dir +cldr/cldr .
   COPY go.mod go.sum .
-  COPY --dir internal/gen internal/
+  COPY --dir internal .
   RUN \
     --mount=type=cache,id=go-mod,target=/go/pkg/mod \
     --mount=type=cache,id=go-build,target=/root/.cache/go-build \
