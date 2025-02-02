@@ -188,7 +188,7 @@ func (g *Generator) merge(log *slog.Logger) {
 
 	// merge root to language
 
-	for _, locale := range g.cldr.Locales() {
+	for _, locale := range g.cldr.Locales()[1:] {
 		if strings.ContainsRune(locale, '_') {
 			continue
 		}
@@ -199,7 +199,7 @@ func (g *Generator) merge(log *slog.Logger) {
 	}
 
 	// merge language to territory
-	for _, locale := range g.cldr.Locales() {
+	for _, locale := range g.cldr.Locales()[1:] {
 		if !strings.ContainsRune(locale, '_') {
 			continue
 		}
@@ -247,11 +247,7 @@ func (g *Generator) mergeAliases() {
 func (g *Generator) mergeParent(log *slog.Logger) {
 	log = log.With("func", "mergeParent")
 
-	for _, locale := range g.cldr.Locales() {
-		if locale == "root" {
-			continue
-		}
-
+	for _, locale := range g.cldr.Locales()[1:] {
 		// main language, skip it
 		parts := strings.Split(locale, "_")
 		if len(parts) == 1 {
@@ -304,10 +300,10 @@ func (g *Generator) mergeParent(log *slog.Logger) {
 }
 
 func (g *Generator) mergeLocal(log *slog.Logger) {
-	for _, locale := range g.cldr.Locales() {
+	for _, locale := range g.cldr.Locales()[1:] {
 		ldml := g.cldr.RawLDML(locale)
 
-		if ldml.Identity.Language.Type == "root" || ldml.Dates == nil || ldml.Dates.Calendars == nil {
+		if ldml.Dates == nil || ldml.Dates.Calendars == nil {
 			continue
 		}
 
@@ -502,10 +498,10 @@ func (g *Generator) calendarPreferences() CalendarPreferences {
 func (g *Generator) defaultNumberingSystems() LocaleLookup {
 	defaultNumberingSystems := make(LocaleLookup)
 
-	for _, locale := range g.cldr.Locales() {
+	for _, locale := range g.cldr.Locales()[1:] {
 		ldml := g.cldr.RawLDML(locale)
 
-		if ldml.Numbers == nil || locale == "root" {
+		if ldml.Numbers == nil {
 			continue
 		}
 
@@ -607,11 +603,7 @@ func (g *Generator) months() Months { //nolint:gocognit
 func (g *Generator) fields() Fields {
 	fields := make(Fields)
 
-	for _, locale := range g.cldr.Locales() {
-		if locale == "root" {
-			continue
-		}
-
+	for _, locale := range g.cldr.Locales()[1:] {
 		ldml := g.cldr.RawLDML(locale)
 
 		if ldml.Dates == nil {
@@ -731,11 +723,7 @@ func (g *Generator) fields() Fields {
 func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 	eras := make(Eras)
 
-	for _, locale := range g.cldr.Locales() {
-		if locale == "root" {
-			continue
-		}
-
+	for _, locale := range g.cldr.Locales()[1:] {
 		ldml := g.cldr.RawLDML(locale)
 		calendar := findCalendar(ldml, calendarPreferences.FindCalendarType(locale))
 

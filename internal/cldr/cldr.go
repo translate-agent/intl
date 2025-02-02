@@ -6,6 +6,7 @@ type CLDR struct {
 	locales      []string
 }
 
+// Locales returns all locales, the first locale is always "root".
 func (c *CLDR) Locales() []string {
 	return c.locales
 }
