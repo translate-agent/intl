@@ -21,6 +21,7 @@ jobs:
       - name: Go ${{ matrix.go-version }}
         run: echo "golang_version=${{ matrix.go-version }}" > .arg
       - name: Generate cldr.go
+        if: ${{ matrix.go-version }} == "1.24"
         run: |
           earthly --strict +generate
           if ! git diff --quiet; then
