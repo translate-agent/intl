@@ -138,12 +138,13 @@ func cleanLDML(ldml *LDML) {
 			}
 		}
 
-		if calendar.DateTimeFormats != nil {
-			for _, dateTimeFormat := range calendar.DateTimeFormats.AvailableFormats {
-				dateTimeFormat.DateFormatItem = filter(dateTimeFormat.DateFormatItem, func(v *DateFormatItem) bool {
+		if calendar.DateTimeFormats != nil && calendar.DateTimeFormats.AvailableFormats != nil {
+			calendar.DateTimeFormats.AvailableFormats.DateFormatItem = filter(
+				calendar.DateTimeFormats.AvailableFormats.DateFormatItem,
+				func(v *DateFormatItem) bool {
 					return v.isContributedOrApproved()
-				})
-			}
+				},
+			)
 		}
 
 		if eras := calendar.Eras; eras != nil {
