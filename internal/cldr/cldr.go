@@ -39,6 +39,17 @@ type LDML struct {
 	Common
 }
 
+// GetCalendar returns *cldr.Calendar by its type if found. Otherwise, returns nil.
+func (l *LDML) GetCalendar(calendarType string) *Calendar {
+	for _, v := range l.Dates.Calendars.Calendar {
+		if v.Type == calendarType {
+			return v
+		}
+	}
+
+	return nil
+}
+
 type Identity struct {
 	Language  *Language `xml:"language"`
 	Script    *Common   `xml:"script"`
@@ -90,6 +101,20 @@ type Calendar struct {
 	Common
 }
 
+func (c *Calendar) GetDateFormatItem(id string) *DateFormatItem {
+	if c == nil || c.DateTimeFormats == nil || c.DateTimeFormats.AvailableFormats == nil {
+		return nil
+	}
+
+	for _, item := range c.DateTimeFormats.AvailableFormats.DateFormatItem {
+		if item.ID == id {
+			return item
+		}
+	}
+
+	return nil
+}
+
 type Months struct {
 	Common
 	MonthContext []*MonthContext `xml:"monthContext"`
@@ -110,9 +135,9 @@ type Month struct {
 }
 
 type DateTimeFormats struct {
+	Alias            *Alias            `xml:"alias"`
+	AvailableFormats *AvailableFormats `xml:"availableFormats"`
 	Common
-	Alias            *Alias              `xml:"alias"`
-	AvailableFormats []*AvailableFormats `xml:"availableFormats"`
 }
 
 type AvailableFormats struct {

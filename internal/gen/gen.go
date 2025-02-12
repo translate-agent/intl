@@ -224,7 +224,7 @@ func (g *Generator) mergeAliases() {
 		for i, calendar := range ldml.Dates.Calendars.Calendar {
 			if calendar.Alias != nil {
 				calendarType := strings.Split(calendar.Alias.Path, "'")[1]
-				calendar = findCalendar(ldml, calendarType)
+				calendar = ldml.GetCalendar(calendarType)
 				ldml.Dates.Calendars.Calendar[i] = calendar
 
 				continue
@@ -237,7 +237,7 @@ func (g *Generator) mergeAliases() {
 			// example: ../../calendar[@type='generic']/dateTimeFormats
 			calendarType := strings.Split(calendar.DateTimeFormats.Alias.Path, "'")[1]
 
-			calendar.DateTimeFormats = findCalendar(ldml, calendarType).DateTimeFormats
+			calendar.DateTimeFormats = ldml.GetCalendar(calendarType).DateTimeFormats
 		}
 	}
 }
@@ -275,7 +275,7 @@ func (g *Generator) mergeParent(log *slog.Logger) {
 		mergeFields(ldml, parent)
 
 		if parent.Dates.Calendars != nil {
-			parentGregorian := findCalendar(parent, "gregorian")
+			parentGregorian := parent.GetCalendar("gregorian")
 
 			if ldml.Dates.Calendars == nil {
 				continue
@@ -283,7 +283,7 @@ func (g *Generator) mergeParent(log *slog.Logger) {
 
 			logger := log.With("locale", locale)
 
-			calendar := findCalendar(ldml, "gregorian")
+			calendar := ldml.GetCalendar("gregorian")
 			if calendar == nil {
 				logger.Debug("copy gregorian calendar")
 
@@ -306,7 +306,7 @@ func (g *Generator) mergeLocal(log *slog.Logger) {
 		}
 
 		// merge generic calendar to persian or buddhist calendar
-		generic := findCalendar(ldml, "generic")
+		generic := ldml.GetCalendar("generic")
 
 		if generic == nil || generic.DateTimeFormats == nil {
 			continue
@@ -324,28 +324,6 @@ func (g *Generator) mergeLocal(log *slog.Logger) {
 			mergeCalendar(calendar, generic, log.With("locale", locale))
 		}
 	}
-}
-
-// findCalendar returns *cldr.Calendar by its type if found. Otherwise, returns nil.
-func findCalendar(ldml *cldr.LDML, calendarType string) *cldr.Calendar {
-	for _, v := range ldml.Dates.Calendars.Calendar {
-		if v.Type == calendarType {
-			return v
-		}
-	}
-
-	return nil
-}
-
-// containsDateFormatItem returns true if calendar contains dateFormatItem with given id.
-func containsDateFormatItem(calendar *cldr.Calendar, id string) bool {
-	for _, v := range calendar.DateTimeFormats.AvailableFormats[0].DateFormatItem {
-		if v.ID == id {
-			return true
-		}
-	}
-
-	return false
 }
 
 var supportedCalendarTypes = []string{"gregorian", "persian", "buddhist"}
@@ -383,7 +361,7 @@ func merge(dst, src *cldr.LDML, log *slog.Logger) {
 	}
 
 	for _, parentCalendar := range supportedCalendars(src.Dates.Calendars.Calendar) {
-		calendar := findCalendar(dst, parentCalendar.Type)
+		calendar := dst.GetCalendar(parentCalendar.Type)
 		if calendar == nil {
 			calendar = deepCopy(parentCalendar)
 			dst.Dates.Calendars.Calendar = append(dst.Dates.Calendars.Calendar, calendar)
@@ -405,17 +383,14 @@ func mergeCalendar(dst, src *cldr.Calendar, log *slog.Logger) {
 		}
 
 		if src.DateTimeFormats != nil {
-			for _, availableFormats := range src.DateTimeFormats.AvailableFormats {
-				for _, dateFormatItem := range availableFormats.DateFormatItem {
-					if containsDateFormatItem(dst, dateFormatItem.ID) {
-						continue
-					}
-
-					// NOTE(jhorsts): Why the first AvailableFormats? I don't remember.
-					dst.DateTimeFormats.AvailableFormats[0].DateFormatItem = append(
-						dst.DateTimeFormats.AvailableFormats[0].DateFormatItem,
-						deepCopy(dateFormatItem))
+			for _, dateFormatItem := range src.DateTimeFormats.AvailableFormats.DateFormatItem {
+				if dst.GetDateFormatItem(dateFormatItem.ID) != nil {
+					continue
 				}
+
+				dst.DateTimeFormats.AvailableFormats.DateFormatItem = append(
+					dst.DateTimeFormats.AvailableFormats.DateFormatItem,
+					deepCopy(dateFormatItem))
 			}
 		}
 	case nil:
@@ -529,7 +504,7 @@ func (g *Generator) months() Months { //nolint:gocognit
 		}
 
 		// month names are available only in gregorian calendars (default)
-		calendar := findCalendar(ldml, "gregorian")
+		calendar := ldml.GetCalendar("gregorian")
 
 		if calendar.Months == nil {
 			continue
@@ -723,7 +698,7 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 
 	for _, locale := range g.cldr.Locales()[1:] {
 		ldml := g.cldr.RawLDML(locale)
-		calendar := findCalendar(ldml, calendarPreferences.FindCalendarType(locale))
+		calendar := ldml.GetCalendar(calendarPreferences.GetCalendarType(locale))
 
 		if calendar == nil || calendar.Eras == nil {
 			continue
@@ -1061,7 +1036,7 @@ type Eras map[string]Era
 
 type CalendarPreferences []CalendarPreference
 
-func (c CalendarPreferences) FindCalendarType(locale string) string {
+func (c CalendarPreferences) GetCalendarType(locale string) string {
 	lang, _, region := language.Make(locale).Raw()
 
 	if lang.String() == "az" {
