@@ -6,6 +6,9 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ["1.22", "1.23", "1.24"]
     env:
       FORCE_COLOR: 1
     steps:
@@ -13,6 +16,8 @@ jobs:
         with:
           version: 0.8.15
           use-cache: true
+      - name: Go ${{ matrix.go-version }}
+        run: echo "go_version=${{ matrix.go-version }}" > .arg
       - uses: actions/checkout@v4
       - name: Generate cldr.go
         run: |
