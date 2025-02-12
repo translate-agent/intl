@@ -67,7 +67,7 @@ lint:
     --mount=type=cache,target=/root/.cache/golangci_lint \
     golangci-lint run ./...
 
-# check verifies code quality by running linters and tests.
+# check verifies code quality by running linters and tests
 check:
   BUILD +test
   BUILD +lint
