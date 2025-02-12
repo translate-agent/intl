@@ -1,6 +1,6 @@
 module go.expect.digital/intl
 
-go 1.23
+go 1.22
 
 require (
 	github.com/yaa110/go-persian-calendar v1.2.1
