@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"iter"
 	"log/slog"
-	"maps"
 	"os"
 	"path"
 	"slices"
@@ -352,16 +350,16 @@ func containsDateFormatItem(calendar *cldr.Calendar, id string) bool {
 
 var supportedCalendarTypes = []string{"gregorian", "persian", "buddhist"}
 
-func supportedCalendars(calendars []*cldr.Calendar) iter.Seq[*cldr.Calendar] {
-	return func(yield func(*cldr.Calendar) bool) {
-		for _, v := range calendars {
-			if slices.Contains(supportedCalendarTypes, v.Type) {
-				if !yield(v) {
-					return
-				}
-			}
+func supportedCalendars(calendars []*cldr.Calendar) []*cldr.Calendar {
+	supported := make([]*cldr.Calendar, 0, len(supportedCalendarTypes))
+
+	for _, v := range calendars {
+		if slices.Contains(supportedCalendarTypes, v.Type) {
+			supported = append(supported, v)
 		}
 	}
+
+	return supported
 }
 
 // merge copies particular src values to dst.
@@ -384,7 +382,7 @@ func merge(dst, src *cldr.LDML, log *slog.Logger) {
 		dst.Dates.Calendars.Calendar = deepCopy(src.Dates.Calendars.Calendar)
 	}
 
-	for parentCalendar := range supportedCalendars(src.Dates.Calendars.Calendar) {
+	for _, parentCalendar := range supportedCalendars(src.Dates.Calendars.Calendar) {
 		calendar := findCalendar(dst, parentCalendar.Type)
 		if calendar == nil {
 			calendar = deepCopy(parentCalendar)
@@ -862,7 +860,10 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 func (g *Generator) numberingSystems(defaultNumberingSystems LocaleLookup) []NumberingSystem {
 	numberingSystems := make([]NumberingSystem, 0, 12) //nolint:mnd
 
-	ids := slices.Collect(maps.Keys(defaultNumberingSystems))
+	ids := make([]string, 0, len(defaultNumberingSystems))
+	for k := range defaultNumberingSystems {
+		ids = append(ids, k)
+	}
 
 	for _, v := range g.cldr.Supplemental().NumberingSystems.NumberingSystem {
 		if v.Type != "numeric" || !slices.Contains(ids, v.ID) {
@@ -885,7 +886,10 @@ func (g *Generator) numberingSystems(defaultNumberingSystems LocaleLookup) []Num
 }
 
 func (g *Generator) numberingSystemsIota(defaultNumberingSystems LocaleLookup) []string {
-	ids := slices.Collect(maps.Keys(defaultNumberingSystems))
+	ids := make([]string, 0, len(defaultNumberingSystems))
+	for k := range defaultNumberingSystems {
+		ids = append(ids, k)
+	}
 
 	slices.Sort(ids)
 

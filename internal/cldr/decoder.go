@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"maps"
 	"os"
 	"path"
 	"slices"
@@ -84,7 +83,7 @@ func DecodePath(dir string) (*CLDR, error) {
 
 	locales = append(locales, "root")
 
-	for v := range maps.Keys(cldr.ldml) {
+	for v := range cldr.ldml {
 		if v != "root" {
 			locales = append(locales, v)
 		}
