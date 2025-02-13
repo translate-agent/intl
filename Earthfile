@@ -1,5 +1,5 @@
 VERSION 0.8
-ARG golang_version=1.23.4
+ARG golang_version=1.24.0
 FROM golang:$golang_version-alpine
 WORKDIR /intl
 
@@ -54,7 +54,7 @@ test:
 
 # lint runs all linters for golang
 lint:
-  ARG golangci_lint_version=1.62.0
+  ARG golangci_lint_version=1.64.4
   FROM golangci/golangci-lint:v$golangci_lint_version-alpine
   WORKDIR /intl
   COPY go.mod go.sum *.go .golangci.yml .

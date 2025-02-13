@@ -5,7 +5,6 @@ linters:
     - dupl
     - err113
     - exhaustruct
-    - exportloopref # deprecated
     - forbidigo
     - funlen
     - gci
@@ -28,6 +27,7 @@ linters:
     - nonamedreturns
     - promlinter
     - tagliatelle
+    - tenv # deprecated
     - testableexamples
     - testpackage
     - thelper
