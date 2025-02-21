@@ -20,12 +20,12 @@ type Test struct {
 func (t *Test) String() string {
 	var sb strings.Builder
 
-	if t.Options.Era != EraUnd {
+	if !t.Options.Era.und() {
 		sb.WriteString("era=")
 		sb.WriteString(t.Options.Era.String())
 	}
 
-	if t.Options.Year != YearUnd {
+	if !t.Options.Year.und() {
 		if sb.Len() > 0 {
 			sb.WriteRune(',')
 		}
@@ -34,7 +34,7 @@ func (t *Test) String() string {
 		sb.WriteString(t.Options.Year.String())
 	}
 
-	if t.Options.Month != MonthUnd {
+	if !t.Options.Month.und() {
 		if sb.Len() > 0 {
 			sb.WriteRune(',')
 		}
@@ -43,7 +43,7 @@ func (t *Test) String() string {
 		sb.WriteString(t.Options.Month.String())
 	}
 
-	if t.Options.Day != DayUnd {
+	if !t.Options.Day.und() {
 		if sb.Len() > 0 {
 			sb.WriteRune(',')
 		}

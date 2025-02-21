@@ -321,7 +321,7 @@ func fmtEraYearMonthDayPersian(
 	case ps:
 		layout = eraYearMonthDay
 
-		if opts.Era != EraNarrow {
+		if !opts.Era.narrow() {
 			separator = "-"
 		}
 	case fa:

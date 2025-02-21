@@ -142,7 +142,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 	case bn, ccp, gu, kn, mr, or, ta, te, to:
 		layout = layoutMonthYear
 
-		if opts.Month == MonthNumeric {
+		if opts.Month.numeric() {
 			middle = "/"
 		}
 	case br, ga, it, iu, kea, kgp, pt, sc, seh, syr, vec, yrl:
@@ -162,12 +162,12 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 
 		middle = "/"
 
-		if opts.Month != MonthNumeric {
+		if !opts.Month.numeric() {
 			middle = ". "
 			suffix = "."
 		}
 
-		if opts.Month == MonthNumeric {
+		if opts.Month.numeric() {
 			opts.Month = Month2Digit
 		} else {
 			opts.Month = MonthNumeric
@@ -176,7 +176,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		layout = layoutMonthYear
 		middle = "."
 
-		if opts.Month == MonthNumeric {
+		if opts.Month.numeric() {
 			middle = "/"
 		}
 	case dz, si: // noop
@@ -193,7 +193,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 			// year=2-digit,month=2-digit,out=1/24
 			layout = layoutMonthYear
 
-			if opts.Month != MonthNumeric {
+			if !opts.Month.numeric() {
 				middle = "/"
 			}
 
@@ -205,7 +205,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 			// year=2-digit,month=2-digit,out=1/24
 			layout = layoutMonthYear
 
-			if opts.Month == MonthNumeric {
+			if opts.Month.numeric() {
 				opts.Month = Month2Digit
 			} else {
 				opts.Month = MonthNumeric
@@ -226,7 +226,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 			layout = layoutMonthYear
 			middle = "/"
 
-			if opts.Month == MonthNumeric {
+			if opts.Month.numeric() {
 				opts.Month = Month2Digit
 			} else {
 				opts.Month = MonthNumeric
@@ -293,7 +293,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 	case fy, kok, ms, ug:
 		layout = layoutMonthYear
 	case gsw:
-		if opts.Month != MonthNumeric {
+		if !opts.Month.numeric() {
 			layout = layoutMonthYear
 			middle = "."
 		}
@@ -325,7 +325,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		month = fmtMonthName(locale.String(), "stand-alone", "narrow")
 		middle = " "
 	case yi:
-		if opts.Month != MonthNumeric {
+		if !opts.Month.numeric() {
 			layout = layoutMonthYear
 			middle = "/"
 		}
@@ -357,7 +357,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		layout = layoutMonthYear
 		suffix = "."
 
-		if opts.Month == MonthNumeric {
+		if opts.Month.numeric() {
 			middle = ". "
 		} else {
 			middle = "."
@@ -366,7 +366,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 		layout = layoutMonthYear
 		middle = "."
 
-		if opts.Month == MonthNumeric {
+		if opts.Month.numeric() {
 			middle = "/"
 		}
 
@@ -374,7 +374,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 	case vi:
 		layout = layoutMonthYear
 
-		if opts.Month == MonthNumeric {
+		if opts.Month.numeric() {
 			middle = "/"
 		} else {
 			prefix = "tháng "
@@ -410,7 +410,7 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 
 			fallthrough
 		default:
-			if opts.Month != MonthNumeric {
+			if !opts.Month.numeric() {
 				opts.Month = MonthNumeric
 				middle = "年"
 				suffix = "月"

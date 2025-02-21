@@ -50,7 +50,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 
 			layout = layoutDayMonth
 
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -66,7 +66,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			// month=numeric,day=2-digit,out=1-02
 			// month=2-digit,day=numeric,out=01-2
 			// month=2-digit,day=2-digit,out=01-02
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -78,7 +78,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			layout = layoutDayMonth
 			middle = "."
 
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -89,7 +89,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			// month=2-digit,day=2-digit,out=02/01
 			middle = "/"
 
-			if opts.Month == Month2Digit && opts.Day == Day2Digit {
+			if opts.Month.twoDigit() && opts.Day.twoDigit() {
 				layout = layoutDayMonth
 			} else {
 				opts.Month = Month2Digit
@@ -101,7 +101,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		opts.Month = Month2Digit
 		opts.Day = Day2Digit
 	case hi:
-		if script == latn && opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if script == latn && opts.Month.numeric() && opts.Day.numeric() {
 			// month=numeric,day=numeric,out=02/01
 			// month=numeric,day=2-digit,out=02/1
 			// month=2-digit,day=numeric,out=2/01
@@ -130,7 +130,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		layout = layoutDayMonth
 		middle = "/"
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -188,7 +188,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		layout = layoutDayMonth
 		middle = "."
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -196,7 +196,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		layout = layoutDayMonth
 		suffix = "."
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			middle = ". "
 		} else {
 			middle = "."
@@ -204,7 +204,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 	case bn, ccp, gu, kn, mr, ta, te, vi:
 		layout = layoutDayMonth
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			middle = "/"
 		}
 	case bs:
@@ -229,7 +229,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			middle = ". "
 		}
 	case hr:
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -261,7 +261,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			// month=2-digit,day=2-digit,out=2/1
 			layout = layoutDayMonth
 
-			if opts.Month == MonthNumeric {
+			if opts.Month.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			} else {
@@ -283,7 +283,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			// month=2-digit,day=2-digit,out=2/1
 			middle = "/"
 
-			if opts.Month == MonthNumeric {
+			if opts.Month.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			} else {
@@ -310,7 +310,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			// month=numeric,day=2-digit,out=1-02
 			// month=2-digit,day=numeric,out=01-02
 			// month=2-digit,day=2-digit,out=01-02
-			if opts.Month == MonthNumeric && opts.Day == Day2Digit {
+			if opts.Month.numeric() && opts.Day.twoDigit() {
 				opts.Month = MonthNumeric
 			} else {
 				opts.Month = Month2Digit
@@ -325,7 +325,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			layout = layoutDayMonth
 			middle = "."
 
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 				suffix = "."
@@ -348,7 +348,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 		opts.Day = Day2Digit
 		middle = "/"
 	case lt:
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 		}
 	case mn:
@@ -358,11 +358,11 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 	case ms:
 		layout = layoutDayMonth
 
-		if opts.Month != MonthNumeric || opts.Day != DayNumeric {
+		if !opts.Month.numeric() || !opts.Day.numeric() {
 			middle = "/"
 		}
 	case om:
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		} else {
@@ -370,7 +370,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			middle = "/"
 		}
 	case or:
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			middle = "/"
 		} else {
 			layout = layoutDayMonth
@@ -411,7 +411,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 			// month=2-digit,day=2-digit,out=02.01
 			middle = "."
 
-			if opts.Day == DayNumeric {
+			if opts.Day.numeric() {
 				opts.Month = MonthNumeric
 			}
 
@@ -420,7 +420,7 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 
 		middle = "/"
 
-		if opts.Month == Month2Digit && opts.Day == DayNumeric {
+		if opts.Month.twoDigit() && opts.Day.numeric() {
 			opts.Month = MonthNumeric
 			opts.Day = DayNumeric
 		}

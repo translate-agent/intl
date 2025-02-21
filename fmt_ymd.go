@@ -31,7 +31,7 @@ func fmtYearMonthDayGregorian(
 
 	switch lang {
 	default:
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -51,7 +51,7 @@ func fmtYearMonthDayGregorian(
 			// year=2-digit,month=2-digit,day=2-digit,out=02-01-24
 			layout = layoutDayMonthYear
 
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -67,7 +67,7 @@ func fmtYearMonthDayGregorian(
 			layout = layoutMonthDayYear
 			separator = "/"
 
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -86,7 +86,7 @@ func fmtYearMonthDayGregorian(
 		layout = layoutDayMonthYear
 		separator = "/"
 	case pa:
-		if script == arab && opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if script == arab && opts.Month.numeric() && opts.Day.numeric() {
 			// year=numeric,month=numeric,day=numeric,out=۲۰۲۴-۰۱-۰۲
 			// year=numeric,month=numeric,day=2-digit,out=۰۲/۱/۲۰۲۴
 			// year=numeric,month=2-digit,day=numeric,out=۲/۰۱/۲۰۲۴
@@ -120,7 +120,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=2-digit,day=2-digit,out=01/02/24
 		separator = "/"
 
-		if opts.Year == Year2Digit {
+		if opts.Year.twoDigit() {
 			layout = layoutMonthDayYear
 		}
 	case eu, ja, yue:
@@ -156,8 +156,8 @@ func fmtYearMonthDayGregorian(
 		layout = layoutDayMonthYear
 		separator = "."
 
-		if opts.Year == YearNumeric ||
-			opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Year.numeric() ||
+			opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -223,7 +223,7 @@ func fmtYearMonthDayGregorian(
 			} else {
 				layout = layoutDayMonthYear
 
-				if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+				if opts.Month.numeric() && opts.Day.numeric() {
 					opts.Month = Month2Digit
 					opts.Day = Day2Digit
 				}
@@ -240,7 +240,7 @@ func fmtYearMonthDayGregorian(
 			layout = layoutDayMonthYear
 			separator = "/"
 
-			if opts.Year == YearNumeric {
+			if opts.Year.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -267,7 +267,7 @@ func fmtYearMonthDayGregorian(
 			layout = layoutDayMonthYear
 			separator = "/"
 
-			if opts.Year == YearNumeric || opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Year.numeric() || opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -280,7 +280,7 @@ func fmtYearMonthDayGregorian(
 			// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 			// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 			// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -296,7 +296,7 @@ func fmtYearMonthDayGregorian(
 			layout = layoutDayMonthYear
 			separator = "."
 
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -311,7 +311,7 @@ func fmtYearMonthDayGregorian(
 			// year=2-digit,month=2-digit,day=2-digit,out=02-01-24
 			layout = layoutDayMonthYear
 
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 				separator = "/"
@@ -328,7 +328,7 @@ func fmtYearMonthDayGregorian(
 			layout = layoutDayMonthYear
 			separator = "/"
 
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 			}
 		case regionZA:
@@ -342,7 +342,7 @@ func fmtYearMonthDayGregorian(
 			// year=2-digit,month=2-digit,day=2-digit,out=24/01/02
 			separator = "/"
 
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -361,7 +361,7 @@ func fmtYearMonthDayGregorian(
 	case ks:
 		separator = "/"
 
-		if script == deva && opts.Year == Year2Digit {
+		if script == deva && opts.Year.twoDigit() {
 			// year=numeric,month=numeric,day=numeric,out=1/2/2024
 			// year=numeric,month=numeric,day=2-digit,out=1/02/2024
 			// year=numeric,month=2-digit,day=numeric,out=01/2/2024
@@ -394,7 +394,7 @@ func fmtYearMonthDayGregorian(
 		layout = layoutDayMonthYear
 		separator = "/"
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -414,11 +414,11 @@ func fmtYearMonthDayGregorian(
 			day := opts.Day
 			separator = "."
 
-			if opts.Month == MonthNumeric {
+			if opts.Month.numeric() {
 				opts.Day = Day2Digit
 			}
 
-			if day == DayNumeric {
+			if day.numeric() {
 				opts.Month = Month2Digit
 			}
 		} else {
@@ -441,7 +441,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=٢٤-١-٠٢
 		// year=2-digit,month=2-digit,day=numeric,out=٢٤-٠١-٢
 		// year=2-digit,month=2-digit,day=2-digit,out=٢٤-٠١-٠٢
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			layout = layoutDayMonthYear
 			separator = "/"
 		}
@@ -468,7 +468,7 @@ func fmtYearMonthDayGregorian(
 		layout = layoutDayMonthYear
 		separator = "."
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -490,11 +490,11 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
 		switch {
-		case opts.Year == YearNumeric:
+		case opts.Year.numeric():
 			opts.Year = YearNumeric
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
-		case opts.Month == MonthNumeric && opts.Day == DayNumeric:
+		case opts.Month.numeric() && opts.Day.numeric():
 			opts.Year = Year2Digit
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
@@ -547,7 +547,7 @@ func fmtYearMonthDayGregorian(
 			layout = layoutDayMonthYear
 			separator = "/"
 
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -560,7 +560,7 @@ func fmtYearMonthDayGregorian(
 			// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 			// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 			// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -576,7 +576,7 @@ func fmtYearMonthDayGregorian(
 			layout = layoutDayMonthYear
 			separator = "."
 
-			if opts.Year == YearNumeric || opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Year.numeric() || opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -592,8 +592,8 @@ func fmtYearMonthDayGregorian(
 			layout = layoutDayMonthYear
 			separator = "/"
 
-			if opts.Year == YearNumeric {
-				if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Year.numeric() {
+				if opts.Month.numeric() && opts.Day.numeric() {
 					opts.Day = Day2Digit
 				}
 
@@ -612,7 +612,7 @@ func fmtYearMonthDayGregorian(
 			// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
 			separator = "/"
 
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				layout = layoutMonthDayYear
 			} else {
 				layout = layoutDayMonthYear
@@ -632,7 +632,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=02/1/24
 		// year=2-digit,month=2-digit,day=numeric,out=2/01/24
 		// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		} else {
@@ -672,7 +672,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=02.1.24
 		// year=2-digit,month=2-digit,day=numeric,out=2.01.24
 		// year=2-digit,month=2-digit,day=2-digit,out=02.01.24
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		} else {
@@ -688,7 +688,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=02/1/24
 		// year=2-digit,month=2-digit,day=numeric,out=2/01/24
 		// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
-		if opts.Year == YearNumeric {
+		if opts.Year.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		} else {
@@ -710,7 +710,7 @@ func fmtYearMonthDayGregorian(
 			// year=2-digit,month=numeric,day=2-digit,out=02. 1. 24.
 			// year=2-digit,month=2-digit,day=numeric,out=2. 01. 24.
 			// year=2-digit,month=2-digit,day=2-digit,out=02. 01. 24.
-			if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -723,7 +723,7 @@ func fmtYearMonthDayGregorian(
 			// year=2-digit,month=numeric,day=2-digit,out=02. 1. 24.
 			// year=2-digit,month=2-digit,day=numeric,out=2. 01. 24.
 			// year=2-digit,month=2-digit,day=2-digit,out=02. 01. 24.
-			if opts.Year == YearNumeric {
+			if opts.Year.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
@@ -740,7 +740,7 @@ func fmtYearMonthDayGregorian(
 		separator = ". "
 		suffix = "."
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -753,7 +753,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			layout = layoutDayMonthYear
 			separator = "."
 		}
@@ -769,8 +769,8 @@ func fmtYearMonthDayGregorian(
 			// year=2-digit,month=2-digit,day=2-digit,out=02.01.24
 			layout = layoutDayMonthYear
 
-			if opts.Year == YearNumeric && !(opts.Month == Month2Digit && opts.Day == Day2Digit) ||
-				opts.Month == MonthNumeric && opts.Day == DayNumeric {
+			if opts.Year.numeric() && !(opts.Month.twoDigit() && opts.Day.twoDigit()) ||
+				opts.Month.numeric() && opts.Day.numeric() {
 				separator = "/"
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
@@ -795,10 +795,10 @@ func fmtYearMonthDayGregorian(
 		separator = "/"
 
 		switch {
-		case opts.Year == YearNumeric:
+		case opts.Year.numeric():
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
-		case opts.Month == MonthNumeric && opts.Day == DayNumeric:
+		case opts.Month.numeric() && opts.Day.numeric():
 			opts.Year = Year2Digit
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
@@ -812,7 +812,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			layout = layoutMonthDayYear
 			separator = "."
 		}
@@ -825,7 +825,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=02/1 24
 		// year=2-digit,month=2-digit,day=numeric,out=2/01 24
 		// year=2-digit,month=2-digit,day=2-digit,out=02/01 24
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -856,7 +856,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=02/1/24
 		// year=2-digit,month=2-digit,day=numeric,out=2/01/24
 		// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
-		if opts.Year == YearNumeric {
+		if opts.Year.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 			layout = layoutYearDayMonth
@@ -873,7 +873,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			layout = layoutDayMonthYear
 			separator = "/"
 		}
@@ -886,7 +886,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=1/02/24
 		// year=2-digit,month=2-digit,day=numeric,out=01/2/24
 		// year=2-digit,month=2-digit,day=2-digit,out=01/02/24
-		if opts.Year == YearNumeric {
+		if opts.Year.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		} else {
@@ -905,8 +905,8 @@ func fmtYearMonthDayGregorian(
 		layout = layoutDayMonthYear
 		separator = "."
 
-		if opts.Year == YearNumeric && !(opts.Month == Month2Digit && opts.Day == Day2Digit) ||
-			opts.Year == Year2Digit && opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Year.numeric() && !(opts.Month.twoDigit() && opts.Day.twoDigit()) ||
+			opts.Year.twoDigit() && opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			suffix = "."
 		}
@@ -921,7 +921,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=2-digit,day=2-digit,out=02-01-24
 		layout = layoutDayMonthYear
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -934,7 +934,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 			layout = layoutDayMonthYear
@@ -950,7 +950,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=2-digit,day=2-digit,out=24.01.02
 		separator = "."
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -965,7 +965,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
 		separator = "/"
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			layout = layoutMonthDayYear
 		} else {
 			layout = layoutDayMonthYear
@@ -979,7 +979,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=२४/१/०२
 		// year=2-digit,month=2-digit,day=numeric,out=२४/०१/२
 		// year=2-digit,month=2-digit,day=2-digit,out=२४/०१/०२
-		if opts.Year == YearNumeric {
+		if opts.Year.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		} else {
@@ -994,7 +994,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=߂߄-߁-߀߂
 		// year=2-digit,month=2-digit,day=numeric,out=߂߄-߀߁-߂
 		// year=2-digit,month=2-digit,day=2-digit,out=߂߄-߀߁-߀߂
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 			layout = layoutYearDayMonth
@@ -1009,7 +1009,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			layout = layoutDayMonthYear
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
@@ -1024,8 +1024,8 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=02.1.24
 		// year=2-digit,month=2-digit,day=numeric,out=2.01.24
 		// year=2-digit,month=2-digit,day=2-digit,out=02.01.24
-		if opts.Year == YearNumeric && !(opts.Month == Month2Digit && opts.Day == Day2Digit) ||
-			opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Year.numeric() && !(opts.Month.twoDigit() && opts.Day.twoDigit()) ||
+			opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		} else {
@@ -1055,7 +1055,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
 		layout = layoutDayMonthYear
 
-		if opts.Year == YearNumeric {
+		if opts.Year.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		} else {
@@ -1070,7 +1070,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=24/1/02
 		// year=2-digit,month=2-digit,day=numeric,out=24/01/2
 		// year=2-digit,month=2-digit,day=2-digit,out=24/01/02
-		if opts.Year == YearNumeric {
+		if opts.Year.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		} else {
@@ -1088,7 +1088,7 @@ func fmtYearMonthDayGregorian(
 			// year=2-digit,month=2-digit,day=2-digit,out=01/02/24
 			layout = layoutMonthDayYear
 			separator = "/"
-		} else if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		} else if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -1106,7 +1106,7 @@ func fmtYearMonthDayGregorian(
 			separator = "."
 		}
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
@@ -1121,8 +1121,8 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
 		separator = "/"
 
-		if opts.Year == YearNumeric && !(opts.Month == Month2Digit && opts.Day == Day2Digit) ||
-			opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Year.numeric() && !(opts.Month.twoDigit() && opts.Day.twoDigit()) ||
+			opts.Month.numeric() && opts.Day.numeric() {
 			layout = layoutMonthDayYear
 		} else {
 			layout = layoutDayMonthYear
@@ -1139,7 +1139,7 @@ func fmtYearMonthDayGregorian(
 		layout = layoutDayMonthYear
 		suffix = "."
 
-		if opts.Month == Month2Digit && opts.Day == Day2Digit {
+		if opts.Month.twoDigit() && opts.Day.twoDigit() {
 			separator = "."
 		} else {
 			separator = ". "
@@ -1155,7 +1155,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=2-digit,day=2-digit,out=02-01-24
 		layout = layoutDayMonthYear
 
-		if opts.Month == MonthNumeric {
+		if opts.Month.numeric() {
 			separator = "/"
 		}
 	case szl:
@@ -1167,7 +1167,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 			layout = layoutDayMonthYear
@@ -1184,8 +1184,8 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=2-digit,day=2-digit,out=02-01-24
 		layout = layoutDayMonthYear
 
-		if opts.Year == YearNumeric && !(opts.Month == Month2Digit && opts.Day == Day2Digit) ||
-			opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Year.numeric() && !(opts.Month.twoDigit() && opts.Day.twoDigit()) ||
+			opts.Month.numeric() && opts.Day.numeric() {
 			separator = "/"
 		}
 	case tok:
@@ -1197,7 +1197,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			prefix = "#"
 			separator = ")#"
 		}
@@ -1213,7 +1213,7 @@ func fmtYearMonthDayGregorian(
 		layout = layoutDayMonthYear
 		separator = "."
 
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Day = Day2Digit
 		}
 
@@ -1227,7 +1227,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			layout = layoutYearDayMonth
 		}
 	case yi:
@@ -1241,8 +1241,8 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
 		layout = layoutDayMonthYear
 
-		if opts.Year == YearNumeric && opts.Month == Month2Digit && opts.Day == Day2Digit ||
-			opts.Year == Year2Digit && !(opts.Month == MonthNumeric && opts.Day == DayNumeric) {
+		if opts.Year.numeric() && opts.Month.twoDigit() && opts.Day.twoDigit() ||
+			opts.Year.twoDigit() && !(opts.Month.numeric() && opts.Day.numeric()) {
 			separator = "/"
 		}
 	case yo:
@@ -1256,7 +1256,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=2-digit,day=2-digit,out=02 01 24
 		layout = layoutDayMonthYear
 
-		if opts.Month == Month2Digit {
+		if opts.Month.twoDigit() {
 			separator = " "
 		} else {
 			separator = "/"
@@ -1270,7 +1270,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			separator = "/"
 		}
 	case zh:
@@ -1327,8 +1327,8 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
 		layout = layoutDayMonthYear
 
-		if opts.Year == YearNumeric && opts.Month == Month2Digit && opts.Day == Day2Digit ||
-			opts.Year == Year2Digit && !(opts.Month == MonthNumeric && opts.Day == DayNumeric) {
+		if opts.Year.numeric() && opts.Month.twoDigit() && opts.Day.twoDigit() ||
+			opts.Year.twoDigit() && !(opts.Month.numeric() && opts.Day.numeric()) {
 			separator = "/"
 		} else {
 			separator = "."
@@ -1342,7 +1342,7 @@ func fmtYearMonthDayGregorian(
 		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
 		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
-		if opts.Month == MonthNumeric && opts.Day == DayNumeric {
+		if opts.Month.numeric() && opts.Day.numeric() {
 			layout = layoutMonthDayYear
 			separator = "/"
 		}

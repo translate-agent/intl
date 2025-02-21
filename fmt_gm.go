@@ -11,7 +11,7 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func
 
 	lang, script, _ := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	withName := opts.Era == EraShort || opts.Era == EraLong && opts.Month == Month2Digit
+	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
 	monthName := unitName(locale).Month
 
 	prefix := era + " "
@@ -49,7 +49,7 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func
 			break
 		}
 
-		if opts.Era == EraLong && opts.Month == MonthNumeric || opts.Era == EraNarrow {
+		if opts.Era.long() && opts.Month.numeric() || opts.Era.narrow() {
 			prefix = ""
 			suffix = " " + era
 		}
@@ -77,7 +77,7 @@ func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	monthName := unitName(locale).Month
-	withName := opts.Era == EraShort || opts.Era == EraLong && opts.Month == Month2Digit
+	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
 
 	prefix := era + " "
 	suffix := ""
@@ -103,7 +103,7 @@ func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m
 func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
 	era := fmtEra(locale, opts.Era)
 	monthName := unitName(locale).Month
-	withName := opts.Era == EraShort || opts.Era == EraLong && opts.Month == Month2Digit
+	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
 
 	prefix := era + " "
 	suffix := ""

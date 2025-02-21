@@ -14,7 +14,7 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(
 		layoutDayYear
 	)
 
-	withName := opts.Year != Year2Digit || opts.Day != DayNumeric
+	withName := !opts.Year.twoDigit() || !opts.Day.numeric()
 	dayName := unitName(locale).Day
 	layout := layoutYearDay
 	middle := " "
@@ -65,7 +65,7 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y,
 	middle := " "
 	suffix := ""
 
-	if opts.Year != Year2Digit || opts.Day != DayNumeric {
+	if !opts.Year.twoDigit() || !opts.Day.numeric() {
 		dayName := unitName(locale).Day
 		middle = " (" + dayName + ": "
 		suffix = ")"
@@ -89,7 +89,7 @@ func fmtYearDayBuddhist(locale language.Tag, digits digits, opts Options) func(y
 	middle := " "
 	suffix := ""
 
-	if opts.Year != Year2Digit || opts.Day != DayNumeric {
+	if !opts.Year.twoDigit() || !opts.Day.numeric() {
 		dayName := unitName(locale).Day
 		middle = " (" + dayName + ": "
 		suffix = ")"
