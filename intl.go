@@ -230,9 +230,6 @@ func (m Month) String() string {
 func (m Month) und() bool      { return m == MonthUnd }
 func (m Month) numeric() bool  { return m == MonthNumeric }
 func (m Month) twoDigit() bool { return m == Month2Digit }
-func (m Month) long() bool     { return m == MonthLong }
-func (m Month) short() bool    { return m == MonthShort }
-func (m Month) narrow() bool   { return m == MonthNarrow }
 
 // ParseMonth converts a string representation of a month format to the [Month] type.
 //
