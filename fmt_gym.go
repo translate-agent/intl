@@ -38,7 +38,7 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 		middle = "."
 		suffix = " " + era
 
-		if opts.Month == MonthNumeric {
+		if opts.Month.numeric() {
 			opts.Month = Month2Digit
 		}
 	case cy, mk:
