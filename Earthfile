@@ -1,5 +1,5 @@
 VERSION 0.8
-ARG golang_version=1.24.0
+ARG golang_version=1.24.2
 FROM golang:$golang_version-alpine
 WORKDIR /intl
 
