@@ -54,7 +54,7 @@ test:
 
 # lint runs all linters for golang
 lint:
-  ARG golangci_lint_version=1.64.4
+  ARG golangci_lint_version=2.0.2
   FROM golangci/golangci-lint:v$golangci_lint_version-alpine
   WORKDIR /intl
   COPY go.mod go.sum *.go .golangci.yml .

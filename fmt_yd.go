@@ -71,7 +71,7 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y,
 		suffix = ")"
 	}
 
-	if !(lang == fa || lang == uz && region == regionAF) {
+	if lang != fa && (lang != uz || region != regionAF) {
 		prefix = fmtEra(locale, EraNarrow) + " "
 	}
 

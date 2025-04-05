@@ -1,5 +1,6 @@
+version: "2"
 linters:
-  enable-all: true
+  default: all
   disable:
     - depguard
     - dupl
@@ -7,16 +8,13 @@ linters:
     - exhaustruct
     - forbidigo
     - funlen
-    - gci
     - ginkgolinter
-    - goconst
     - gochecknoglobals
     - gochecknoinits
+    - goconst
     - gocyclo
     - godox
-    - gofmt
     - goheader
-    - goimports
     - gomodguard
     - gosmopolitan
     - grouper
@@ -27,7 +25,6 @@ linters:
     - nonamedreturns
     - promlinter
     - tagliatelle
-    - tenv # deprecated
     - testableexamples
     - testpackage
     - thelper
@@ -36,12 +33,22 @@ linters:
     - wastedassign
     - whitespace
     - zerologlint
-linters-settings:
-  cyclop:
-    max-complexity: 30
-  exhaustive:
-    default-signifies-exhaustive: true
-  govet:
-    enable-all: true
-  predeclared:
-    ignore: ""
+  settings:
+    cyclop:
+      max-complexity: 30
+    exhaustive:
+      default-signifies-exhaustive: true
+    govet:
+      enable-all: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+formatters:
+  enable:
+    - gofumpt
+  exclusions:
+    generated: lax
