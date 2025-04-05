@@ -1071,8 +1071,7 @@ func Locale(ldml *cldr.LDML) string {
 	return lang
 }
 
-//nolint:ireturn
-func deepCopy[T any](v T) T {
+func deepCopy[T any](v T) T { //nolint:ireturn
 	var r T
 
 	b, err := json.Marshal(v)

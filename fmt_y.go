@@ -30,7 +30,7 @@ func fmtYearPersian(locale language.Tag) func(y string) string {
 	lang, _, region := locale.Raw()
 	prefix := ""
 
-	if !(lang == fa || lang == uz && region == regionAF) {
+	if lang != fa && (lang != uz || region != regionAF) {
 		prefix = fmtEra(locale, EraNarrow) + " "
 	}
 
