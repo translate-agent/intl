@@ -1,6 +1,6 @@
 VERSION 0.8
-ARG golang_version=1.24.0
-FROM golang:$golang_version-alpine
+ARG golang_version=1.24.2
+FROM golang:$golang_version-alpine3.21
 WORKDIR /intl
 
 # init prepares the project for local development
