@@ -352,15 +352,15 @@ type DateTimeFormat struct {
 // This function initializes a [DateTimeFormat] with the default calendar based on the
 // given locale. It supports different calendar systems including Gregorian, Persian, and Buddhist calendars.
 func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
-	digits := localeDigits(locale)
+	d := localeDigits(locale)
 
 	switch defaultCalendar(locale) {
 	default:
-		return DateTimeFormat{fmt: gregorianDateTimeFormat(locale, digits, options)}
+		return DateTimeFormat{fmt: gregorianDateTimeFormat(locale, d, options)}
 	case calendarTypePersian:
-		return DateTimeFormat{fmt: persianDateTimeFormat(locale, digits, options)}
+		return DateTimeFormat{fmt: persianDateTimeFormat(locale, d, options)}
 	case calendarTypeBuddhist:
-		return DateTimeFormat{fmt: buddhistDateTimeFormat(locale, digits, options)}
+		return DateTimeFormat{fmt: buddhistDateTimeFormat(locale, d, options)}
 	}
 }
 
@@ -426,7 +426,7 @@ func fmtMonthName(locale string, context, width string) func(v int) string {
 	return func(v int) string {
 		v--
 
-		if v >= 0 && int(v) < len(names) { // isInBounds()
+		if v >= 0 && v < len(names) { // isInBounds()
 			return names[v]
 		}
 

@@ -21,34 +21,38 @@ import (
 type digits [10]rune
 
 func (d digits) twoDigit(number int) string {
-	if number < 10 {
+	if number < 10 { //nolint:mnd
 		return string(d[0]) + string(d[number])
 	}
 
-	last := number % 10
-	number = number / 10
-	beforeLast := number % 10
+	last := number % 10 //nolint:mnd
+	number /= 10
+	beforeLast := number % 10 //nolint:mnd
 
 	return string(d[beforeLast]) + string(d[last])
 }
 
 func (d digits) numeric(number int) string {
 	// single digit
-	if number < 10 {
+	if number < 10 { //nolint:mnd
 		return string(d[number])
 	}
 
+	const maxDigits = 4 // based on digits in the current Gregorian calendar year
+
 	// more than one digit
-	chars := make([]int, 0, 4)
+	chars := make([]int, 0, maxDigits)
 
 	for number > 0 {
-		chars = append(chars, number%10)
+		chars = append(chars, number%10) //nolint:mnd
 		number /= 10
 	}
 
 	var sb strings.Builder
 
-	sb.Grow(len(chars) * 4)
+	const bytesPerRune = 4
+
+	sb.Grow(len(chars) * bytesPerRune)
 
 	for i := len(chars) - 1; i >= 0; i-- {
 		sb.WriteRune(d[chars[i]])
