@@ -833,7 +833,7 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 }
 
 func (g *Generator) numberingSystems(defaultNumberingSystems LocaleLookup) []NumberingSystem {
-	numberingSystems := make([]NumberingSystem, 0, 12) //nolint:mnd
+	numberingSystems := make([]NumberingSystem, 0, 13) //nolint:mnd
 
 	ids := make([]string, 0, len(defaultNumberingSystems))
 	for k := range defaultNumberingSystems {

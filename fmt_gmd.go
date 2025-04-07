@@ -8,7 +8,7 @@ import (
 
 //nolint:cyclop,gocognit
 func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
-	var month func(time.Month) string
+	var month func(int) string
 
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
@@ -379,12 +379,12 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 
 	if layout == layoutDayMonth {
 		return func(m time.Month, d int) string {
-			return prefix + day(d) + separator + month(m) + suffix
+			return prefix + day(d) + separator + month(int(m)) + suffix
 		}
 	}
 
 	return func(m time.Month, d int) string {
-		return prefix + month(m) + separator + day(d) + suffix
+		return prefix + month(int(m)) + separator + day(d) + suffix
 	}
 }
 
@@ -404,7 +404,7 @@ func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) fun
 	day := fmtDay(digits, opts.Day)
 
 	return func(m time.Month, d int) string {
-		return prefix + month(m) + separator + day(d)
+		return prefix + month(int(m)) + separator + day(d)
 	}
 }
 
@@ -414,6 +414,6 @@ func fmtEraMonthDayBuddhist(locale language.Tag, digits digits, opts Options) fu
 	day := fmtDay(digits, opts.Day)
 
 	return func(m time.Month, d int) string {
-		return era + " " + day(d) + "/" + month(m)
+		return era + " " + day(d) + "/" + month(int(m))
 	}
 }

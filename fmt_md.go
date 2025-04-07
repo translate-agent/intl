@@ -8,7 +8,7 @@ import (
 
 //nolint:gocognit,cyclop
 func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
-	var month func(time.Month) string
+	var month func(int) string
 
 	lang, script, region := locale.Raw()
 
@@ -462,12 +462,12 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 
 	if layout == layoutDayMonth {
 		return func(m time.Month, d int) string {
-			return day(d) + middle + month(m) + suffix
+			return day(d) + middle + month(int(m)) + suffix
 		}
 	}
 
 	return func(m time.Month, d int) string {
-		return month(m) + middle + day(d) + suffix
+		return month(int(m)) + middle + day(d) + suffix
 	}
 }
 
@@ -490,11 +490,11 @@ func fmtMonthDayBuddhist(locale language.Tag, digits digits, opts Options) func(
 
 	if layout == layoutDayMonth {
 		return func(m time.Month, d int) string {
-			return day(d) + "/" + month(m)
+			return day(d) + "/" + month(int(m))
 		}
 	}
 
-	return func(m time.Month, d int) string { return month(m) + "-" + day(d) }
+	return func(m time.Month, d int) string { return month(int(m)) + "-" + day(d) }
 }
 
 func fmtMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
@@ -512,6 +512,6 @@ func fmtMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m
 	day := fmtDay(digits, opts.Day)
 
 	return func(m time.Month, d int) string {
-		return month(m) + middle + day(d)
+		return month(int(m)) + middle + day(d)
 	}
 }

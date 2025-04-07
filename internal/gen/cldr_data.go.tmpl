@@ -67,10 +67,8 @@ const (
 
 var numberingSystems = []digits{
 {{- range $v := .NumberingSystems }}
-  {{- if ne $v.ID "latn" }}
   numberingSystem{{ title $v.ID }}: {
     {{- range $char := $v.Digits }}{{ printf "'%c'" $char }},{{- end -}}
     },
-  {{- end }}
 {{- end }}
 }
