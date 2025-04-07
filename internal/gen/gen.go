@@ -471,7 +471,7 @@ func (g *Generator) calendarPreferences() CalendarPreferences {
 func (g *Generator) defaultNumberingSystems() LocaleLookup {
 	defaultNumberingSystems := make(LocaleLookup)
 
-	for _, locale := range g.cldr.Locales()[:] {
+	for _, locale := range g.cldr.Locales()[1:] {
 		ldml := g.cldr.RawLDML(locale)
 
 		if ldml.Numbers == nil {
