@@ -7,7 +7,7 @@ import (
 )
 
 func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
-	var month func(time.Month) string
+	var month func(int) string
 
 	lang, script, _ := locale.Raw()
 	era := fmtEra(locale, opts.Era)
@@ -70,7 +70,7 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func
 		month = fmtMonth(digits, opts.Month)
 	}
 
-	return func(m time.Month) string { return prefix + month(m) + suffix }
+	return func(m time.Month) string { return prefix + month(int(m)) + suffix }
 }
 
 func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
@@ -97,7 +97,7 @@ func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m
 
 	month := fmtMonth(digits, opts.Month)
 
-	return func(m time.Month) string { return prefix + month(m) + suffix }
+	return func(m time.Month) string { return prefix + month(int(m)) + suffix }
 }
 
 func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
@@ -115,5 +115,5 @@ func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) func(
 
 	month := fmtMonth(digits, opts.Month)
 
-	return func(m time.Month) string { return prefix + month(m) + suffix }
+	return func(m time.Month) string { return prefix + month(int(m)) + suffix }
 }

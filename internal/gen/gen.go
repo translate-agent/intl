@@ -471,7 +471,7 @@ func (g *Generator) calendarPreferences() CalendarPreferences {
 func (g *Generator) defaultNumberingSystems() LocaleLookup {
 	defaultNumberingSystems := make(LocaleLookup)
 
-	for _, locale := range g.cldr.Locales()[1:] {
+	for _, locale := range g.cldr.Locales()[:] {
 		ldml := g.cldr.RawLDML(locale)
 
 		if ldml.Numbers == nil {
@@ -833,7 +833,7 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 }
 
 func (g *Generator) numberingSystems(defaultNumberingSystems LocaleLookup) []NumberingSystem {
-	numberingSystems := make([]NumberingSystem, 0, 12) //nolint:mnd
+	numberingSystems := make([]NumberingSystem, 0, 13) //nolint:mnd
 
 	ids := make([]string, 0, len(defaultNumberingSystems))
 	for k := range defaultNumberingSystems {
