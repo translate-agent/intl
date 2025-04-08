@@ -446,15 +446,6 @@ func convertDayDigits(digits digits, opt Day) fmtFunc {
 	return func(t timeReader) string { return f(t.Day()) }
 }
 
-// convertDayDigits formats day as numeric.
-func convertDayDigitsPersian(digits digits, opt Day) fmtFunc {
-	if opt.twoDigit() {
-		return func(v timeReader) string { return digits.twoDigit(v.Day()) }
-	}
-
-	return func(v timeReader) string { return digits.numeric(v.Day()) }
-}
-
 //nolint:cyclop
 func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
 	switch {

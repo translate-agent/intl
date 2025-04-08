@@ -399,7 +399,7 @@ func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) fmt
 	}
 
 	month := convertMonthDigits(digits, opts.Month)
-	dayDigits := convertDayDigitsPersian(digits, opts.Day)
+	dayDigits := convertDayDigits(digits, opts.Day)
 
 	return func(v timeReader) string { return prefix + month(v) + separator + dayDigits(v) }
 }

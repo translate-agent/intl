@@ -37,5 +37,5 @@ func fmtDayBuddhist(_ language.Tag, digits digits, opt Day) fmtFunc {
 }
 
 func fmtDayPersian(_ language.Tag, digits digits, opt Day) fmtFunc {
-	return convertDayDigitsPersian(digits, opt)
+	return convertDayDigits(digits, opt)
 }

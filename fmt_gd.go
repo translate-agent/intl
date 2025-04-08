@@ -90,7 +90,7 @@ func fmtEraDayPersian(locale language.Tag, digits digits, opts Options) fmtFunc 
 		}
 	}
 
-	dayDigits := convertDayDigitsPersian(digits, opts.Day)
+	dayDigits := convertDayDigits(digits, opts.Day)
 
 	return func(v timeReader) string { return prefix + dayDigits(v) + suffix }
 }

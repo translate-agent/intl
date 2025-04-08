@@ -319,7 +319,7 @@ func fmtEraYearMonthDayPersian(locale language.Tag, digits digits, opts Options)
 	}
 
 	month := convertMonthDigits(digits, opts.Month)
-	dayDigits := convertDayDigitsPersian(digits, opts.Day)
+	dayDigits := convertDayDigits(digits, opts.Day)
 
 	switch layout {
 	default: // eraMonthDayYear

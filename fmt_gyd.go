@@ -151,7 +151,7 @@ func fmtEraYearDayPersian(locale language.Tag, digits digits, opts Options) fmtF
 		middle = " " + era + " (" + dayName + ": "
 	}
 
-	dayDigits := convertDayDigitsPersian(digits, opts.Day)
+	dayDigits := convertDayDigits(digits, opts.Day)
 
 	return func(v timeReader) string {
 		return prefix + year(yearDigits(v)) + middle + dayDigits(v) + suffix
