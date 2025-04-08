@@ -1,9 +1,6 @@
 package intl
 
 import (
-	"time"
-
-	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
@@ -379,17 +376,17 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 	dayDigits := convertDayDigits(digits, opts.Day)
 
 	if layout == layoutDayMonth {
-		return func(t time.Time) string {
+		return func(t timeReader) string {
 			return prefix + dayDigits(t) + separator + month(t) + suffix
 		}
 	}
 
-	return func(t time.Time) string {
+	return func(t timeReader) string {
 		return prefix + month(t) + separator + dayDigits(t) + suffix
 	}
 }
 
-func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
+func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	prefix := era + " "
@@ -401,10 +398,10 @@ func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) fmt
 		separator = "/"
 	}
 
-	month := convertMonthDigitsPersian(digits, opts.Month)
-	dayDigits := convertDayDigitsPersian(digits, opts.Day)
+	month := convertMonthDigits(digits, opts.Month)
+	dayDigits := convertDayDigits(digits, opts.Day)
 
-	return func(v ptime.Time) string { return prefix + month(v) + separator + dayDigits(v) }
+	return func(v timeReader) string { return prefix + month(v) + separator + dayDigits(v) }
 }
 
 func fmtEraMonthDayBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
@@ -412,5 +409,5 @@ func fmtEraMonthDayBuddhist(locale language.Tag, digits digits, opts Options) fm
 	prefix := era + " "
 	month := fmtMonthDayBuddhist(locale, digits, opts)
 
-	return func(t time.Time) string { return prefix + month(t) }
+	return func(t timeReader) string { return prefix + month(t) }
 }

@@ -1,9 +1,6 @@
 package intl
 
 import (
-	"time"
-
-	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
@@ -424,12 +421,12 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fmt
 	}
 
 	if layout == layoutMonthYear {
-		return func(t time.Time) string {
+		return func(t timeReader) string {
 			return prefix + month(t) + middle + yearDigits(t) + suffix
 		}
 	}
 
-	return func(t time.Time) string {
+	return func(t timeReader) string {
 		return prefix + yearDigits(t) + middle + month(t) + suffix
 	}
 }
@@ -440,22 +437,22 @@ func fmtYearMonthBuddhist(locale language.Tag, digits digits, opts Options) fmtF
 	if lang, _ := locale.Base(); lang == th {
 		monthDigits := convertMonthDigits(digits, opts.Month)
 
-		return func(t time.Time) string {
+		return func(t timeReader) string {
 			return monthDigits(t) + "/" + yearDigits(t)
 		}
 	}
 
 	monthDigits := convertMonthDigits(digits, Month2Digit)
 
-	return func(t time.Time) string {
+	return func(t timeReader) string {
 		return yearDigits(t) + "-" + monthDigits(t)
 	}
 }
 
-func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
+func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
 	lang, _, region := locale.Raw()
-	yearDigits := convertYearDigitsPersian(digits, opts.Year)
-	month := convertMonthDigitsPersian(digits, Month2Digit)
+	yearDigits := convertYearDigits(digits, opts.Year)
+	month := convertMonthDigits(digits, Month2Digit)
 
 	prefix := ""
 	separator := "-"
@@ -466,7 +463,7 @@ func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) fmtPe
 		// year=numeric,month=2-digit,out=١٠/١٤٠٢
 		// year=2-digit,month=numeric,out=١٠/٠٢
 		// year=2-digit,month=2-digit,out=١٠/٠٢
-		return func(v ptime.Time) string {
+		return func(v timeReader) string {
 			return month(v) + "/" + yearDigits(v)
 		}
 	case fa:
@@ -488,7 +485,7 @@ func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) fmtPe
 		prefix = fmtEra(locale, EraNarrow) + " "
 	}
 
-	return func(v ptime.Time) string {
+	return func(v timeReader) string {
 		return prefix + yearDigits(v) + separator + month(v)
 	}
 }

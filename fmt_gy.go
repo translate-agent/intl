@@ -1,9 +1,6 @@
 package intl
 
 import (
-	"time"
-
-	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
@@ -82,13 +79,13 @@ func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) fmtFu
 		suffix = ""
 	}
 
-	return func(t time.Time) string { return prefix + year(t) + suffix }
+	return func(t timeReader) string { return prefix + year(t) + suffix }
 }
 
-func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
+func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
-	yearDigits := convertYearDigitsPersian(digits, opts.Year)
+	yearDigits := convertYearDigits(digits, opts.Year)
 
 	prefix := ""
 	suffix := " " + era
@@ -101,7 +98,7 @@ func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) fmtPers
 		suffix = " " + era
 	}
 
-	return func(v ptime.Time) string {
+	return func(v timeReader) string {
 		return prefix + yearDigits(v) + suffix
 	}
 }

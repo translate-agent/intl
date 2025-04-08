@@ -1,9 +1,6 @@
 package intl
 
 import (
-	"time"
-
-	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
@@ -71,10 +68,10 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) fmtF
 		month = convertMonthDigits(digits, opts.Month)
 	}
 
-	return func(t time.Time) string { return prefix + month(t) + suffix }
+	return func(t timeReader) string { return prefix + month(t) + suffix }
 }
 
-func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
+func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	monthName := unitName(locale).Month
@@ -96,9 +93,9 @@ func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) fmtPer
 		}
 	}
 
-	month := convertMonthDigitsPersian(digits, opts.Month)
+	month := convertMonthDigits(digits, opts.Month)
 
-	return func(v ptime.Time) string { return prefix + month(v) + suffix }
+	return func(v timeReader) string { return prefix + month(v) + suffix }
 }
 
 func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
@@ -115,5 +112,5 @@ func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) fmtFu
 		suffix = ")"
 	}
 
-	return func(t time.Time) string { return prefix + monthDigits(t) + suffix }
+	return func(t timeReader) string { return prefix + monthDigits(t) + suffix }
 }
