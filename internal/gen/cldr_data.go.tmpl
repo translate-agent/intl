@@ -21,7 +21,7 @@ type era [3]string
 
 var eraLookup = map[string]era{
 {{-  range $locale, $era := .Eras }}
-  "{{ $locale }}": { {{- value $era.Narrow }}, {{ value $era.Short }}, {{ value $era.Long -}} },
+  "{{ $locale }}": { {{- value $era.Narrow }} /* {{ $era.Narrow }} */ , {{ value $era.Short }} /* {{ $era.Short }} */, {{ value $era.Long -}} /* {{ $era.Long }} */ },
 {{- end }}
 }
 

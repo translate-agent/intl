@@ -1,10 +1,12 @@
 package intl
 
 import (
+	"time"
+
 	"golang.org/x/text/language"
 )
 
-func fmtMonthGregorian(locale language.Tag, digits digits, opt Month) func(m int) string {
+func fmtMonthGregorian(locale language.Tag, digits digits, opt Month) fmtFunc {
 	suffix := ""
 
 	switch lang, _ := locale.Base(); lang {
@@ -20,15 +22,17 @@ func fmtMonthGregorian(locale language.Tag, digits digits, opt Month) func(m int
 		return fmtMonthName(locale.String(), "stand-alone", "abbreviated")
 	}
 
-	month := fmtMonth(digits, opt)
+	monthDigits := convertMonthDigits(digits, opt)
 
-	return func(m int) string { return month(m) + suffix }
+	return func(t time.Time) string { return monthDigits(t) + suffix }
 }
 
-func fmtMonthBuddhist(_ language.Tag, digits digits, opt Month) func(m int) string {
-	return fmtMonth(digits, opt)
+func fmtMonthBuddhist(_ language.Tag, digits digits, opt Month) fmtFunc {
+	monthDigits := convertMonthDigits(digits, opt)
+
+	return func(t time.Time) string { return monthDigits(t) }
 }
 
-func fmtMonthPersian(_ language.Tag, digits digits, opt Month) func(m int) string {
-	return fmtMonth(digits, opt)
+func fmtMonthPersian(_ language.Tag, digits digits, opt Month) fmtPersianFunc {
+	return convertMonthDigitsPersian(digits, opt)
 }

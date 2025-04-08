@@ -3,12 +3,13 @@ package intl
 import (
 	"time"
 
+	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
 //nolint:gocognit,cyclop
-func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
-	var month func(int) string
+func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+	var month fmtFunc
 
 	lang, script, region := locale.Raw()
 
@@ -455,23 +456,23 @@ func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func
 	}
 
 	if month == nil {
-		month = fmtMonth(digits, opts.Month)
+		month = convertMonthDigits(digits, opts.Month)
 	}
 
-	day := fmtDay(digits, opts.Day)
+	dayDigits := convertDayDigits(digits, opts.Day)
 
 	if layout == layoutDayMonth {
-		return func(m time.Month, d int) string {
-			return day(d) + middle + month(int(m)) + suffix
+		return func(t time.Time) string {
+			return dayDigits(t) + middle + month(t) + suffix
 		}
 	}
 
-	return func(m time.Month, d int) string {
-		return month(int(m)) + middle + day(d) + suffix
+	return func(t time.Time) string {
+		return month(t) + middle + dayDigits(t) + suffix
 	}
 }
 
-func fmtMonthDayBuddhist(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
+func fmtMonthDayBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
 	const (
 		layoutMonthDay = iota
 		layoutDayMonth
@@ -485,19 +486,19 @@ func fmtMonthDayBuddhist(locale language.Tag, digits digits, opts Options) func(
 		opts.Day = Day2Digit
 	}
 
-	month := fmtMonth(digits, opts.Month)
-	day := fmtDay(digits, opts.Day)
+	monthDigits := convertMonthDigits(digits, opts.Month)
+	dayDigits := convertDayDigits(digits, opts.Day)
 
 	if layout == layoutDayMonth {
-		return func(m time.Month, d int) string {
-			return day(d) + "/" + month(int(m))
+		return func(t time.Time) string {
+			return dayDigits(t) + "/" + monthDigits(t)
 		}
 	}
 
-	return func(m time.Month, d int) string { return month(int(m)) + "-" + day(d) }
+	return func(t time.Time) string { return monthDigits(t) + "-" + dayDigits(t) }
 }
 
-func fmtMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
+func fmtMonthDayPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
 	middle := "-"
 
 	switch lang, _ := locale.Base(); lang {
@@ -508,10 +509,10 @@ func fmtMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m
 		middle = "/"
 	}
 
-	month := fmtMonth(digits, opts.Month)
-	day := fmtDay(digits, opts.Day)
+	month := convertMonthDigitsPersian(digits, opts.Month)
+	dayDigits := convertDayDigitsPersian(digits, opts.Day)
 
-	return func(m time.Month, d int) string {
-		return month(int(m)) + middle + day(d)
+	return func(v ptime.Time) string {
+		return month(v) + middle + dayDigits(v)
 	}
 }

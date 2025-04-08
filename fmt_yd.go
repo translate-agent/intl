@@ -1,13 +1,15 @@
 package intl
 
 import (
+	"time"
+
+	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
-func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(y, d int) string {
+func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
 	lang, script, _ := locale.Raw()
-	layoutYear := fmtYearGregorian(locale)
-	fmtYear := fmtYear(digits, opts.Year)
+	year := fmtYearGregorian(locale, digits, opts.Year)
 
 	const (
 		layoutYearDay = iota
@@ -42,24 +44,23 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) func(
 		}
 	}
 
-	fmtDay := fmtDayGregorian(locale, digits, opts.Day)
+	day := fmtDayGregorian(locale, digits, opts.Day)
 
 	if layout == layoutDayYear {
-		return func(y, d int) string {
-			return fmtDay(d) + middle + layoutYear(fmtYear(y)) + suffix
+		return func(t time.Time) string {
+			return day(t) + middle + year(t) + suffix
 		}
 	}
 
 	// layoutYearDay
-	return func(y, d int) string {
-		return layoutYear(fmtYear(y)) + middle + fmtDay(d) + suffix
+	return func(t time.Time) string {
+		return year(t) + middle + day(t) + suffix
 	}
 }
 
-func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y, d int) string {
-	lang, _, region := locale.Raw()
-	layoutYear := fmtYearGregorian(locale)
-	fmtYear := fmtYear(digits, opts.Year)
+func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
+	year := fmtYearPersian(locale)
+	yearDigits := convertYearDigitsPersian(digits, opts.Year)
 
 	prefix := ""
 	middle := " "
@@ -71,20 +72,15 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) func(y,
 		suffix = ")"
 	}
 
-	if lang != fa && (lang != uz || region != regionAF) {
-		prefix = fmtEra(locale, EraNarrow) + " "
-	}
+	day := fmtDayPersian(locale, digits, opts.Day)
 
-	fmtDay := fmtDayGregorian(locale, digits, opts.Day)
-
-	return func(y, d int) string {
-		return prefix + layoutYear(fmtYear(y)) + middle + fmtDay(d) + suffix
+	return func(v ptime.Time) string {
+		return prefix + year(yearDigits(v)) + middle + day(v) + suffix
 	}
 }
 
-func fmtYearDayBuddhist(locale language.Tag, digits digits, opts Options) func(y, d int) string {
-	layoutYear := fmtYearBuddhist(locale, EraNarrow)
-	fmtYear := fmtYear(digits, opts.Year)
+func fmtYearDayBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+	year := fmtYearBuddhist(locale, digits, opts)
 
 	middle := " "
 	suffix := ""
@@ -95,9 +91,9 @@ func fmtYearDayBuddhist(locale language.Tag, digits digits, opts Options) func(y
 		suffix = ")"
 	}
 
-	fmtDay := fmtDayBuddhist(locale, digits, opts.Day)
+	day := fmtDayBuddhist(locale, digits, opts.Day)
 
-	return func(y, d int) string {
-		return layoutYear(fmtYear(y)) + middle + fmtDay(d) + suffix
+	return func(t time.Time) string {
+		return year(t) + middle + day(t) + suffix
 	}
 }

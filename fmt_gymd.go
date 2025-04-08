@@ -3,20 +3,17 @@ package intl
 import (
 	"time"
 
+	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
 //nolint:cyclop,gocognit
-func fmtEraYearMonthDayGregorian(
-	locale language.Tag,
-	digits digits,
-	opts Options,
-) func(y int, m time.Month, d int) string {
-	var month func(int) string
+func fmtEraYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+	var month fmtFunc
 
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
+	yearDigits := convertYearDigits(digits, opts.Year)
 
 	const (
 		eraYearMonthDay = iota
@@ -265,40 +262,36 @@ func fmtEraYearMonthDayGregorian(
 	}
 
 	if month == nil {
-		month = fmtMonth(digits, monthOpt)
+		month = convertMonthDigits(digits, monthOpt)
 	}
 
-	day := fmtDay(digits, monthDay)
+	dayDigits := convertDayDigits(digits, monthDay)
 
 	switch layout {
 	default: // eraYearMonthDay
-		return func(y int, m time.Month, d int) string {
-			return prefix + year(y) + separator + month(int(m)) + separator + day(d) + suffix
+		return func(t time.Time) string {
+			return prefix + yearDigits(t) + separator + month(t) + separator + dayDigits(t) + suffix
 		}
 	case eraMonthDayYear:
-		return func(y int, m time.Month, d int) string {
-			return prefix + month(int(m)) + separator + day(d) + separator + year(y) + suffix
+		return func(t time.Time) string {
+			return prefix + month(t) + separator + dayDigits(t) + separator + yearDigits(t) + suffix
 		}
 	case eraDayMonthYear:
-		return func(y int, m time.Month, d int) string {
-			return prefix + day(d) + separator + month(int(m)) + separator + year(y) + suffix
+		return func(t time.Time) string {
+			return prefix + dayDigits(t) + separator + month(t) + separator + yearDigits(t) + suffix
 		}
 	case dayMonthEraYear:
-		return func(y int, m time.Month, d int) string {
-			return day(d) + separator + month(int(m)) + separator + era + " " + year(y)
+		return func(t time.Time) string {
+			return dayDigits(t) + separator + month(t) + separator + era + " " + yearDigits(t)
 		}
 	}
 }
 
-func fmtEraYearMonthDayPersian(
-	locale language.Tag,
-	digits digits,
-	opts Options,
-) func(y int, m time.Month, d int) string {
+func fmtEraYearMonthDayPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
 	lang, _, region := locale.Raw()
 
 	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
+	yearDigits := convertYearDigitsPersian(digits, opts.Year)
 
 	const (
 		eraYearMonthDay = iota
@@ -328,33 +321,29 @@ func fmtEraYearMonthDayPersian(
 		suffix = " " + era
 	}
 
-	month := fmtMonth(digits, opts.Month)
-	day := fmtDay(digits, opts.Day)
+	month := convertMonthDigitsPersian(digits, opts.Month)
+	dayDigits := convertDayDigitsPersian(digits, opts.Day)
 
 	switch layout {
 	default: // eraMonthDayYear
-		return func(y int, m time.Month, d int) string {
-			return month(int(m)) + separator + day(d) + separator + year(y) + suffix
+		return func(v ptime.Time) string {
+			return month(v) + separator + dayDigits(v) + separator + yearDigits(v) + suffix
 		}
 	case eraYearMonthDay:
-		return func(y int, m time.Month, d int) string {
-			// TODO(jhorsts): replace with the "prefix" variable (era + " ")
-			return era + " " + year(y) + separator + month(int(m)) + separator + day(d)
+		prefix := era + " "
+
+		return func(v ptime.Time) string {
+			return prefix + yearDigits(v) + separator + month(v) + separator + dayDigits(v)
 		}
 	}
 }
 
-func fmtEraYearMonthDayBuddhist(
-	locale language.Tag,
-	digits digits,
-	opts Options,
-) func(y int, m time.Month, d int) string {
-	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
-	month := fmtMonth(digits, opts.Month)
-	day := fmtDay(digits, opts.Day)
+func fmtEraYearMonthDayBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+	year := fmtYearBuddhist(locale, digits, opts)
+	monthDigits := convertMonthDigits(digits, opts.Month)
+	dayDigits := convertDayDigits(digits, opts.Day)
 
-	return func(y int, m time.Month, d int) string {
-		return day(d) + "/" + month(int(m)) + "/" + era + " " + year(y)
+	return func(t time.Time) string {
+		return dayDigits(t) + "/" + monthDigits(t) + "/" + year(t)
 	}
 }

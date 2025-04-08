@@ -3,17 +3,17 @@ package intl
 import (
 	"time"
 
+	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
 //nolint:cyclop
-func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
-	var month func(int) string
+func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+	var month fmtFunc
 
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
-	layoutYear := fmtYearGregorian(locale)
+	year := fmtYearGregorian(locale, digits, opts.Year)
 	monthName := unitName(locale).Month
 
 	const (
@@ -186,26 +186,26 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 	}
 
 	if month == nil {
-		month = fmtMonth(digits, opts.Month)
+		month = convertMonthDigits(digits, opts.Month)
 	}
 
 	switch layout {
 	default: // eraYearMonth
-		return func(y int, m time.Month) string {
-			return prefix + layoutYear(year(y)) + middle + month(int(m)) + suffix
+		return func(t time.Time) string {
+			return prefix + year(t) + middle + month(t) + suffix
 		}
 	case eraMonthYear:
-		return func(y int, m time.Month) string {
-			return prefix + month(int(m)) + middle + layoutYear(year(y)) + suffix
+		return func(t time.Time) string {
+			return prefix + month(t) + middle + year(t) + suffix
 		}
 	}
 }
 
-func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
+func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
 	lang, _, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
-	layoutYear := fmtYearPersian(locale)
+	year := fmtYearPersian(locale)
+	yearDigits := convertYearDigitsPersian(digits, opts.Year)
 
 	const (
 		// eraYearMonth includes "era year month" and "year month era".
@@ -233,26 +233,25 @@ func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) fu
 		prefix = ""
 	}
 
-	month := fmtMonth(digits, opts.Month)
+	month := convertMonthDigitsPersian(digits, opts.Month)
 
 	switch layout {
 	default: // eraYearMonth
-		return func(y int, m time.Month) string {
-			return prefix + layoutYear(year(y)) + middle + month(int(m)) + suffix
+		return func(v ptime.Time) string {
+			return prefix + year(yearDigits(v)) + middle + month(v) + suffix
 		}
 	case eraMonthYear:
-		return func(y int, m time.Month) string {
-			return prefix + month(int(m)) + middle + layoutYear(year(y)) + suffix
+		return func(v ptime.Time) string {
+			return prefix + month(v) + middle + year(yearDigits(v)) + suffix
 		}
 	}
 }
 
-func fmtEraYearMonthBuddhist(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
-	year := fmtYear(digits, opts.Year)
-	layoutYear := fmtYearBuddhist(locale, opts.Era)
-	month := fmtMonth(digits, opts.Month)
+func fmtEraYearMonthBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+	year := fmtYearBuddhist(locale, digits, opts)
+	monthDigits := convertMonthDigits(digits, opts.Month)
 
-	return func(y int, m time.Month) string {
-		return month(int(m)) + " " + layoutYear(year(y))
+	return func(t time.Time) string {
+		return monthDigits(t) + " " + year(t)
 	}
 }
