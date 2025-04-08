@@ -41,11 +41,12 @@ func (d digits) numeric(number int) string {
 
 	const maxDigits = 4 // based on digits in the current Gregorian calendar year
 
-	chars := make([]rune, 0, 4)
+	chars := make([]rune, 0, maxDigits)
 
 	for number > 0 {
-		if v := number % 10; v >= 0 && v < 10 { // isInBounds()
-			chars = append(chars, d[v]) //nolint:mnd
+		// isInBounds()
+		if v := number % 10; v >= 0 && v < 10 { //nolint:mnd
+			chars = append(chars, d[v])
 		}
 
 		number /= 10
