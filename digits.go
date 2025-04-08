@@ -1,6 +1,7 @@
 package intl
 
 import (
+	"strconv"
 	"strings"
 
 	"golang.org/x/text/language"
@@ -21,41 +22,43 @@ import (
 type digits [10]rune
 
 func (d digits) twoDigit(number int) string {
-	if number < 10 { //nolint:mnd
-		return string(d[0]) + string(d[number])
+	ones := number % 10      //nolint:mnd
+	tens := number / 10 % 10 //nolint:mnd
+
+	// latn
+	if d[0] == '0' {
+		return string([]byte{byte('0' + tens), byte('0' + ones)})
 	}
 
-	last := number % 10 //nolint:mnd
-	number /= 10
-	beforeLast := number % 10 //nolint:mnd
-
-	return string(d[beforeLast]) + string(d[last])
+	return string([]rune{d[tens], d[ones]})
 }
 
 func (d digits) numeric(number int) string {
-	// single digit
-	if number < 10 { //nolint:mnd
-		return string(d[number])
+	// latn
+	if d[0] == '0' {
+		return strconv.Itoa(number)
 	}
 
 	const maxDigits = 4 // based on digits in the current Gregorian calendar year
 
-	// more than one digit
-	chars := make([]int, 0, maxDigits)
+	chars := make([]rune, 0, 4)
 
 	for number > 0 {
-		chars = append(chars, number%10) //nolint:mnd
+		if v := number % 10; v >= 0 && v < 10 { // isInBounds()
+			chars = append(chars, d[v]) //nolint:mnd
+		}
+
 		number /= 10
 	}
 
 	var sb strings.Builder
 
-	const bytesPerRune = 4
+	const bytesPerRune = 4 // at least one digit
 
-	sb.Grow(len(chars) * bytesPerRune)
+	sb.Grow(bytesPerRune)
 
 	for i := len(chars) - 1; i >= 0; i-- {
-		sb.WriteRune(d[chars[i]])
+		sb.WriteRune(chars[i])
 	}
 
 	return sb.String()
