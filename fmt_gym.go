@@ -1,9 +1,6 @@
 package intl
 
 import (
-	"time"
-
-	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
@@ -191,21 +188,21 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 
 	switch layout {
 	default: // eraYearMonth
-		return func(t time.Time) string {
+		return func(t timeReader) string {
 			return prefix + year(t) + middle + month(t) + suffix
 		}
 	case eraMonthYear:
-		return func(t time.Time) string {
+		return func(t timeReader) string {
 			return prefix + month(t) + middle + year(t) + suffix
 		}
 	}
 }
 
-func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
+func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
 	lang, _, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
 	year := fmtYearPersian(locale)
-	yearDigits := convertYearDigitsPersian(digits, opts.Year)
+	yearDigits := convertYearDigits(digits, opts.Year)
 
 	const (
 		// eraYearMonth includes "era year month" and "year month era".
@@ -233,15 +230,15 @@ func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) fm
 		prefix = ""
 	}
 
-	month := convertMonthDigitsPersian(digits, opts.Month)
+	month := convertMonthDigits(digits, opts.Month)
 
 	switch layout {
 	default: // eraYearMonth
-		return func(v ptime.Time) string {
+		return func(v timeReader) string {
 			return prefix + year(yearDigits(v)) + middle + month(v) + suffix
 		}
 	case eraMonthYear:
-		return func(v ptime.Time) string {
+		return func(v timeReader) string {
 			return prefix + month(v) + middle + year(yearDigits(v)) + suffix
 		}
 	}
@@ -251,7 +248,7 @@ func fmtEraYearMonthBuddhist(locale language.Tag, digits digits, opts Options) f
 	year := fmtYearBuddhist(locale, digits, opts)
 	monthDigits := convertMonthDigits(digits, opts.Month)
 
-	return func(t time.Time) string {
+	return func(t timeReader) string {
 		return monthDigits(t) + " " + year(t)
 	}
 }

@@ -369,44 +369,19 @@ func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
 // This method applies the formatting options specified in the [DateTimeFormat] instance
 // to the provided time value.
 func (f DateTimeFormat) Format(t time.Time) string {
-	return f.fmt(t)
+	return f.fmt(timeReader(t))
 }
 
 // fmtFunc is date time formatter for a particular calendar.
-type fmtFunc func(time.Time) string
-
-type fmtPersianFunc func(ptime.Time) string
+type fmtFunc func(timeReader) string
 
 // convertYearDigits formats year.
 func convertYearDigits(digits digits, opt Year) fmtFunc {
 	if opt.twoDigit() {
-		return func(t time.Time) string { return digits.twoDigit(t.Year()) }
+		return func(t timeReader) string { return digits.twoDigit(t.Year()) }
 	}
 
-	return func(t time.Time) string { return digits.numeric(t.Year()) }
-}
-
-// convertYearDigits formats year.
-func convertYearDigitsPersian(digits digits, opt Year) fmtPersianFunc {
-	f := digits.numeric
-
-	if opt.twoDigit() {
-		f = digits.twoDigit
-	}
-
-	return func(v ptime.Time) string { return f(v.Year()) }
-}
-
-// convertMonthDigitsPersian returns month formatting func.
-// Deprecated: use [fmtMonth] instead. Only Persian calendar formatting depends on this.
-func convertMonthDigitsPersian(digits digits, opt Month) fmtPersianFunc {
-	f := digits.numeric
-
-	if opt.twoDigit() {
-		f = digits.twoDigit
-	}
-
-	return func(v ptime.Time) string { return f(int(v.Month())) }
+	return func(t timeReader) string { return digits.numeric(t.Year()) }
 }
 
 func convertMonthDigits(digits digits, opt Month) fmtFunc {
@@ -416,7 +391,7 @@ func convertMonthDigits(digits digits, opt Month) fmtFunc {
 		f = digits.twoDigit
 	}
 
-	return func(t time.Time) string { return f(int(t.Month())) }
+	return func(t timeReader) string { return f(int(t.Month())) }
 }
 
 // fmtMonthName formats month as name.
@@ -449,7 +424,7 @@ func fmtMonthName(locale string, context, width string) fmtFunc {
 		}
 	}
 
-	return func(t time.Time) string {
+	return func(t timeReader) string {
 		i := int(t.Month() - 1)
 
 		if i >= 0 && i < len(names) { // isInBounds()
@@ -468,23 +443,23 @@ func convertDayDigits(digits digits, opt Day) fmtFunc {
 		f = digits.twoDigit
 	}
 
-	return func(t time.Time) string { return f(t.Day()) }
+	return func(t timeReader) string { return f(t.Day()) }
 }
 
 // convertDayDigits formats day as numeric.
-func convertDayDigitsPersian(digits digits, opt Day) fmtPersianFunc {
+func convertDayDigitsPersian(digits digits, opt Day) fmtFunc {
 	if opt.twoDigit() {
-		return func(v ptime.Time) string { return digits.twoDigit(v.Day()) }
+		return func(v timeReader) string { return digits.twoDigit(v.Day()) }
 	}
 
-	return func(v ptime.Time) string { return digits.numeric(v.Day()) }
+	return func(v timeReader) string { return digits.numeric(v.Day()) }
 }
 
 //nolint:cyclop
 func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
 	switch {
 	default:
-		return func(_ time.Time) string {
+		return func(_ timeReader) string {
 			return ""
 		}
 	case !opts.Era.und() && (!opts.Year.und() && !opts.Month.und() && !opts.Day.und() ||
@@ -521,15 +496,16 @@ func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) f
 
 //nolint:cyclop
 func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
-	gregorianToPersian := func(f fmtPersianFunc) fmtFunc {
-		return func(t time.Time) string {
-			return f(ptime.New(t))
+	gregorianToPersian := func(f fmtFunc) fmtFunc {
+		return func(t timeReader) string {
+			v, _ := t.(time.Time) // t is always [time.Time]
+			return f(persionTime(ptime.New(v)))
 		}
 	}
 
 	switch {
 	default:
-		return func(_ time.Time) string {
+		return func(_ timeReader) string {
 			return ""
 		}
 	case !opts.Era.und() && (!opts.Year.und() && !opts.Month.und() && !opts.Day.und() ||
@@ -557,10 +533,11 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 		return gregorianToPersian(fmtMonthDayPersian(locale, digits, opts))
 	case !opts.Year.und():
 		layout := fmtYearPersian(locale)
-		yearDigits := convertYearDigitsPersian(digits, opts.Year)
+		yearDigits := convertYearDigits(digits, opts.Year)
 
-		return func(t time.Time) string {
-			return layout(yearDigits(ptime.New(t)))
+		return func(t timeReader) string {
+			v, _ := t.(time.Time) // t is always [time.Time]
+			return layout(yearDigits(persionTime(ptime.New(v))))
 		}
 	case !opts.Month.und():
 		return gregorianToPersian(fmtMonthPersian(locale, digits, opts.Month))
@@ -573,14 +550,15 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
 	// convert Gregorian calendar time to Buddhist
 	gregorianToBuddhist := func(f fmtFunc) fmtFunc {
-		return func(t time.Time) string {
-			return f(t.AddDate(543, 0, 0)) //nolint:mnd
+		return func(t timeReader) string {
+			v, _ := t.(time.Time)          // t is always [time.Time]
+			return f(v.AddDate(543, 0, 0)) //nolint:mnd
 		}
 	}
 
 	switch {
 	default:
-		return func(_ time.Time) string {
+		return func(_ timeReader) string {
 			return ""
 		}
 	case !opts.Era.und() && (!opts.Year.und() && !opts.Month.und() && !opts.Day.und() ||
@@ -613,4 +591,24 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 	case !opts.Day.und():
 		return gregorianToBuddhist(fmtDayBuddhist(locale, digits, opts.Day))
 	}
+}
+
+type timeReader interface {
+	Year() int
+	Month() time.Month
+	Day() int
+}
+
+type persionTime ptime.Time
+
+func (p persionTime) Year() int {
+	return ptime.Time(p).Year()
+}
+
+func (p persionTime) Month() time.Month {
+	return time.Month(ptime.Time(p).Month())
+}
+
+func (p persionTime) Day() int {
+	return ptime.Time(p).Day()
 }

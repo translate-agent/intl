@@ -1,9 +1,6 @@
 package intl
 
 import (
-	"time"
-
-	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
@@ -830,7 +827,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		month = convertMonthDigits(digits, opts.Month)
 		dayDigits := convertDayDigits(digits, opts.Day)
 
-		return func(t time.Time) string {
+		return func(t timeReader) string {
 			return dayDigits(t) + "/" + month(t) + " " + yearDigits(t)
 		}
 	case ko:
@@ -1295,7 +1292,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				month = convertMonthDigits(digits, opts.Month)
 				dayDigits := convertDayDigits(digits, opts.Day)
 
-				return func(t time.Time) string {
+				return func(t timeReader) string {
 					return yearDigits(t) + "年" + month(t) + "月" + dayDigits(t) + "日"
 				}
 			}
@@ -1353,28 +1350,28 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 
 	switch layout {
 	default: // layoutYearMonthDay
-		return func(t time.Time) string {
+		return func(t timeReader) string {
 			return prefix + yearDigits(t) + separator + month(t) + separator + dayDigits(t) + suffix
 		}
 	case layoutDayMonthYear:
-		return func(t time.Time) string {
+		return func(t timeReader) string {
 			return dayDigits(t) + separator + month(t) + separator + yearDigits(t) + suffix
 		}
 	case layoutMonthDayYear:
-		return func(t time.Time) string {
+		return func(t timeReader) string {
 			return month(t) + separator + dayDigits(t) + separator + yearDigits(t) + suffix
 		}
 	case layoutYearDayMonth:
-		return func(t time.Time) string {
+		return func(t timeReader) string {
 			return yearDigits(t) + separator + dayDigits(t) + separator + month(t) + suffix
 		}
 	}
 }
 
-func fmtYearMonthDayPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
+func fmtYearMonthDayPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
 	lang, _, region := locale.Raw()
 
-	yearDigits := convertYearDigitsPersian(digits, opts.Year)
+	yearDigits := convertYearDigits(digits, opts.Year)
 
 	const (
 		layoutYearMonthDay = iota
@@ -1427,16 +1424,16 @@ func fmtYearMonthDayPersian(locale language.Tag, digits digits, opts Options) fm
 		}
 	}
 
-	month := convertMonthDigitsPersian(digits, opts.Month)
-	dayDigits := convertDayDigitsPersian(digits, opts.Day)
+	month := convertMonthDigits(digits, opts.Month)
+	dayDigits := convertDayDigits(digits, opts.Day)
 
 	if layout == layoutDayMonthYear {
-		return func(v ptime.Time) string {
+		return func(v timeReader) string {
 			return dayDigits(v) + "/" + month(v) + "/" + yearDigits(v)
 		}
 	}
 
-	return func(v ptime.Time) string {
+	return func(v timeReader) string {
 		return prefix + yearDigits(v) + separator + month(v) + separator + dayDigits(v)
 	}
 }
@@ -1455,7 +1452,7 @@ func fmtYearMonthDayBuddhist(_ language.Tag, digits digits, opts Options) fmtFun
 	// year=2-digit,month=numeric,day=2-digit,out=02/1/24
 	// year=2-digit,month=2-digit,day=numeric,out=2/01/24
 	// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
-	return func(t time.Time) string {
+	return func(t timeReader) string {
 		return dayDigits(t) + "/" + monthDigits(t) + "/" + yearDigits(t)
 	}
 }

@@ -1,8 +1,6 @@
 package intl
 
 import (
-	"time"
-
 	"golang.org/x/text/language"
 )
 
@@ -24,14 +22,14 @@ func fmtYearGregorian(locale language.Tag, digits digits, opt Year) fmtFunc {
 
 	yearDigits := convertYearDigits(digits, opt)
 
-	return func(t time.Time) string { return yearDigits(t) + suffix }
+	return func(t timeReader) string { return yearDigits(t) + suffix }
 }
 
 func fmtYearBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
 	prefix := fmtEra(locale, opts.Era) + " "
 	yearDigits := convertYearDigits(digits, opts.Year)
 
-	return func(t time.Time) string { return prefix + yearDigits(t) }
+	return func(t timeReader) string { return prefix + yearDigits(t) }
 }
 
 func fmtYearPersian(locale language.Tag) func(y string) string {

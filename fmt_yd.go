@@ -1,9 +1,6 @@
 package intl
 
 import (
-	"time"
-
-	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
@@ -47,20 +44,20 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) fmtFu
 	day := fmtDayGregorian(locale, digits, opts.Day)
 
 	if layout == layoutDayYear {
-		return func(t time.Time) string {
+		return func(t timeReader) string {
 			return day(t) + middle + year(t) + suffix
 		}
 	}
 
 	// layoutYearDay
-	return func(t time.Time) string {
+	return func(t timeReader) string {
 		return year(t) + middle + day(t) + suffix
 	}
 }
 
-func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
+func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
 	year := fmtYearPersian(locale)
-	yearDigits := convertYearDigitsPersian(digits, opts.Year)
+	yearDigits := convertYearDigits(digits, opts.Year)
 
 	prefix := ""
 	middle := " "
@@ -74,7 +71,7 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) fmtPers
 
 	day := fmtDayPersian(locale, digits, opts.Day)
 
-	return func(v ptime.Time) string {
+	return func(v timeReader) string {
 		return prefix + year(yearDigits(v)) + middle + day(v) + suffix
 	}
 }
@@ -93,7 +90,7 @@ func fmtYearDayBuddhist(locale language.Tag, digits digits, opts Options) fmtFun
 
 	day := fmtDayBuddhist(locale, digits, opts.Day)
 
-	return func(t time.Time) string {
+	return func(t timeReader) string {
 		return year(t) + middle + day(t) + suffix
 	}
 }
