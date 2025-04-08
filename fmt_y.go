@@ -1,8 +1,12 @@
 package intl
 
-import "golang.org/x/text/language"
+import (
+	"time"
 
-func fmtYearGregorian(locale language.Tag) func(y string) string {
+	"golang.org/x/text/language"
+)
+
+func fmtYearGregorian(locale language.Tag, digits digits, opt Year) fmtFunc {
 	var suffix string
 
 	switch lang, _ := locale.Base(); lang {
@@ -18,12 +22,16 @@ func fmtYearGregorian(locale language.Tag) func(y string) string {
 		suffix = ". g."
 	}
 
-	return func(y string) string { return y + suffix }
+	yearDigits := convertYearDigits(digits, opt)
+
+	return func(t time.Time) string { return yearDigits(t) + suffix }
 }
 
-func fmtYearBuddhist(locale language.Tag, era Era) func(y string) string {
-	prefix := fmtEra(locale, era) + " "
-	return func(y string) string { return prefix + y }
+func fmtYearBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+	prefix := fmtEra(locale, opts.Era) + " "
+	yearDigits := convertYearDigits(digits, opts.Year)
+
+	return func(t time.Time) string { return prefix + yearDigits(t) }
 }
 
 func fmtYearPersian(locale language.Tag) func(y string) string {

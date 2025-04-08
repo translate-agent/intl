@@ -368,36 +368,62 @@ func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
 //
 // This method applies the formatting options specified in the [DateTimeFormat] instance
 // to the provided time value.
-func (f DateTimeFormat) Format(v time.Time) string {
-	return f.fmt(v)
+func (f DateTimeFormat) Format(t time.Time) string {
+	return f.fmt(t)
 }
 
 // fmtFunc is date time formatter for a particular calendar.
 type fmtFunc func(time.Time) string
 
-// fmtYear formats year.
-func fmtYear(digits digits, opt Year) func(v int) string {
+type fmtPersianFunc func(ptime.Time) string
+
+// convertYearDigits formats year.
+func convertYearDigits(digits digits, opt Year) fmtFunc {
 	if opt.twoDigit() {
-		return digits.twoDigit
+		return func(t time.Time) string { return digits.twoDigit(t.Year()) }
 	}
 
-	return digits.numeric
+	return func(t time.Time) string { return digits.numeric(t.Year()) }
 }
 
-// fmtMonth returns month formatting func.
-func fmtMonth(digits digits, opt Month) func(v int) string {
+// convertYearDigits formats year.
+func convertYearDigitsPersian(digits digits, opt Year) fmtPersianFunc {
+	f := digits.numeric
+
 	if opt.twoDigit() {
-		return digits.twoDigit
+		f = digits.twoDigit
 	}
 
-	return digits.numeric
+	return func(v ptime.Time) string { return f(v.Year()) }
+}
+
+// convertMonthDigitsPersian returns month formatting func.
+// Deprecated: use [fmtMonth] instead. Only Persian calendar formatting depends on this.
+func convertMonthDigitsPersian(digits digits, opt Month) fmtPersianFunc {
+	f := digits.numeric
+
+	if opt.twoDigit() {
+		f = digits.twoDigit
+	}
+
+	return func(v ptime.Time) string { return f(int(v.Month())) }
+}
+
+func convertMonthDigits(digits digits, opt Month) fmtFunc {
+	f := digits.numeric
+
+	if opt.twoDigit() {
+		f = digits.twoDigit
+	}
+
+	return func(t time.Time) string { return f(int(t.Month())) }
 }
 
 // fmtMonthName formats month as name.
 //
 // TODO(jhorsts): ensure this is rectified before release v0.1.0 - when formatting of date is complete.
 // The "context" is always "stand-alone".
-func fmtMonthName(locale string, context, width string) func(v int) string {
+func fmtMonthName(locale string, context, width string) fmtFunc {
 	indexes := monthLookup[locale]
 
 	var i int
@@ -423,24 +449,35 @@ func fmtMonthName(locale string, context, width string) func(v int) string {
 		}
 	}
 
-	return func(v int) string {
-		v--
+	return func(t time.Time) string {
+		i := int(t.Month() - 1)
 
-		if v >= 0 && v < len(names) { // isInBounds()
-			return names[v]
+		if i >= 0 && i < len(names) { // isInBounds()
+			return names[i]
 		}
 
 		return ""
 	}
 }
 
-// fmtDay formats day as numeric.
-func fmtDay(digits digits, opt Day) func(v int) string {
+// convertDayDigits formats day as numeric.
+func convertDayDigits(digits digits, opt Day) fmtFunc {
+	f := digits.numeric
+
 	if opt.twoDigit() {
-		return digits.twoDigit
+		f = digits.twoDigit
 	}
 
-	return digits.numeric
+	return func(t time.Time) string { return f(t.Day()) }
+}
+
+// convertDayDigits formats day as numeric.
+func convertDayDigitsPersian(digits digits, opt Day) fmtPersianFunc {
+	if opt.twoDigit() {
+		return func(v ptime.Time) string { return digits.twoDigit(v.Day()) }
+	}
+
+	return func(v ptime.Time) string { return digits.numeric(v.Day()) }
 }
 
 //nolint:cyclop
@@ -452,95 +489,44 @@ func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) f
 		}
 	case !opts.Era.und() && (!opts.Year.und() && !opts.Month.und() && !opts.Day.und() ||
 		opts.Year.und() && opts.Month.und() && opts.Day.und()):
-		layout := fmtEraYearMonthDayGregorian(locale, digits, opts)
-
-		return func(t time.Time) string {
-			return layout(t.Year(), t.Month(), t.Day())
-		}
+		return fmtEraYearMonthDayGregorian(locale, digits, opts)
 	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und() && opts.Day.und():
-		layout := fmtEraYearMonthGregorian(locale, digits, opts)
-
-		return func(t time.Time) string {
-			return layout(t.Year(), t.Month())
-		}
+		return fmtEraYearMonthGregorian(locale, digits, opts)
 	case !opts.Era.und() && !opts.Year.und() && opts.Month.und() && opts.Day.und():
-		layout := fmtEraYearGregorian(locale, digits, opts)
-
-		return func(t time.Time) string {
-			return layout(t.Year())
-		}
+		return fmtEraYearGregorian(locale, digits, opts)
 	case !opts.Era.und() && opts.Year.und() && !opts.Month.und() && opts.Day.und():
-		layout := fmtEraMonthGregorian(locale, digits, opts)
-
-		return func(t time.Time) string {
-			return layout(t.Month())
-		}
+		return fmtEraMonthGregorian(locale, digits, opts)
 	case !opts.Era.und() && !opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		layout := fmtEraYearDayGregorian(locale, digits, opts)
-
-		return func(t time.Time) string {
-			return layout(t.Year(), t.Day())
-		}
+		return fmtEraYearDayGregorian(locale, digits, opts)
 	case !opts.Era.und() && opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		layout := fmtEraDayGregorian(locale, digits, opts)
-
-		return func(t time.Time) string {
-			return layout(t.Day())
-		}
+		return fmtEraDayGregorian(locale, digits, opts)
 	case !opts.Era.und() && opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		layout := fmtEraMonthDayGregorian(locale, digits, opts)
-
-		return func(t time.Time) string {
-			return layout(t.Month(), t.Day())
-		}
+		return fmtEraMonthDayGregorian(locale, digits, opts)
 	case !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		layout := fmtYearMonthDayGregorian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			return layout(v.Year(), v.Month(), v.Day())
-		}
+		return fmtYearMonthDayGregorian(locale, digits, opts)
 	case !opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		layout := fmtYearDayGregorian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			return layout(v.Year(), v.Day())
-		}
+		return fmtYearDayGregorian(locale, digits, opts)
 	case !opts.Year.und() && !opts.Month.und():
-		layout := fmtYearMonthGregorian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			return layout(v.Year(), v.Month())
-		}
+		return fmtYearMonthGregorian(locale, digits, opts)
 	case !opts.Month.und() && !opts.Day.und():
-		layout := fmtMonthDayGregorian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			return layout(v.Month(), v.Day())
-		}
+		return fmtMonthDayGregorian(locale, digits, opts)
 	case !opts.Year.und():
-		layout := fmtYearGregorian(locale)
-		fmt := fmtYear(digits, opts.Year)
-
-		return func(v time.Time) string {
-			return layout(fmt(v.Year()))
-		}
+		return fmtYearGregorian(locale, digits, opts.Year)
 	case !opts.Month.und():
-		layout := fmtMonthGregorian(locale, digits, opts.Month)
-
-		return func(v time.Time) string {
-			return layout(int(v.Month()))
-		}
+		return fmtMonthGregorian(locale, digits, opts.Month)
 	case !opts.Day.und():
-		layout := fmtDayGregorian(locale, digits, opts.Day)
-
-		return func(v time.Time) string {
-			return layout(v.Day())
-		}
+		return fmtDayGregorian(locale, digits, opts.Day)
 	}
 }
 
 //nolint:cyclop
 func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
+	gregorianToPersian := func(f fmtPersianFunc) fmtFunc {
+		return func(t time.Time) string {
+			return f(ptime.New(t))
+		}
+	}
+
 	switch {
 	default:
 		return func(_ time.Time) string {
@@ -548,108 +534,50 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 		}
 	case !opts.Era.und() && (!opts.Year.und() && !opts.Month.und() && !opts.Day.und() ||
 		opts.Year.und() && opts.Month.und() && opts.Day.und()):
-		layout := fmtEraYearMonthDayPersian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			t := ptime.New(v)
-			return layout(t.Year(), time.Month(t.Month()), t.Day())
-		}
+		return gregorianToPersian(fmtEraYearMonthDayPersian(locale, digits, opts))
 	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und() && opts.Day.und():
-		layout := fmtEraYearMonthPersian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			t := ptime.New(v)
-			return layout(t.Year(), time.Month(t.Month()))
-		}
+		return gregorianToPersian(fmtEraYearMonthPersian(locale, digits, opts))
 	case !opts.Era.und() && opts.Year.und() && !opts.Month.und() && opts.Day.und():
-		layout := fmtEraMonthPersian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			t := ptime.New(v)
-			return layout(time.Month(t.Month()))
-		}
+		return gregorianToPersian(fmtEraMonthPersian(locale, digits, opts))
 	case !opts.Era.und() && opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		layout := fmtEraMonthDayPersian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			t := ptime.New(v)
-			return layout(time.Month(t.Month()), t.Day())
-		}
+		return gregorianToPersian(fmtEraMonthDayPersian(locale, digits, opts))
 	case !opts.Era.und() && !opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		layout := fmtEraYearDayPersian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			t := ptime.New(v)
-			return layout(t.Year(), t.Day())
-		}
+		return gregorianToPersian(fmtEraYearDayPersian(locale, digits, opts))
 	case !opts.Era.und() && !opts.Year.und() && opts.Month.und() && opts.Day.und():
-		layout := fmtEraYearPersian(locale, digits, opts)
-
-		return func(t time.Time) string {
-			return layout(ptime.New(t).Year())
-		}
+		return gregorianToPersian(fmtEraYearPersian(locale, digits, opts))
 	case !opts.Era.und() && opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		layout := fmtEraDayPersian(locale, digits, opts)
-
-		return func(t time.Time) string {
-			return layout(ptime.New(t).Day())
-		}
+		return gregorianToPersian(fmtEraDayPersian(locale, digits, opts))
 	case !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		layout := fmtYearMonthDayPersian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			t := ptime.New(v)
-
-			return layout(t.Year(), time.Month(t.Month()), t.Day())
-		}
+		return gregorianToPersian(fmtYearMonthDayPersian(locale, digits, opts))
 	case !opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		layout := fmtYearDayPersian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			t := ptime.New(v)
-
-			return layout(t.Year(), t.Day())
-		}
+		return gregorianToPersian(fmtYearDayPersian(locale, digits, opts))
 	case !opts.Year.und() && !opts.Month.und():
-		layout := fmtYearMonthPersian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			t := ptime.New(v)
-
-			return layout(t.Year(), time.Month(t.Month()))
-		}
+		return gregorianToPersian(fmtYearMonthPersian(locale, digits, opts))
 	case !opts.Month.und() && !opts.Day.und():
-		layout := fmtMonthDayPersian(locale, digits, opts)
-
-		return func(v time.Time) string {
-			t := ptime.New(v)
-
-			return layout(time.Month(t.Month()), t.Day())
-		}
+		return gregorianToPersian(fmtMonthDayPersian(locale, digits, opts))
 	case !opts.Year.und():
 		layout := fmtYearPersian(locale)
-		fmt := fmtYear(digits, opts.Year)
+		yearDigits := convertYearDigitsPersian(digits, opts.Year)
 
-		return func(v time.Time) string {
-			return layout(fmt(ptime.New(v).Year()))
+		return func(t time.Time) string {
+			return layout(yearDigits(ptime.New(t)))
 		}
 	case !opts.Month.und():
-		layout := fmtMonthPersian(locale, digits, opts.Month)
-
-		return func(v time.Time) string {
-			return layout(int(ptime.New(v).Month()))
-		}
+		return gregorianToPersian(fmtMonthPersian(locale, digits, opts.Month))
 	case !opts.Day.und():
-		layout := fmtDayPersian(locale, digits, opts.Day)
-
-		return func(v time.Time) string {
-			return layout(ptime.New(v).Day())
-		}
+		return gregorianToPersian(fmtDayPersian(locale, digits, opts.Day))
 	}
 }
 
 //nolint:cyclop
 func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
+	// convert Gregorian calendar time to Buddhist
+	gregorianToBuddhist := func(f fmtFunc) fmtFunc {
+		return func(t time.Time) string {
+			return f(t.AddDate(543, 0, 0)) //nolint:mnd
+		}
+	}
+
 	switch {
 	default:
 		return func(_ time.Time) string {
@@ -657,117 +585,32 @@ func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fm
 		}
 	case !opts.Era.und() && (!opts.Year.und() && !opts.Month.und() && !opts.Day.und() ||
 		opts.Year.und() && opts.Month.und() && opts.Day.und()):
-		layout := fmtEraYearMonthDayBuddhist(locale, digits, opts)
-
-		return (func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(v.Year(), v.Month(), v.Day())
-		})
+		return gregorianToBuddhist(fmtEraYearMonthDayBuddhist(locale, digits, opts))
 	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und() && opts.Day.und():
-		layout := fmtEraYearMonthBuddhist(locale, digits, opts)
-
-		return (func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(v.Year(), v.Month())
-		})
+		return gregorianToBuddhist(fmtEraYearMonthBuddhist(locale, digits, opts))
 	case !opts.Era.und() && !opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		layout := fmtEraYearDayBuddhist(locale, digits, opts)
-
-		return (func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(v.Year(), v.Day())
-		})
+		return gregorianToBuddhist(fmtEraYearDayBuddhist(locale, digits, opts))
 	case !opts.Era.und() && opts.Year.und() && !opts.Month.und() && opts.Day.und():
-		layout := fmtEraMonthBuddhist(locale, digits, opts)
-
-		return (func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(v.Month())
-		})
+		return gregorianToBuddhist(fmtEraMonthBuddhist(locale, digits, opts))
 	case !opts.Era.und() && opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		layout := fmtEraDayBuddhist(locale, digits, opts)
-
-		return (func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(v.Day())
-		})
+		return gregorianToBuddhist(fmtEraDayBuddhist(locale, digits, opts))
 	case !opts.Era.und() && opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		layout := fmtEraMonthDayBuddhist(locale, digits, opts)
-
-		return (func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(v.Month(), v.Day())
-		})
+		return gregorianToBuddhist(fmtEraMonthDayBuddhist(locale, digits, opts))
 	case !opts.Era.und() && !opts.Year.und() && opts.Month.und() && opts.Day.und():
-		layout := fmtEraYearBuddhist(locale, digits, opts)
-
-		return (func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(v.Year())
-		})
+		return gregorianToBuddhist(fmtEraYearBuddhist(locale, digits, opts))
 	case !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		layout := fmtYearMonthDayBuddhist(locale, digits, opts)
-
-		return func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(v.Year(), v.Month(), v.Day())
-		}
+		return gregorianToBuddhist(fmtYearMonthDayBuddhist(locale, digits, opts))
 	case !opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		layout := fmtYearDayBuddhist(locale, digits, opts)
-
-		return func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(v.Year(), v.Day())
-		}
+		return gregorianToBuddhist(fmtYearDayBuddhist(locale, digits, opts))
 	case !opts.Year.und() && !opts.Month.und():
-		layout := fmtYearMonthBuddhist(locale, digits, opts)
-
-		return func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(v.Year(), v.Month())
-		}
+		return gregorianToBuddhist(fmtYearMonthBuddhist(locale, digits, opts))
 	case !opts.Month.und() && !opts.Day.und():
-		layout := fmtMonthDayBuddhist(locale, digits, opts)
-
-		return func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(v.Month(), v.Day())
-		}
+		return gregorianToBuddhist(fmtMonthDayBuddhist(locale, digits, opts))
 	case !opts.Year.und():
-		layout := fmtYearBuddhist(locale, EraNarrow)
-		fmt := fmtYear(digits, opts.Year)
-
-		return func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(fmt(v.Year()))
-		}
+		return gregorianToBuddhist(fmtYearBuddhist(locale, digits, opts))
 	case !opts.Month.und():
-		layout := fmtMonthBuddhist(locale, digits, opts.Month)
-
-		return func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(int(v.Month()))
-		}
+		return gregorianToBuddhist(fmtMonthBuddhist(locale, digits, opts.Month))
 	case !opts.Day.und():
-		layout := fmtDayBuddhist(locale, digits, opts.Day)
-
-		return func(v time.Time) string {
-			v = v.AddDate(543, 0, 0) //nolint:mnd
-
-			return layout(v.Day())
-		}
+		return gregorianToBuddhist(fmtDayBuddhist(locale, digits, opts.Day))
 	}
 }

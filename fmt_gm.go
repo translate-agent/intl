@@ -3,11 +3,12 @@ package intl
 import (
 	"time"
 
+	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
-func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
-	var month func(int) string
+func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+	var month fmtFunc
 
 	lang, script, _ := locale.Raw()
 	era := fmtEra(locale, opts.Era)
@@ -67,13 +68,13 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func
 	}
 
 	if month == nil {
-		month = fmtMonth(digits, opts.Month)
+		month = convertMonthDigits(digits, opts.Month)
 	}
 
-	return func(m time.Month) string { return prefix + month(int(m)) + suffix }
+	return func(t time.Time) string { return prefix + month(t) + suffix }
 }
 
-func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
+func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	monthName := unitName(locale).Month
@@ -95,13 +96,14 @@ func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m
 		}
 	}
 
-	month := fmtMonth(digits, opts.Month)
+	month := convertMonthDigitsPersian(digits, opts.Month)
 
-	return func(m time.Month) string { return prefix + month(int(m)) + suffix }
+	return func(v ptime.Time) string { return prefix + month(v) + suffix }
 }
 
-func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
+func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
 	era := fmtEra(locale, opts.Era)
+	monthDigits := convertMonthDigits(digits, opts.Month)
 	monthName := unitName(locale).Month
 	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
 
@@ -113,7 +115,5 @@ func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) func(
 		suffix = ")"
 	}
 
-	month := fmtMonth(digits, opts.Month)
-
-	return func(m time.Month) string { return prefix + month(int(m)) + suffix }
+	return func(t time.Time) string { return prefix + monthDigits(t) + suffix }
 }

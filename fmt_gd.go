@@ -1,8 +1,13 @@
 package intl
 
-import "golang.org/x/text/language"
+import (
+	"time"
 
-func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) func(d int) string {
+	ptime "github.com/yaa110/go-persian-calendar"
+	"golang.org/x/text/language"
+)
+
+func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
 	lang, script, _ := locale.Raw()
 	era := fmtEra(locale, opts.Era)
 	dayName := unitName(locale).Day
@@ -62,12 +67,12 @@ func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) func(d
 		}
 	}
 
-	day := fmtDay(digits, opts.Day)
+	dayDigits := convertDayDigits(digits, opts.Day)
 
-	return func(d int) string { return prefix + day(d) + suffix }
+	return func(t time.Time) string { return prefix + dayDigits(t) + suffix }
 }
 
-func fmtEraDayPersian(locale language.Tag, digits digits, opts Options) func(d int) string {
+func fmtEraDayPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
@@ -88,12 +93,12 @@ func fmtEraDayPersian(locale language.Tag, digits digits, opts Options) func(d i
 		}
 	}
 
-	day := fmtDay(digits, opts.Day)
+	dayDigits := convertDayDigitsPersian(digits, opts.Day)
 
-	return func(d int) string { return prefix + day(d) + suffix }
+	return func(v ptime.Time) string { return prefix + dayDigits(v) + suffix }
 }
 
-func fmtEraDayBuddhist(locale language.Tag, digits digits, opts Options) func(d int) string {
+func fmtEraDayBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
 	era := fmtEra(locale, opts.Era)
 	prefix, suffix := era+" ", ""
 	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
@@ -102,7 +107,7 @@ func fmtEraDayBuddhist(locale language.Tag, digits digits, opts Options) func(d 
 		prefix, suffix = era+" ("+unitName(locale).Day+": ", ")"
 	}
 
-	day := fmtDay(digits, opts.Day)
+	dayDigits := convertDayDigits(digits, opts.Day)
 
-	return func(d int) string { return prefix + day(d) + suffix }
+	return func(t time.Time) string { return prefix + dayDigits(t) + suffix }
 }

@@ -3,15 +3,16 @@ package intl
 import (
 	"time"
 
+	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
 //nolint:cyclop,gocognit
-func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
-	var month func(int) string
+func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+	var month fmtFunc
 
 	lang, script, region := locale.Raw()
-	year := fmtYear(digits, opts.Year)
+	yearDigits := convertYearDigits(digits, opts.Year)
 
 	const (
 		layoutYearMonth = iota
@@ -419,43 +420,42 @@ func fmtYearMonthGregorian(locale language.Tag, digits digits, opts Options) fun
 	}
 
 	if month == nil {
-		month = fmtMonth(digits, opts.Month)
+		month = convertMonthDigits(digits, opts.Month)
 	}
 
 	if layout == layoutMonthYear {
-		return func(y int, m time.Month) string {
-			return prefix + month(int(m)) + middle + year(y) + suffix
+		return func(t time.Time) string {
+			return prefix + month(t) + middle + yearDigits(t) + suffix
 		}
 	}
 
-	return func(y int, m time.Month) string {
-		return prefix + year(y) + middle + month(int(m)) + suffix
+	return func(t time.Time) string {
+		return prefix + yearDigits(t) + middle + month(t) + suffix
 	}
 }
 
-func fmtYearMonthBuddhist(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
-	year := fmtYear(digits, opts.Year)
+func fmtYearMonthBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+	yearDigits := convertYearDigits(digits, opts.Year)
 
 	if lang, _ := locale.Base(); lang == th {
-		month := fmtMonth(digits, opts.Month)
+		monthDigits := convertMonthDigits(digits, opts.Month)
 
-		return func(y int, m time.Month) string {
-			return month(int(m)) + "/" + year(y)
+		return func(t time.Time) string {
+			return monthDigits(t) + "/" + yearDigits(t)
 		}
 	}
 
-	prefix := fmtEra(locale, EraNarrow) + " "
-	month := fmtMonth(digits, Month2Digit)
+	monthDigits := convertMonthDigits(digits, Month2Digit)
 
-	return func(y int, m time.Month) string {
-		return prefix + year(y) + "-" + month(int(m))
+	return func(t time.Time) string {
+		return yearDigits(t) + "-" + monthDigits(t)
 	}
 }
 
-func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) func(y int, m time.Month) string {
+func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
 	lang, _, region := locale.Raw()
-	year := fmtYear(digits, opts.Year)
-	month := fmtMonth(digits, Month2Digit)
+	yearDigits := convertYearDigitsPersian(digits, opts.Year)
+	month := convertMonthDigitsPersian(digits, Month2Digit)
 
 	prefix := ""
 	separator := "-"
@@ -466,8 +466,8 @@ func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) func(
 		// year=numeric,month=2-digit,out=١٠/١٤٠٢
 		// year=2-digit,month=numeric,out=١٠/٠٢
 		// year=2-digit,month=2-digit,out=١٠/٠٢
-		return func(y int, m time.Month) string {
-			return month(int(m)) + "/" + year(y)
+		return func(v ptime.Time) string {
+			return month(v) + "/" + yearDigits(v)
 		}
 	case fa:
 		separator = "/"
@@ -488,7 +488,7 @@ func fmtYearMonthPersian(locale language.Tag, digits digits, opts Options) func(
 		prefix = fmtEra(locale, EraNarrow) + " "
 	}
 
-	return func(y int, m time.Month) string {
-		return prefix + year(y) + separator + month(int(m))
+	return func(v ptime.Time) string {
+		return prefix + yearDigits(v) + separator + month(v)
 	}
 }

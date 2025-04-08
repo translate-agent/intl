@@ -1,8 +1,12 @@
 package intl
 
-import "golang.org/x/text/language"
+import (
+	"time"
 
-func fmtDayGregorian(locale language.Tag, digits digits, opt Day) func(d int) string {
+	"golang.org/x/text/language"
+)
+
+func fmtDayGregorian(locale language.Tag, digits digits, opt Day) fmtFunc {
 	suffix := ""
 
 	switch lang, _ := locale.Base(); lang {
@@ -24,15 +28,16 @@ func fmtDayGregorian(locale language.Tag, digits digits, opt Day) func(d int) st
 		suffix = "ꑍ"
 	}
 
-	day := fmtDay(digits, opt)
+	dayDigits := convertDayDigits(digits, opt)
 
-	return func(d int) string { return day(d) + suffix }
+	return func(t time.Time) string { return dayDigits(t) + suffix }
 }
 
-func fmtDayBuddhist(_ language.Tag, digits digits, opt Day) func(d int) string {
-	return fmtDay(digits, opt)
+func fmtDayBuddhist(_ language.Tag, digits digits, opt Day) fmtFunc {
+	dayDigits := convertDayDigits(digits, opt)
+	return func(t time.Time) string { return dayDigits(t) }
 }
 
-func fmtDayPersian(_ language.Tag, digits digits, opt Day) func(d int) string {
-	return fmtDay(digits, opt)
+func fmtDayPersian(_ language.Tag, digits digits, opt Day) fmtPersianFunc {
+	return convertDayDigitsPersian(digits, opt)
 }

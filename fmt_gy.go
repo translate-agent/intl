@@ -1,12 +1,16 @@
 package intl
 
-import "golang.org/x/text/language"
+import (
+	"time"
 
-func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) func(y int) string {
+	ptime "github.com/yaa110/go-persian-calendar"
+	"golang.org/x/text/language"
+)
+
+func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
-	layoutYear := fmtYearGregorian(locale)
+	year := fmtYearGregorian(locale, digits, opts.Year)
 
 	prefix := ""
 	suffix := " " + era
@@ -78,13 +82,13 @@ func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) func(
 		suffix = ""
 	}
 
-	return func(y int) string { return prefix + layoutYear(year(y)) + suffix }
+	return func(t time.Time) string { return prefix + year(t) + suffix }
 }
 
-func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) func(y int) string {
+func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
+	yearDigits := convertYearDigitsPersian(digits, opts.Year)
 
 	prefix := ""
 	suffix := " " + era
@@ -97,16 +101,11 @@ func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) func(y 
 		suffix = " " + era
 	}
 
-	return func(y int) string {
-		return prefix + year(y) + suffix
+	return func(v ptime.Time) string {
+		return prefix + yearDigits(v) + suffix
 	}
 }
 
-func fmtEraYearBuddhist(locale language.Tag, digits digits, opts Options) func(y int) string {
-	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
-
-	return func(y int) string {
-		return era + " " + year(y)
-	}
+func fmtEraYearBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+	return fmtYearBuddhist(locale, digits, opts)
 }

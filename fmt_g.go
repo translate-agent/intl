@@ -1,8 +1,14 @@
 package intl
 
-import "golang.org/x/text/language"
+import (
+	"golang.org/x/text/language"
+)
 
 func fmtEra(locale language.Tag, opt Era) string {
+	if opt.und() {
+		opt = EraNarrow
+	}
+
 	era, ok := eraLookup[locale.String()]
 	if ok && opt > 0 && int(opt) <= len(era) { // isInBounds()
 		return era[opt-1]

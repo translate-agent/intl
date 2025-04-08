@@ -3,12 +3,13 @@ package intl
 import (
 	"time"
 
+	ptime "github.com/yaa110/go-persian-calendar"
 	"golang.org/x/text/language"
 )
 
 //nolint:cyclop,gocognit
-func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
-	var month func(int) string
+func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+	var month fmtFunc
 
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
@@ -372,23 +373,23 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 	}
 
 	if month == nil {
-		month = fmtMonth(digits, opts.Month)
+		month = convertMonthDigits(digits, opts.Month)
 	}
 
-	day := fmtDay(digits, opts.Day)
+	dayDigits := convertDayDigits(digits, opts.Day)
 
 	if layout == layoutDayMonth {
-		return func(m time.Month, d int) string {
-			return prefix + day(d) + separator + month(int(m)) + suffix
+		return func(t time.Time) string {
+			return prefix + dayDigits(t) + separator + month(t) + suffix
 		}
 	}
 
-	return func(m time.Month, d int) string {
-		return prefix + month(int(m)) + separator + day(d) + suffix
+	return func(t time.Time) string {
+		return prefix + month(t) + separator + dayDigits(t) + suffix
 	}
 }
 
-func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
+func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) fmtPersianFunc {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	prefix := era + " "
@@ -400,20 +401,16 @@ func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) fun
 		separator = "/"
 	}
 
-	month := fmtMonth(digits, opts.Month)
-	day := fmtDay(digits, opts.Day)
+	month := convertMonthDigitsPersian(digits, opts.Month)
+	dayDigits := convertDayDigitsPersian(digits, opts.Day)
 
-	return func(m time.Month, d int) string {
-		return prefix + month(int(m)) + separator + day(d)
-	}
+	return func(v ptime.Time) string { return prefix + month(v) + separator + dayDigits(v) }
 }
 
-func fmtEraMonthDayBuddhist(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
+func fmtEraMonthDayBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
 	era := fmtEra(locale, opts.Era)
-	month := fmtMonth(digits, opts.Month)
-	day := fmtDay(digits, opts.Day)
+	prefix := era + " "
+	month := fmtMonthDayBuddhist(locale, digits, opts)
 
-	return func(m time.Month, d int) string {
-		return era + " " + day(d) + "/" + month(int(m))
-	}
+	return func(t time.Time) string { return prefix + month(t) }
 }
