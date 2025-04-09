@@ -39,14 +39,14 @@ generate:
     --mount=type=cache,id=go-build,target=/root/.cache/go-build \
     go run -C internal/gen . -cldr-dir /intl/cldr -out=/intl && \
     gofumpt -w .
-  SAVE ARTIFACT cldr_data.go AS LOCAL cldr_data.go
+  SAVE ARTIFACT internal/cldr/data.go data.go AS LOCAL internal/cldr/data.go
 
 # test runs unit tests
 test:
   COPY go.mod go.sum *.go .
   COPY --dir internal .
   COPY +testdata/tests.json .
-  COPY +generate/cldr_data.go .
+  COPY +generate/data.go internal/cldr/
   RUN \
     --mount=type=cache,id=go-mod,target=/go/pkg/mod \
     --mount=type=cache,id=go-build,target=/root/.cache/go-build \
@@ -60,12 +60,12 @@ lint:
   COPY go.mod go.sum *.go .golangci.yml .
   COPY --dir internal .
   COPY +testdata/tests.json .
-  COPY +generate/cldr_data.go .
+  COPY +generate/data.go internal/cldr/
   RUN \
     --mount=type=cache,id=go-mod,target=/go/pkg/mod \
     --mount=type=cache,id=go-build,target=/root/.cache/go-build \
     --mount=type=cache,target=/root/.cache/golangci_lint \
-    golangci-lint run ./...
+    golangci-lint run
 
 # check verifies code quality by running linters and tests
 check:

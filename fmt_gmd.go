@@ -1,11 +1,12 @@
 package intl
 
 import (
+	"go.expect.digital/intl/internal/cldr"
 	"golang.org/x/text/language"
 )
 
 //nolint:cyclop,gocognit
-func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraMonthDayGregorian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	var month fmtFunc
 
 	lang, script, region := locale.Raw()
@@ -23,53 +24,55 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 	separator := "/"
 
 	switch lang {
-	case af, as, ia, ky, mi, rm, tg, wo:
+	case cldr.AF, cldr.AS, cldr.IA, cldr.KY, cldr.MI, cldr.RM, cldr.TG, cldr.WO:
 		opts.Month = Month2Digit
 		opts.Day = Day2Digit
 		separator = "-"
-	case sd:
-		if script == deva {
+	case cldr.SD:
+		if script == cldr.Deva {
 			layout = layoutMonthDay
 			break
 		}
 
 		fallthrough
-	case bgc, bho, bo, ce, ckb, csw, eo, gaa, gv, kl, ksh, kw, lij, lkt, lmo, mgo, mt, nds, nnh, ne, nqo, nso, oc, prg,
-		ps, qu, raj, rw, sah, sat, sn, st, szl, tn, tok, vmw, yi, za, zu:
+	case cldr.BGC, cldr.BHO, cldr.BO, cldr.CE, cldr.CKB, cldr.CSW, cldr.EO, cldr.GAA, cldr.GV, cldr.KL, cldr.KSH,
+		cldr.KW, cldr.LIJ, cldr.LKT, cldr.LMO, cldr.MGO, cldr.MT, cldr.NDS, cldr.NNH, cldr.NE, cldr.NQO, cldr.NSO, cldr.OC,
+		cldr.PRG, cldr.PS, cldr.QU, cldr.RAJ, cldr.RW, cldr.SAH, cldr.SAT, cldr.SN, cldr.ST, cldr.SZL, cldr.TN, cldr.TOK,
+		cldr.VMW, cldr.YI, cldr.ZA, cldr.ZU:
 		opts.Month = Month2Digit
 		opts.Day = Day2Digit
 		layout = layoutMonthDay
 		separator = "-"
-	case lt:
+	case cldr.LT:
 		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 		}
 
 		fallthrough
-	case dz, si:
+	case cldr.DZ, cldr.SI:
 		layout = layoutMonthDay
 		separator = "-"
-	case nl:
-		if region == regionBE {
+	case cldr.NL:
+		if region == cldr.RegionBE {
 			break
 		}
 
 		fallthrough
-	case fy, ug:
+	case cldr.FY, cldr.UG:
 		separator = "-"
-	case or:
+	case cldr.OR:
 		if opts.Month.numeric() && opts.Day.numeric() {
 			layout = layoutMonthDay
 			break
 		}
 
 		separator = "-"
-	case ms:
+	case cldr.MS:
 		if opts.Month.numeric() && opts.Day.numeric() {
 			separator = "-"
 		}
-	case se:
-		if region == regionFI {
+	case cldr.SE:
+		if region == cldr.RegionFI {
 			break
 		}
 
@@ -77,93 +80,93 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		opts.Day = Day2Digit
 		layout = layoutMonthDay
 		separator = "-"
-	case kn, mr, vi:
+	case cldr.KN, cldr.MR, cldr.VI:
 		if !opts.Month.numeric() || !opts.Day.numeric() {
 			separator = "-"
 		}
-	case ti:
+	case cldr.TI:
 		opts.Month = MonthNumeric
 		opts.Day = DayNumeric
-	case ff:
-		if script == adlm {
+	case cldr.FF:
+		if script == cldr.Adlm {
 			separator = "-"
 		}
-	case bn, ccp, gu, ta, te:
+	case cldr.BN, cldr.CCP, cldr.GU, cldr.TA, cldr.TE:
 		if opts.Month.twoDigit() || opts.Day.twoDigit() {
 			separator = "-"
 			break
 		}
-	case az, cv, fo, hy, kk, ku, os, tk, tt, uk:
+	case cldr.AZ, cldr.CV, cldr.FO, cldr.HY, cldr.KK, cldr.KU, cldr.OS, cldr.TK, cldr.TT, cldr.UK:
 		opts.Month = Month2Digit
 		opts.Day = Day2Digit
 		separator = "."
-	case sq:
+	case cldr.SQ:
 		opts.Month = MonthNumeric
 		opts.Day = DayNumeric
 		separator = "."
-	case bg:
+	case cldr.BG:
 		opts.Month = Month2Digit
 		prefix = era + " "
 		separator = "."
-	case cy:
+	case cldr.CY:
 		prefix = era + " "
-	case pl:
+	case cldr.PL:
 		opts.Month = Month2Digit
 		separator = "."
-	case be, da, et, he, ie, jgo, ka:
+	case cldr.BE, cldr.DA, cldr.ET, cldr.HE, cldr.IE, cldr.JGO, cldr.KA:
 		separator = "."
-	case mk:
+	case cldr.MK:
 		opts.Day = DayNumeric
 		prefix = era + " "
 		separator = "."
-	case nb, nn, no:
+	case cldr.NB, cldr.NN, cldr.NO:
 		opts.Month = MonthNumeric
 		opts.Day = DayNumeric
 		separator = "."
 		suffix = "."
-	case lv:
+	case cldr.LV:
 		opts.Month = Month2Digit
 		opts.Day = Day2Digit
 		separator = "."
 		suffix = "."
-	case sr:
+	case cldr.SR:
 		separator = "."
 		suffix = "."
 
 		if opts.Month.numeric() && opts.Day.numeric() {
 			separator = ". "
 		}
-	case hr:
+	case cldr.HR:
 		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
 
 		fallthrough
-	case cs, sk, sl:
+	case cldr.CS, cldr.SK, cldr.SL:
 		separator = ". "
 		suffix = "."
-	case ro, ru:
+	case cldr.RO, cldr.RU:
 		separator = "."
 
 		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case de, dsb, fi, gsw, hsb, lb, is, smn:
+	case cldr.DE, cldr.DSB, cldr.FI, cldr.GSW, cldr.HSB, cldr.LB, cldr.IS, cldr.SMN:
 		separator = "."
 		suffix = "."
-	case hu, ko:
+	case cldr.HU, cldr.KO:
 		layout = layoutMonthDay
 		separator = ". "
 		suffix = "."
-	case wae:
+	case cldr.WAE:
 		month = fmtMonthName(locale.String(), "format", "abbreviated")
 		separator = ". "
-	case bs:
+	case cldr.BS:
 		suffix = "."
 
-		if script == cyrl {
+		if script == cldr.Cyrl {
 			separator = "."
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
@@ -174,7 +177,7 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		opts.Month = MonthNumeric
 		opts.Day = DayNumeric
 		separator = ". "
-	case om:
+	case cldr.OM:
 		if opts.Month.twoDigit() || opts.Day.twoDigit() {
 			break
 		}
@@ -183,8 +186,8 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		opts.Month = Month2Digit
 		opts.Day = Day2Digit
 		separator = "-"
-	case ks:
-		if script == deva {
+	case cldr.KS:
+		if script == cldr.Deva {
 			layout = layoutMonthDay
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
@@ -194,25 +197,27 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		}
 
 		fallthrough
-	case ak, asa, bem, blo, bez, brx, ceb, cgg, chr, dav, ebu, ee, eu, fil, guz, ha, kam, kde, kln, teo, vai, ja, jmc, ki,
-		ksb, lag, lg, luo, luy, mas, mer, naq, nd, nyn, rof, rwk, saq, sbp, so, tzm, vun, xh, xog, yue:
+	case cldr.AK, cldr.ASA, cldr.BEM, cldr.BLO, cldr.BEZ, cldr.BRX, cldr.CEB, cldr.CGG, cldr.CHR, cldr.DAV, cldr.EBU,
+		cldr.EE, cldr.EU, cldr.FIL, cldr.GUZ, cldr.HA, cldr.KAM, cldr.KDE, cldr.KLN, cldr.TEO, cldr.VAI, cldr.JA,
+		cldr.JMC, cldr.KI, cldr.KSB, cldr.LAG, cldr.LG, cldr.LUO, cldr.LUY, cldr.MAS, cldr.MER, cldr.NAQ, cldr.ND,
+		cldr.NYN, cldr.ROF, cldr.RWK, cldr.SAQ, cldr.SBP, cldr.SO, cldr.TZM, cldr.VUN, cldr.XH, cldr.XOG, cldr.YUE:
 		layout = layoutMonthDay
-	case mn:
+	case cldr.MN:
 		month = fmtMonthName(locale.String(), "stand-alone", "narrow")
 		opts.Day = Day2Digit
 		layout = layoutMonthDay
-	case zh:
-		if region == regionHK || region == regionMO {
+	case cldr.ZH:
+		if region == cldr.RegionHK || region == cldr.RegionMO {
 			break
 		}
 
 		layout = layoutMonthDay
 
-		if region == regionSG {
+		if region == cldr.RegionSG {
 			separator = "-"
 		}
-	case fr:
-		if region == regionCA {
+	case cldr.FR:
+		if region == cldr.RegionCA {
 			layout = layoutMonthDay
 			separator = "-"
 
@@ -224,7 +229,7 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 			break
 		}
 
-		if region == regionCH {
+		if region == cldr.RegionCH {
 			separator = "."
 
 			if opts.Month.numeric() && opts.Day.numeric() {
@@ -237,26 +242,26 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		}
 
 		fallthrough
-	case br, ga, it, jv, kkj, sc, syr, vec, uz:
+	case cldr.BR, cldr.GA, cldr.IT, cldr.JV, cldr.KKJ, cldr.SC, cldr.SYR, cldr.VEC, cldr.UZ:
 		opts.Month = Month2Digit
 		opts.Day = Day2Digit
-	case pcm:
+	case cldr.PCM:
 		separator = " /"
-	case sv:
-		if region == regionFI {
+	case cldr.SV:
+		if region == cldr.RegionFI {
 			separator = "."
 		}
 
 		if opts.Month.twoDigit() && opts.Day.numeric() {
 			opts.Month = MonthNumeric
 		}
-	case kea, pt:
+	case cldr.KEA, cldr.PT:
 		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case hi:
-		if script != latn {
+	case cldr.HI:
+		if script != cldr.Latn {
 			break
 		}
 
@@ -267,34 +272,34 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case ar:
+	case cldr.AR:
 		separator = "\u200f/"
-	case lrc:
-		if region == regionIQ {
+	case cldr.LRC:
+		if region == cldr.RegionIQ {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 			layout = layoutMonthDay
 			separator = "-"
 		}
-	case en:
+	case cldr.EN:
 		prefix = ""
 		suffix = " " + era
 
 		switch region {
-		case regionUS, regionAS, regionBI, regionPH, regionPR, regionUM, regionVI:
+		case cldr.RegionUS, cldr.RegionAS, cldr.RegionBI, cldr.RegionPH, cldr.RegionPR, cldr.RegionUM, cldr.RegionVI:
 			layout = layoutMonthDay
 			goto breakEN
-		case regionAU, regionBE, regionIE, regionNZ, regionZW:
+		case cldr.RegionAU, cldr.RegionBE, cldr.RegionIE, cldr.RegionNZ, cldr.RegionZW:
 			goto breakEN
-		case regionGU, regionMH, regionMP, regionZZ:
+		case cldr.RegionGU, cldr.RegionMH, cldr.RegionMP, cldr.RegionZZ:
 			layout = layoutMonthDay
 			goto breakEN
-		case regionCA:
+		case cldr.RegionCA:
 			layout = layoutMonthDay
 			separator = "-"
-		case regionCH:
+		case cldr.RegionCH:
 			separator = "."
-		case regionZA:
+		case cldr.RegionZA:
 			if !opts.Month.twoDigit() || !opts.Day.twoDigit() {
 				layout = layoutMonthDay
 				opts.Month = Month2Digit
@@ -302,7 +307,7 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 			}
 		}
 
-		if script == shaw || script == dsrt {
+		if script == cldr.Shaw || script == cldr.Dsrt {
 			layout = layoutMonthDay
 			break
 		}
@@ -313,11 +318,11 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		}
 	breakEN:
 		break
-	case es:
+	case cldr.ES:
 		switch region {
-		case regionUS, regionMX:
+		case cldr.RegionUS, cldr.RegionMX:
 			goto breakES
-		case regionCL:
+		case cldr.RegionCL:
 			if opts.Month.twoDigit() {
 				separator = "/"
 				opts.Month = MonthNumeric
@@ -329,7 +334,7 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 			}
 
 			goto breakES
-		case regionPA, regionPR:
+		case cldr.RegionPA, cldr.RegionPR:
 			if opts.Month.numeric() {
 				layout = layoutMonthDay
 				opts.Month = Month2Digit
@@ -353,17 +358,17 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 		opts.Day = DayNumeric
 	breakES:
 		break
-	case ii:
+	case cldr.II:
 		opts.Month = Month2Digit
 		opts.Day = Day2Digit
 		layout = layoutMonthDay
 		separator = "ꆪ-"
 		suffix = "ꑍ"
-	case kok:
-		if script != latn {
+	case cldr.KOK:
+		if script != cldr.Latn {
 			separator = "-"
 		}
-	case kaa, mhn:
+	case cldr.KAA, cldr.MHN:
 		layout = layoutMonthDay
 		prefix = ""
 		suffix = " " + era
@@ -386,14 +391,14 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits digits, opts Options) f
 	}
 }
 
-func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	prefix := era + " "
 	separator := "-"
 
 	switch lang {
-	case fa, ps:
+	case cldr.FA, cldr.PS:
 		prefix = era + " "
 		separator = "/"
 	}
@@ -404,7 +409,7 @@ func fmtEraMonthDayPersian(locale language.Tag, digits digits, opts Options) fmt
 	return func(v timeReader) string { return prefix + month(v) + separator + dayDigits(v) }
 }
 
-func fmtEraMonthDayBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraMonthDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	era := fmtEra(locale, opts.Era)
 	prefix := era + " "
 	month := fmtMonthDayBuddhist(locale, digits, opts)

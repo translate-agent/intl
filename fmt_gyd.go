@@ -1,15 +1,16 @@
 package intl
 
 import (
+	"go.expect.digital/intl/internal/cldr"
 	"golang.org/x/text/language"
 )
 
 //nolint:cyclop
-func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraYearDayGregorian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
 	year := fmtYearGregorian(locale, digits, opts.Year)
-	dayName := unitName(locale).Day
+	dayName := cldr.UnitName(locale).Day
 
 	const (
 		eraYearDay = iota
@@ -22,95 +23,101 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fm
 	suffix := ")"
 
 	switch lang {
-	case be, ru:
+	case cldr.BE, cldr.RU:
 		middle = " г. " + era + " (" + dayName + ": "
-	case cv:
+	case cldr.CV:
 		middle = " ҫ. " + era + " (" + dayName + ": "
-	case kk:
+	case cldr.KK:
 		prefix = era + " "
 		middle = " ж. (" + dayName + ": "
-	case ky:
+	case cldr.KY:
 		prefix = era + " "
 		middle = "-ж. (" + dayName + ": "
-	case hy:
+	case cldr.HY:
 		prefix = era + " "
 		middle = " թ. (" + dayName + ": "
-	case tt:
+	case cldr.TT:
 		prefix = era + " "
 		middle = " ел (" + dayName + ": "
-	case sah:
+	case cldr.SAH:
 		middle = " с. " + era + " (" + dayName + ": "
-	case lt:
+	case cldr.LT:
 		opts.Day = Day2Digit
 		middle = " m. " + era + " (" + dayName + ": "
-	case bg, cy, mk:
+	case cldr.BG, cldr.CY, cldr.MK:
 		middle = " " + era + " (" + dayName + ": "
-	case bs:
-		if script != cyrl {
+	case cldr.BS:
+		if script != cldr.Cyrl {
 			suffix = ".)"
 		}
-	case agq, ak, as, asa, az, bas, bem, bez, bgc, bho, bm, bo, ce, cgg, ckb, csw, dav, dje, doi, dua, dyo, dz, ebu, eo,
-		eu, ewo, fur, fy, gaa, gsw, gu, guz, gv, ha, hu, ig, jgo, jmc, kab, kam, kde, khq, ki, kl, kln, kn, ksb, ksf, ksh, ku,
-		kw, lag, lg, lij, lkt, lmo, ln, lo, lrc, lu, luo, luy, lv, mas, mer, mfe, mg, mgh, mgo, ml, mn, mni, mr, mt, mua, my,
-		naq, nd, nds, ne, nmg, nnh, nqo, nso, nus, nyn, oc, om, os, pa, pcm, prg, ps, qu, raj, rn, rof, rw, rwk, saq, sat,
-		sbp, seh, ses, sg, shi, si, sn, st, szl, ta, te, teo, tk, tn, tok, tr, twq, tzm, vai, vmw, vun, wae, xog, yav, yi, yo,
-		za, zgh, zu:
+	case cldr.AGQ, cldr.AK, cldr.AS, cldr.ASA, cldr.AZ, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BGC, cldr.BHO, cldr.BM,
+		cldr.BO, cldr.CE, cldr.CGG, cldr.CKB, cldr.CSW, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DYO, cldr.DZ,
+		cldr.EBU, cldr.EO, cldr.EU, cldr.EWO, cldr.FUR, cldr.FY, cldr.GAA, cldr.GSW, cldr.GU, cldr.GUZ, cldr.GV, cldr.HA,
+		cldr.HU, cldr.IG, cldr.JGO, cldr.JMC, cldr.KAB, cldr.KAM, cldr.KDE, cldr.KHQ, cldr.KI, cldr.KL, cldr.KLN, cldr.KN,
+		cldr.KSB, cldr.KSF, cldr.KSH, cldr.KU, cldr.KW, cldr.LAG, cldr.LG, cldr.LIJ, cldr.LKT, cldr.LMO, cldr.LN, cldr.LO,
+		cldr.LRC, cldr.LU, cldr.LUO, cldr.LUY, cldr.LV, cldr.MAS, cldr.MER, cldr.MFE, cldr.MG, cldr.MGH, cldr.MGO, cldr.ML,
+		cldr.MN, cldr.MNI, cldr.MR, cldr.MT, cldr.MUA, cldr.MY, cldr.NAQ, cldr.ND, cldr.NDS, cldr.NE, cldr.NMG, cldr.NNH,
+		cldr.NQO, cldr.NSO, cldr.NUS, cldr.NYN, cldr.OC, cldr.OM, cldr.OS, cldr.PA, cldr.PCM, cldr.PRG, cldr.PS, cldr.QU,
+		cldr.RAJ, cldr.RN, cldr.ROF, cldr.RW, cldr.RWK, cldr.SAQ, cldr.SAT, cldr.SBP, cldr.SEH, cldr.SES, cldr.SG,
+		cldr.SHI, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TE, cldr.TEO, cldr.TK, cldr.TN, cldr.TOK, cldr.TR,
+		cldr.TWQ, cldr.TZM, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI, cldr.YO, cldr.ZA,
+		cldr.ZGH, cldr.ZU:
 		prefix = era + " "
 		middle = " (" + dayName + ": "
-	case uz:
-		if script != arab {
+	case cldr.UZ:
+		if script != cldr.Arab {
 			prefix = era + " "
 			middle = " (" + dayName + ": "
 		}
-	case brx:
+	case cldr.BRX:
 		prefix = era
 		middle = " (" + dayName + ": "
-	case cs, da, dsb, fo, hr, hsb, ie, nb, nn, no, sk, sl:
+	case cldr.CS, cldr.DA, cldr.DSB, cldr.FO, cldr.HR, cldr.HSB, cldr.IE, cldr.NB, cldr.NN, cldr.NO, cldr.SK, cldr.SL:
 		suffix = ".)"
-	case ff:
-		if script != adlm {
+	case cldr.FF:
+		if script != cldr.Adlm {
 			prefix = era + " "
 			middle = " (" + dayName + ": "
 		}
-	case hi:
-		if script == latn {
+	case cldr.HI:
+		if script == cldr.Latn {
 			prefix = era + " "
 			middle = " (" + dayName + ": "
 		}
-	case ks:
-		if script == deva {
+	case cldr.KS:
+		if script == cldr.Deva {
 			prefix = era + " "
 			middle = " (" + dayName + ": "
 		}
-	case sd:
-		if script != deva {
+	case cldr.SD:
+		if script != cldr.Deva {
 			prefix = era + " "
 			middle = " (" + dayName + ": "
 		}
-	case ja, yue, zh:
+	case cldr.JA, cldr.YUE, cldr.ZH:
 		prefix = era
 		middle = " (" + dayName + ": "
 		suffix = dayName + ")"
-	case ko:
+	case cldr.KO:
 		prefix = era + " "
 		middle = " (" + dayName + ": "
 		suffix = dayName + ")"
-	case ii:
+	case cldr.II:
 		prefix = era + " "
 		middle = " (" + dayName + ": "
 		suffix = "ꑍ)"
-	case kxv:
-		if script == deva || script == orya || script == telu {
+	case cldr.KXV:
+		if script == cldr.Deva || script == cldr.Orya || script == cldr.Telu {
 			prefix = ""
 			middle = " " + era + " (" + dayName + ": "
 		}
-	case se:
-		if region != regionFI {
+	case cldr.SE:
+		if region != cldr.RegionFI {
 			prefix = era + " "
 			middle = " (" + dayName + ": "
 		}
-	case kok:
-		if script != latn {
+	case cldr.KOK:
+		if script != cldr.Latn {
 			prefix = era + " "
 			middle = " (" + dayName + ": "
 		}
@@ -130,23 +137,23 @@ func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) fm
 	}
 }
 
-func fmtEraYearDayPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraYearDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	lang, _, region := locale.Raw()
 	year := fmtYearPersian(locale)
 	yearDigits := convertYearDigits(digits, opts.Year)
-	dayName := unitName(locale).Day
+	dayName := cldr.UnitName(locale).Day
 
 	prefix := ""
 	middle := " (" + dayName + ": "
 	suffix := ")"
 
 	switch lang {
-	case uz:
-		if region == regionAF {
+	case cldr.UZ:
+		if region == cldr.RegionAF {
 			era := fmtEra(locale, opts.Era)
 			prefix = era + " "
 		}
-	case fa:
+	case cldr.FA:
 		era := fmtEra(locale, opts.Era)
 		middle = " " + era + " (" + dayName + ": "
 	}
@@ -158,10 +165,10 @@ func fmtEraYearDayPersian(locale language.Tag, digits digits, opts Options) fmtF
 	}
 }
 
-func fmtEraYearDayBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraYearDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	year := fmtYearBuddhist(locale, digits, opts)
 	dayDigits := convertDayDigits(digits, opts.Day)
-	dayName := unitName(locale).Day
+	dayName := cldr.UnitName(locale).Day
 	middle, suffix := " ("+dayName+": ", ")"
 
 	return func(t timeReader) string {

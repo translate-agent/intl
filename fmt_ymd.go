@@ -1,11 +1,12 @@
 package intl
 
 import (
+	"go.expect.digital/intl/internal/cldr"
 	"golang.org/x/text/language"
 )
 
 //nolint:gocognit,cyclop
-func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtYearMonthDayGregorian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	var month fmtFunc
 
 	lang, script, region := locale.Raw()
@@ -29,12 +30,12 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case es:
+	case cldr.ES:
 		switch region {
 		default:
 			layout = layoutDayMonthYear
 			separator = "/"
-		case regionCL:
+		case cldr.RegionCL:
 			// year=numeric,month=numeric,day=numeric,out=02-01-2024
 			// year=numeric,month=numeric,day=2-digit,out=02-1-2024
 			// year=numeric,month=2-digit,day=numeric,out=2-01-2024
@@ -49,7 +50,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
-		case regionPA, regionPR:
+		case cldr.RegionPA, cldr.RegionPR:
 			// year=numeric,month=numeric,day=numeric,out=01/02/2024
 			// year=numeric,month=numeric,day=2-digit,out=1/02/2024
 			// year=numeric,month=2-digit,day=numeric,out=01/2/2024
@@ -66,9 +67,11 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Day = Day2Digit
 			}
 		}
-	case agq, am, asa, ast, bas, bem, bez, bm, bn, ca, ccp, cgg, cy, dav, dje, doi, dua, dyo, ebu, el, ewo, gd, gl, gu,
-		haw, hi, id, ig, km, kn, ksf, kxv, ln, lo, lu, mai, mgh, ml, mni, mr, ms, mua, my, nmg, nnh, nus, pcm, rn, sa, su,
-		sw, ta, to, twq, ur, vi, xnr, yav:
+	case cldr.AGQ, cldr.AM, cldr.ASA, cldr.AST, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BM, cldr.BN, cldr.CA, cldr.CCP,
+		cldr.CGG, cldr.CY, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DYO, cldr.EBU, cldr.EL, cldr.EWO, cldr.GD, cldr.GL,
+		cldr.GU, cldr.HAW, cldr.HI, cldr.ID, cldr.IG, cldr.KM, cldr.KN, cldr.KSF, cldr.KXV, cldr.LN, cldr.LO, cldr.LU,
+		cldr.MAI, cldr.MGH, cldr.ML, cldr.MNI, cldr.MR, cldr.MS, cldr.MUA, cldr.MY, cldr.NMG, cldr.NNH, cldr.NUS, cldr.PCM,
+		cldr.RN, cldr.SA, cldr.SU, cldr.SW, cldr.TA, cldr.TO, cldr.TWQ, cldr.UR, cldr.VI, cldr.XNR, cldr.YAV:
 		// year=numeric,month=numeric,day=numeric,out=2/1/2024
 		// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 		// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -79,8 +82,8 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
 		layout = layoutDayMonthYear
 		separator = "/"
-	case pa:
-		if script == arab && opts.Month.numeric() && opts.Day.numeric() {
+	case cldr.PA:
+		if script == cldr.Arab && opts.Month.numeric() && opts.Day.numeric() {
 			// year=numeric,month=numeric,day=numeric,out=۲۰۲۴-۰۱-۰۲
 			// year=numeric,month=numeric,day=2-digit,out=۰۲/۱/۲۰۲۴
 			// year=numeric,month=2-digit,day=numeric,out=۲/۰۱/۲۰۲۴
@@ -103,7 +106,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutDayMonthYear
 			separator = "/"
 		}
-	case ak:
+	case cldr.AK:
 		// year=numeric,month=numeric,day=numeric,out=2024/1/2
 		// year=numeric,month=numeric,day=2-digit,out=2024/1/02
 		// year=numeric,month=2-digit,day=numeric,out=2024/01/2
@@ -117,7 +120,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		if opts.Year.twoDigit() {
 			layout = layoutMonthDayYear
 		}
-	case eu, ja, yue:
+	case cldr.EU, cldr.JA, cldr.YUE:
 		// year=numeric,month=numeric,day=numeric,out=2024/1/2
 		// year=numeric,month=numeric,day=2-digit,out=2024/1/02
 		// year=numeric,month=2-digit,day=numeric,out=2024/01/2
@@ -127,7 +130,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		// year=2-digit,month=2-digit,day=numeric,out=24/01/2
 		// year=2-digit,month=2-digit,day=2-digit,out=24/01/02
 		separator = "/"
-	case ar:
+	case cldr.AR:
 		// year=numeric,month=numeric,day=numeric,out=٢‏/١‏/٢٠٢٤
 		// year=numeric,month=numeric,day=2-digit,out=٠٢‏/١‏/٢٠٢٤
 		// year=numeric,month=2-digit,day=numeric,out=٢‏/٠١‏/٢٠٢٤
@@ -138,7 +141,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		// year=2-digit,month=2-digit,day=2-digit,out=٠٢‏/٠١‏/٢٤
 		layout = layoutDayMonthYear
 		separator = "\u200f/"
-	case az, hy, kk, uk:
+	case cldr.AZ, cldr.HY, cldr.KK, cldr.UK:
 		// year=numeric,month=numeric,day=numeric,out=02.01.2024
 		// year=numeric,month=numeric,day=2-digit,out=02.01.2024
 		// year=numeric,month=2-digit,day=numeric,out=02.01.2024
@@ -155,7 +158,8 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case be, da, de, dsb, et, fi, he, hsb, ie, is, ka, lb, nb, nn, no, smn, sq:
+	case cldr.BE, cldr.DA, cldr.DE, cldr.DSB, cldr.ET, cldr.FI, cldr.HE, cldr.HSB, cldr.IE, cldr.IS, cldr.KA, cldr.LB,
+		cldr.NB, cldr.NN, cldr.NO, cldr.SMN, cldr.SQ:
 		// year=numeric,month=numeric,day=numeric,out=2.1.2024
 		// year=numeric,month=numeric,day=2-digit,out=02.1.2024
 		// year=numeric,month=2-digit,day=numeric,out=2.01.2024
@@ -166,7 +170,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		// year=2-digit,month=2-digit,day=2-digit,out=02.01.24
 		layout = layoutDayMonthYear
 		separator = "."
-	case bg:
+	case cldr.BG:
 		// year=numeric,month=numeric,day=numeric,out=2.01.2024 г.
 		// year=numeric,month=numeric,day=2-digit,out=02.01.2024 г.
 		// year=numeric,month=2-digit,day=numeric,out=2.01.2024 г.
@@ -177,7 +181,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		// year=2-digit,month=2-digit,day=2-digit,out=02.01.24 г.
 		opts.Month = Month2Digit
 		fallthrough
-	case mk:
+	case cldr.MK:
 		// year=numeric,month=numeric,day=numeric,out=2.1.2024 г.
 		// year=numeric,month=numeric,day=2-digit,out=02.1.2024 г.
 		// year=numeric,month=2-digit,day=numeric,out=2.01.2024 г.
@@ -189,19 +193,23 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		layout = layoutDayMonthYear
 		separator = "."
 		suffix = " г."
-	case en:
+	case cldr.EN:
 		switch region {
 		default:
 			layout = layoutMonthDayYear
 			separator = "/"
-		case region001, region150, regionAE, regionAG, regionAI, regionAT, regionBB, regionBM, regionBS, regionCC,
-			regionCK, regionCM, regionCX, regionCY, regionDE, regionDG, regionDK, regionDM, regionER, regionFI, regionFJ,
-			regionFK, regionFM, regionGB, regionGD, regionGG, regionGH, regionGI, regionGM, regionGY, regionID, regionIL,
-			regionIM, regionIO, regionJE, regionJM, regionKE, regionKI, regionKN, regionKY, regionLC, regionLR, regionLS,
-			regionMG, regionMO, regionMS, regionMT, regionMU, regionMW, regionMY, regionNA, regionNF, regionNG, regionNL,
-			regionNR, regionNU, regionPG, regionPK, regionPN, regionPW, regionRW, regionSB, regionSC, regionSD, regionSH,
-			regionSI, regionSL, regionSS, regionSX, regionSZ, regionTC, regionTK, regionTO, regionTT, regionTV, regionTZ,
-			regionUG, regionVC, regionVG, regionVU, regionWS, regionZM:
+		case cldr.Region001, cldr.Region150, cldr.RegionAE, cldr.RegionAG, cldr.RegionAI, cldr.RegionAT, cldr.RegionBB,
+			cldr.RegionBM, cldr.RegionBS, cldr.RegionCC, cldr.RegionCK, cldr.RegionCM, cldr.RegionCX, cldr.RegionCY,
+			cldr.RegionDE, cldr.RegionDG, cldr.RegionDK, cldr.RegionDM, cldr.RegionER, cldr.RegionFI, cldr.RegionFJ,
+			cldr.RegionFK, cldr.RegionFM, cldr.RegionGB, cldr.RegionGD, cldr.RegionGG, cldr.RegionGH, cldr.RegionGI,
+			cldr.RegionGM, cldr.RegionGY, cldr.RegionID, cldr.RegionIL, cldr.RegionIM, cldr.RegionIO, cldr.RegionJE,
+			cldr.RegionJM, cldr.RegionKE, cldr.RegionKI, cldr.RegionKN, cldr.RegionKY, cldr.RegionLC, cldr.RegionLR,
+			cldr.RegionLS, cldr.RegionMG, cldr.RegionMO, cldr.RegionMS, cldr.RegionMT, cldr.RegionMU, cldr.RegionMW,
+			cldr.RegionMY, cldr.RegionNA, cldr.RegionNF, cldr.RegionNG, cldr.RegionNL, cldr.RegionNR, cldr.RegionNU,
+			cldr.RegionPG, cldr.RegionPK, cldr.RegionPN, cldr.RegionPW, cldr.RegionRW, cldr.RegionSB, cldr.RegionSC,
+			cldr.RegionSD, cldr.RegionSH, cldr.RegionSI, cldr.RegionSL, cldr.RegionSS, cldr.RegionSX, cldr.RegionSZ,
+			cldr.RegionTC, cldr.RegionTK, cldr.RegionTO, cldr.RegionTT, cldr.RegionTV, cldr.RegionTZ, cldr.RegionUG,
+			cldr.RegionVC, cldr.RegionVG, cldr.RegionVU, cldr.RegionWS, cldr.RegionZM:
 			// year=numeric,month=numeric,day=numeric,out=02/01/2024
 			// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 			// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -212,7 +220,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
 			separator = "/"
 
-			if script == shaw {
+			if script == cldr.Shaw {
 				layout = layoutMonthDayYear
 			} else {
 				layout = layoutDayMonthYear
@@ -222,7 +230,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 					opts.Day = Day2Digit
 				}
 			}
-		case regionAU, regionSG:
+		case cldr.RegionAU, cldr.RegionSG:
 			// year=numeric,month=numeric,day=numeric,out=02/01/2024
 			// year=numeric,month=numeric,day=2-digit,out=02/01/2024
 			// year=numeric,month=2-digit,day=numeric,out=02/01/2024
@@ -238,7 +246,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
-		case regionBE, regionHK, regionIE, regionIN, regionZW:
+		case cldr.RegionBE, cldr.RegionHK, cldr.RegionIE, cldr.RegionIN, cldr.RegionZW:
 			// year=numeric,month=numeric,day=numeric,out=2/1/2024
 			// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 			// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -249,7 +257,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
 			layout = layoutDayMonthYear
 			separator = "/"
-		case regionBW, regionBZ:
+		case cldr.RegionBW, cldr.RegionBZ:
 			// year=numeric,month=numeric,day=numeric,out=02/01/2024
 			// year=numeric,month=numeric,day=2-digit,out=02/01/2024
 			// year=numeric,month=2-digit,day=numeric,out=02/01/2024
@@ -265,7 +273,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
-		case regionCA, regionSE:
+		case cldr.RegionCA, cldr.RegionSE:
 			// year=numeric,month=numeric,day=numeric,out=2024-01-02
 			// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 			// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -278,7 +286,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
-		case regionCH:
+		case cldr.RegionCH:
 			// year=numeric,month=numeric,day=numeric,out=02.01.2024
 			// year=numeric,month=numeric,day=2-digit,out=02.1.2024
 			// year=numeric,month=2-digit,day=numeric,out=2.01.2024
@@ -294,7 +302,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
-		case regionMV:
+		case cldr.RegionMV:
 			// year=numeric,month=numeric,day=numeric,out=02/01/2024
 			// year=numeric,month=numeric,day=2-digit,out=02-1-2024
 			// year=numeric,month=2-digit,day=numeric,out=2-01-2024
@@ -310,7 +318,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Day = Day2Digit
 				separator = "/"
 			}
-		case regionNZ:
+		case cldr.RegionNZ:
 			// year=numeric,month=numeric,day=numeric,out=2/01/2024
 			// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 			// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -325,7 +333,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 			}
-		case regionZA:
+		case cldr.RegionZA:
 			// year=numeric,month=numeric,day=numeric,out=2024/01/02
 			// year=numeric,month=numeric,day=2-digit,out=2024/1/02
 			// year=numeric,month=2-digit,day=numeric,out=2024/01/2
@@ -341,7 +349,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Day = Day2Digit
 			}
 		}
-	case blo, ceb, chr, ee, fil, kaa, mhn, om, or, ti, xh:
+	case cldr.BLO, cldr.CEB, cldr.CHR, cldr.EE, cldr.FIL, cldr.KAA, cldr.MHN, cldr.OM, cldr.OR, cldr.TI, cldr.XH:
 		// year=numeric,month=numeric,day=numeric,out=1/2/2024
 		// year=numeric,month=numeric,day=2-digit,out=1/02/2024
 		// year=numeric,month=2-digit,day=numeric,out=01/2/2024
@@ -352,10 +360,10 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		// year=2-digit,month=2-digit,day=2-digit,out=01/02/24
 		layout = layoutMonthDayYear
 		separator = "/"
-	case ks:
+	case cldr.KS:
 		separator = "/"
 
-		if script == deva && opts.Year.twoDigit() {
+		if script == cldr.Deva && opts.Year.twoDigit() {
 			// year=numeric,month=numeric,day=numeric,out=1/2/2024
 			// year=numeric,month=numeric,day=2-digit,out=1/02/2024
 			// year=numeric,month=2-digit,day=numeric,out=01/2/2024
@@ -376,7 +384,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			// year=2-digit,month=2-digit,day=2-digit,out=01/02/24
 			layout = layoutMonthDayYear
 		}
-	case br, ga, kea, kgp, pt, sc, yrl:
+	case cldr.BR, cldr.GA, cldr.KEA, cldr.KGP, cldr.PT, cldr.SC, cldr.YRL:
 		// year=numeric,month=numeric,day=numeric,out=02/01/2024
 		// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 		// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -392,11 +400,11 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case bs:
+	case cldr.BS:
 		layout = layoutDayMonthYear
 		suffix = "."
 
-		if script == cyrl {
+		if script == cldr.Cyrl {
 			// year=numeric,month=numeric,day=numeric,out=02.01.2024.
 			// year=numeric,month=numeric,day=2-digit,out=02.1.2024.
 			// year=numeric,month=2-digit,day=numeric,out=2.01.2024.
@@ -426,7 +434,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			// year=2-digit,month=2-digit,day=2-digit,out=02. 01. 24.
 			separator = ". "
 		}
-	case ckb:
+	case cldr.CKB:
 		// year=numeric,month=numeric,day=numeric,out=٢/١/٢٠٢٤
 		// year=numeric,month=numeric,day=2-digit,out=٢٠٢٤-١-٠٢
 		// year=numeric,month=2-digit,day=numeric,out=٢٠٢٤-٠١-٢
@@ -439,7 +447,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutDayMonthYear
 			separator = "/"
 		}
-	case cs, sk, sl:
+	case cldr.CS, cldr.SK, cldr.SL:
 		// year=numeric,month=numeric,day=numeric,out=2. 1. 2024
 		// year=numeric,month=numeric,day=2-digit,out=02. 1. 2024
 		// year=numeric,month=2-digit,day=numeric,out=2. 01. 2024
@@ -450,7 +458,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		// year=2-digit,month=2-digit,day=2-digit,out=02. 01. 24
 		layout = layoutDayMonthYear
 		separator = ". "
-	case cv, fo, ku, ro, ru, tk, tt:
+	case cldr.CV, cldr.FO, cldr.KU, cldr.RO, cldr.RU, cldr.TK, cldr.TT:
 		// year=numeric,month=numeric,day=numeric,out=02.01.2024
 		// year=numeric,month=numeric,day=2-digit,out=02.1.2024
 		// year=numeric,month=2-digit,day=numeric,out=2.01.2024
@@ -466,7 +474,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case dz, si: // noop
+	case cldr.DZ, cldr.SI: // noop
 		// year=numeric,month=numeric,day=numeric,out=2024-1-2
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -474,7 +482,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		// year=2-digit,month=numeric,day=numeric,out=24-1-2
 		// year=2-digit,month=numeric,day=2-digit,out=24-1-02
 		// year=2-digit,month=2-digit,day=numeric,out=24-01-2
-	case eo:
+	case cldr.EO:
 		// year=numeric,month=numeric,day=numeric,out=2024-01-02
 		// year=numeric,month=numeric,day=2-digit,out=2024-01-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-02
@@ -493,7 +501,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case kab, khq, ksh, mfe, zgh, ps, seh, ses, sg, shi:
+	case cldr.KAB, cldr.KHQ, cldr.KSH, cldr.MFE, cldr.ZGH, cldr.PS, cldr.SEH, cldr.SES, cldr.SG, cldr.SHI:
 		// year=numeric,month=numeric,day=numeric,out=2024-01-02
 		// year=numeric,month=numeric,day=2-digit,out=2024-01-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-02
@@ -504,8 +512,8 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		// year=2-digit,month=2-digit,day=2-digit,out=24-01-02
 		opts.Month = Month2Digit
 		opts.Day = Day2Digit
-	case ff:
-		if script == adlm {
+	case cldr.FF:
+		if script == cldr.Adlm {
 			// year=numeric,month=numeric,day=numeric,out=𞥒-𞥑-𞥒𞥐𞥒𞥔
 			// year=numeric,month=numeric,day=2-digit,out=𞥐𞥒-𞥑-𞥒𞥐𞥒𞥔
 			// year=numeric,month=2-digit,day=numeric,out=𞥒-𞥐𞥑-𞥒𞥐𞥒𞥔
@@ -527,7 +535,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case fr:
+	case cldr.FR:
 		switch region {
 		default:
 			// year=numeric,month=numeric,day=numeric,out=02/01/2024
@@ -545,7 +553,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
-		case regionCA:
+		case cldr.RegionCA:
 			// year=numeric,month=numeric,day=numeric,out=2024-01-02
 			// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 			// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -558,7 +566,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
-		case regionCH:
+		case cldr.RegionCH:
 			// year=numeric,month=numeric,day=numeric,out=02.01.2024
 			// year=numeric,month=numeric,day=2-digit,out=02.01.2024
 			// year=numeric,month=2-digit,day=numeric,out=02.01.2024
@@ -574,7 +582,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
-		case regionBE:
+		case cldr.RegionBE:
 			// year=numeric,month=numeric,day=numeric,out=02/01/2024
 			// year=numeric,month=numeric,day=2-digit,out=02/01/2024
 			// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -594,8 +602,8 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Month = Month2Digit
 			}
 		}
-	case vai:
-		if script == latn {
+	case cldr.VAI:
+		if script == cldr.Latn {
 			// year=numeric,month=numeric,day=numeric,out=1/2/2024
 			// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 			// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -616,8 +624,9 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		}
 
 		fallthrough
-	case fur, guz, jmc, kam, kde, ki, kln, ksb, lag, lg, luo, luy, mas, mer, naq, nd, nyn, rof, rwk, saq, teo, tzm, vun,
-		xog:
+	case cldr.FUR, cldr.GUZ, cldr.JMC, cldr.KAM, cldr.KDE, cldr.KI, cldr.KLN, cldr.KSB, cldr.LAG, cldr.LG, cldr.LUO,
+		cldr.LUY, cldr.MAS, cldr.MER, cldr.NAQ, cldr.ND, cldr.NYN, cldr.ROF, cldr.RWK, cldr.SAQ, cldr.TEO, cldr.TZM,
+		cldr.VUN, cldr.XOG:
 		// year=numeric,month=numeric,day=numeric,out=2024-01-02
 		// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 		// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -633,10 +642,10 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutDayMonthYear
 			separator = "/"
 		}
-	case nl:
+	case cldr.NL:
 		layout = layoutDayMonthYear
 
-		if region == regionBE {
+		if region == cldr.RegionBE {
 			// year=numeric,month=numeric,day=numeric,out=2/1/2024
 			// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 			// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -647,7 +656,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
 			separator = "/"
 		}
-	case fy, kok:
+	case cldr.FY, cldr.KOK:
 		// year=numeric,month=numeric,day=numeric,out=2-1-2024
 		// year=numeric,month=numeric,day=2-digit,out=02-1-2024
 		// year=numeric,month=2-digit,day=numeric,out=2-01-2024
@@ -657,7 +666,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		// year=2-digit,month=2-digit,day=numeric,out=2-01-24
 		// year=2-digit,month=2-digit,day=2-digit,out=02-01-24
 		layout = layoutDayMonthYear
-	case gsw:
+	case cldr.GSW:
 		// year=numeric,month=numeric,day=numeric,out=2024-01-02
 		// year=numeric,month=numeric,day=2-digit,out=02.1.2024
 		// year=numeric,month=2-digit,day=numeric,out=2.01.2024
@@ -673,7 +682,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutDayMonthYear
 			separator = "."
 		}
-	case ha, sat:
+	case cldr.HA, cldr.SAT:
 		// year=numeric,month=numeric,day=numeric,out=2024-01-02
 		// year=numeric,month=numeric,day=2-digit,out=2024-01-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-02
@@ -689,7 +698,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutDayMonthYear
 			separator = "/"
 		}
-	case hr:
+	case cldr.HR:
 		layout = layoutDayMonthYear
 		separator = ". "
 		suffix = "."
@@ -708,7 +717,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
-		case regionBA:
+		case cldr.RegionBA:
 			// year=numeric,month=numeric,day=numeric,out=02. 01. 2024.
 			// year=numeric,month=numeric,day=2-digit,out=02. 01. 2024.
 			// year=numeric,month=2-digit,day=numeric,out=02. 01. 2024.
@@ -722,7 +731,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 				opts.Day = Day2Digit
 			}
 		}
-	case hu:
+	case cldr.HU:
 		// year=numeric,month=numeric,day=numeric,out=2024. 01. 02.
 		// year=numeric,month=numeric,day=2-digit,out=2024. 1. 02.
 		// year=numeric,month=2-digit,day=numeric,out=2024. 01. 2.
@@ -738,7 +747,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case nds, prg:
+	case cldr.NDS, cldr.PRG:
 		// year=numeric,month=numeric,day=numeric,out=2.1.2024
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -751,8 +760,8 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutDayMonthYear
 			separator = "."
 		}
-	case it:
-		if region == regionCH {
+	case cldr.IT:
+		if region == cldr.RegionCH {
 			// year=numeric,month=numeric,day=numeric,out=02/01/2024
 			// year=numeric,month=numeric,day=2-digit,out=02/01/2024
 			// year=numeric,month=2-digit,day=numeric,out=02/01/2024
@@ -776,7 +785,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		}
 
 		fallthrough
-	case vec, uz:
+	case cldr.VEC, cldr.UZ:
 		// year=numeric,month=numeric,day=numeric,out=02/01/2024
 		// year=numeric,month=numeric,day=2-digit,out=02/01/2024
 		// year=numeric,month=2-digit,day=numeric,out=02/01/2024
@@ -797,7 +806,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case jgo:
+	case cldr.JGO:
 		// year=numeric,month=numeric,day=numeric,out=1.2.2024
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -810,7 +819,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutMonthDayYear
 			separator = "."
 		}
-	case kkj:
+	case cldr.KKJ:
 		// year=numeric,month=numeric,day=numeric,out=02/01 2024
 		// year=numeric,month=numeric,day=2-digit,out=02/1 2024
 		// year=numeric,month=2-digit,day=numeric,out=2/01 2024
@@ -830,7 +839,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		return func(t timeReader) string {
 			return dayDigits(t) + "/" + month(t) + " " + yearDigits(t)
 		}
-	case ko:
+	case cldr.KO:
 		// year=numeric,month=numeric,day=numeric,out=2024. 1. 2.
 		// year=numeric,month=numeric,day=2-digit,out=2024. 1. 02.
 		// year=numeric,month=2-digit,day=numeric,out=2024. 01. 2.
@@ -841,7 +850,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		// year=2-digit,month=2-digit,day=2-digit,out=24. 01. 02.
 		separator = ". "
 		suffix = "."
-	case ky:
+	case cldr.KY:
 		// year=numeric,month=numeric,day=numeric,out=2024-02-01
 		// year=numeric,month=numeric,day=2-digit,out=2024-02-01
 		// year=numeric,month=2-digit,day=numeric,out=2024-02-01
@@ -858,7 +867,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutDayMonthYear
 			separator = "/"
 		}
-	case lij, vmw:
+	case cldr.LIJ, cldr.VMW:
 		// year=numeric,month=numeric,day=numeric,out=2/1/2024
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -871,7 +880,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutDayMonthYear
 			separator = "/"
 		}
-	case lkt, zu:
+	case cldr.LKT, cldr.ZU:
 		// year=numeric,month=numeric,day=numeric,out=2024-01-02
 		// year=numeric,month=numeric,day=2-digit,out=2024-01-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-02
@@ -887,7 +896,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutMonthDayYear
 			separator = "/"
 		}
-	case lv:
+	case cldr.LV:
 		// year=numeric,month=numeric,day=numeric,out=2.01.2024.
 		// year=numeric,month=numeric,day=2-digit,out=02.01.2024.
 		// year=numeric,month=2-digit,day=numeric,out=2.01.2024.
@@ -904,7 +913,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			suffix = "."
 		}
-	case as, brx, ia, jv, mi, rm, wo:
+	case cldr.AS, cldr.BRX, cldr.IA, cldr.JV, cldr.MI, cldr.RM, cldr.WO:
 		// year=numeric,month=numeric,day=numeric,out=02-01-2024
 		// year=numeric,month=numeric,day=2-digit,out=02-1-2024
 		// year=numeric,month=2-digit,day=numeric,out=2-01-2024
@@ -919,7 +928,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case rw:
+	case cldr.RW:
 		// year=numeric,month=numeric,day=numeric,out=02-01-2024
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -933,7 +942,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Day = Day2Digit
 			layout = layoutDayMonthYear
 		}
-	case mn:
+	case cldr.MN:
 		// year=numeric,month=numeric,day=numeric,out=2024.01.02
 		// year=numeric,month=numeric,day=2-digit,out=2024.1.02
 		// year=numeric,month=2-digit,day=numeric,out=2024.01.2
@@ -948,7 +957,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case mt, sbp:
+	case cldr.MT, cldr.SBP:
 		// year=numeric,month=numeric,day=numeric,out=1/2/2024
 		// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 		// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -964,7 +973,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		} else {
 			layout = layoutDayMonthYear
 		}
-	case ne:
+	case cldr.NE:
 		// year=numeric,month=numeric,day=numeric,out=२०२४-०१-०२
 		// year=numeric,month=numeric,day=2-digit,out=२०२४-०१-०२
 		// year=numeric,month=2-digit,day=numeric,out=२०२४-०१-०२
@@ -979,7 +988,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		} else {
 			separator = "/"
 		}
-	case nqo:
+	case cldr.NQO:
 		// year=numeric,month=numeric,day=numeric,out=߂߀߂߄ / ߀߂ / ߀߁
 		// year=numeric,month=numeric,day=2-digit,out=߂߀߂߄-߁-߀߂
 		// year=numeric,month=2-digit,day=numeric,out=߂߀߂߄-߀߁-߂
@@ -994,7 +1003,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutYearDayMonth
 			separator = " / "
 		}
-	case oc:
+	case cldr.OC:
 		// year=numeric,month=numeric,day=numeric,out=02/01/2024
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -1009,7 +1018,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Day = Day2Digit
 			separator = "/"
 		}
-	case os:
+	case cldr.OS:
 		// year=numeric,month=numeric,day=numeric,out=2024-01-02
 		// year=numeric,month=numeric,day=2-digit,out=2024-01-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-02
@@ -1026,7 +1035,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutDayMonthYear
 			separator = "."
 		}
-	case pl:
+	case cldr.PL:
 		// year=numeric,month=numeric,day=numeric,out=2.01.2024
 		// year=numeric,month=numeric,day=2-digit,out=02.01.2024
 		// year=numeric,month=2-digit,day=numeric,out=2.01.2024
@@ -1038,7 +1047,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		opts.Month = Month2Digit
 		layout = layoutDayMonthYear
 		separator = "."
-	case qu:
+	case cldr.QU:
 		// year=numeric,month=numeric,day=numeric,out=02-01-2024
 		// year=numeric,month=numeric,day=2-digit,out=02-01-2024
 		// year=numeric,month=2-digit,day=numeric,out=02-01-2024
@@ -1055,7 +1064,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		} else {
 			separator = "/"
 		}
-	case sah:
+	case cldr.SAH:
 		// year=numeric,month=numeric,day=numeric,out=2024-01-02
 		// year=numeric,month=numeric,day=2-digit,out=2024-01-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-02
@@ -1070,8 +1079,8 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		} else {
 			separator = "/"
 		}
-	case sd:
-		if script == deva {
+	case cldr.SD:
+		if script == cldr.Deva {
 			// year=numeric,month=numeric,day=numeric,out=1/2/2024
 			// year=numeric,month=numeric,day=2-digit,out=1/02/2024
 			// year=numeric,month=2-digit,day=numeric,out=01/2/2024
@@ -1086,8 +1095,8 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case se:
-		if region == regionFI {
+	case cldr.SE:
+		if region == cldr.RegionFI {
 			// year=numeric,month=numeric,day=numeric,out=02.01.2024
 			// year=numeric,month=numeric,day=2-digit,out=02.1.2024
 			// year=numeric,month=2-digit,day=numeric,out=2.01.2024
@@ -1104,7 +1113,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
-	case so:
+	case cldr.SO:
 		// year=numeric,month=numeric,day=numeric,out=1/2/2024
 		// year=numeric,month=numeric,day=2-digit,out=1/02/2024
 		// year=numeric,month=2-digit,day=numeric,out=01/2/2024
@@ -1121,7 +1130,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		} else {
 			layout = layoutDayMonthYear
 		}
-	case sr:
+	case cldr.SR:
 		// year=numeric,month=numeric,day=numeric,out=2. 1. 2024.
 		// year=numeric,month=numeric,day=2-digit,out=02. 1. 2024.
 		// year=numeric,month=2-digit,day=numeric,out=2. 01. 2024.
@@ -1138,7 +1147,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		} else {
 			separator = ". "
 		}
-	case syr:
+	case cldr.SYR:
 		// year=numeric,month=numeric,day=numeric,out=2/1/2024
 		// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 		// year=numeric,month=2-digit,day=numeric,out=2-01-2024
@@ -1152,7 +1161,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		if opts.Month.numeric() {
 			separator = "/"
 		}
-	case szl:
+	case cldr.SZL:
 		// year=numeric,month=numeric,day=numeric,out=02.01.2024
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -1167,7 +1176,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutDayMonthYear
 			separator = "."
 		}
-	case te:
+	case cldr.TE:
 		// year=numeric,month=numeric,day=numeric,out=2/1/2024
 		// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 		// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -1182,7 +1191,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Month.numeric() && opts.Day.numeric() {
 			separator = "/"
 		}
-	case tok:
+	case cldr.TOK:
 		// year=numeric,month=numeric,day=numeric,out=#2024)#1)#2
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -1195,7 +1204,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			prefix = "#"
 			separator = ")#"
 		}
-	case tr:
+	case cldr.TR:
 		// year=numeric,month=numeric,day=numeric,out=02.01.2024
 		// year=numeric,month=numeric,day=2-digit,out=02.01.2024
 		// year=numeric,month=2-digit,day=numeric,out=2.01.2024
@@ -1212,7 +1221,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		}
 
 		opts.Month = Month2Digit
-	case ug:
+	case cldr.UG:
 		// year=numeric,month=numeric,day=numeric,out=2024-2-1
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -1224,7 +1233,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		if opts.Month.numeric() && opts.Day.numeric() {
 			layout = layoutYearDayMonth
 		}
-	case yi:
+	case cldr.YI:
 		// year=numeric,month=numeric,day=numeric,out=2-1-2024
 		// year=numeric,month=numeric,day=2-digit,out=02-1-2024
 		// year=numeric,month=2-digit,day=numeric,out=2-01-2024
@@ -1239,7 +1248,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			opts.Year.twoDigit() && (!opts.Month.numeric() || !opts.Day.numeric()) {
 			separator = "/"
 		}
-	case yo:
+	case cldr.YO:
 		// year=numeric,month=numeric,day=numeric,out=2/1/2024
 		// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 		// year=numeric,month=2-digit,day=numeric,out=2 01 2024
@@ -1255,7 +1264,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		} else {
 			separator = "/"
 		}
-	case za:
+	case cldr.ZA:
 		// year=numeric,month=numeric,day=numeric,out=2024/1/2
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -1267,7 +1276,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		if opts.Month.numeric() && opts.Day.numeric() {
 			separator = "/"
 		}
-	case zh:
+	case cldr.ZH:
 		switch region {
 		default:
 			// year=numeric,month=numeric,day=numeric,out=2024/1/2
@@ -1279,8 +1288,8 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			// year=2-digit,month=2-digit,day=numeric,out=24/01/2
 			// year=2-digit,month=2-digit,day=2-digit,out=24/01/02
 			separator = "/"
-		case regionMO, regionSG:
-			if script == hans {
+		case cldr.RegionMO, cldr.RegionSG:
+			if script == cldr.Hans {
 				// year=numeric,month=numeric,day=numeric,out=2024年1月2日
 				// year=numeric,month=numeric,day=2-digit,out=2024年1月02日
 				// year=numeric,month=2-digit,day=numeric,out=2024年01月2日
@@ -1298,7 +1307,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			}
 
 			fallthrough
-		case regionHK:
+		case cldr.RegionHK:
 			// year=numeric,month=numeric,day=numeric,out=2/1/2024
 			// year=numeric,month=numeric,day=2-digit,out=02/1/2024
 			// year=numeric,month=2-digit,day=numeric,out=2/01/2024
@@ -1310,7 +1319,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 			layout = layoutDayMonthYear
 			separator = "/"
 		}
-	case tg:
+	case cldr.TG:
 		// year=numeric,month=numeric,day=numeric,out=2.1.2024
 		// year=numeric,month=numeric,day=2-digit,out=02.1.2024
 		// year=numeric,month=2-digit,day=numeric,out=2.01.2024
@@ -1327,7 +1336,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 		} else {
 			separator = "."
 		}
-	case gaa:
+	case cldr.GAA:
 		// year=numeric,month=numeric,day=numeric,out=1/2/2024
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
@@ -1368,7 +1377,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits digits, opts Options) 
 	}
 }
 
-func fmtYearMonthDayPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtYearMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	lang, _, region := locale.Raw()
 
 	yearDigits := convertYearDigits(digits, opts.Year)
@@ -1397,7 +1406,7 @@ func fmtYearMonthDayPersian(locale language.Tag, digits digits, opts Options) fm
 	switch lang {
 	default:
 		prefix = "AP "
-	case ckb: // ckb-IR
+	case cldr.CKB: // ckb-IR
 		// year=numeric,month=numeric,day=numeric,out=١٢/١٠/١٤٠٢
 		// year=numeric,month=numeric,day=2-digit,out=١٢/١٠/١٤٠٢
 		// year=numeric,month=2-digit,day=numeric,out=١٢/١٠/١٤٠٢
@@ -1408,7 +1417,7 @@ func fmtYearMonthDayPersian(locale language.Tag, digits digits, opts Options) fm
 		// year=2-digit,month=2-digit,day=2-digit,out=١٢/١٠/٠٢
 		layout = layoutDayMonthYear
 		separator = "/"
-	case fa: // fa-IR
+	case cldr.FA: // fa-IR
 		// year=numeric,month=numeric,day=numeric,out=۱۴۰۲/۱۰/۱۲
 		// year=numeric,month=numeric,day=2-digit,out=۱۴۰۲/۱۰/۱۲
 		// year=numeric,month=2-digit,day=numeric,out=۱۴۰۲/۱۰/۱۲
@@ -1418,8 +1427,8 @@ func fmtYearMonthDayPersian(locale language.Tag, digits digits, opts Options) fm
 		// year=2-digit,month=2-digit,day=numeric,out=۰۲/۱۰/۱۲
 		// year=2-digit,month=2-digit,day=2-digit,out=۰۲/۱۰/۱۲
 		separator = "/"
-	case uz:
-		if region != regionAF {
+	case cldr.UZ:
+		if region != cldr.RegionAF {
 			prefix = "AP "
 		}
 	}
@@ -1438,7 +1447,7 @@ func fmtYearMonthDayPersian(locale language.Tag, digits digits, opts Options) fm
 	}
 }
 
-func fmtYearMonthDayBuddhist(_ language.Tag, digits digits, opts Options) fmtFunc {
+func fmtYearMonthDayBuddhist(_ language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	yearDigits := convertYearDigits(digits, opts.Year)
 	monthDigits := convertMonthDigits(digits, opts.Month)
 	dayDigits := convertDayDigits(digits, opts.Day)

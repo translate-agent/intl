@@ -1,17 +1,18 @@
 package intl
 
 import (
+	"go.expect.digital/intl/internal/cldr"
 	"golang.org/x/text/language"
 )
 
 //nolint:cyclop
-func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraYearMonthGregorian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	var month fmtFunc
 
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
 	year := fmtYearGregorian(locale, digits, opts.Year)
-	monthName := unitName(locale).Month
+	monthName := cldr.UnitName(locale).Month
 
 	const (
 		// eraYearMonth includes "era year month" and "year month era".
@@ -26,25 +27,25 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 	suffix := " " + era
 
 	switch lang {
-	case az, qu, te, tk, tr:
+	case cldr.AZ, cldr.QU, cldr.TE, cldr.TK, cldr.TR:
 		prefix = era + " "
 		suffix = ""
-	case be, ru:
+	case cldr.BE, cldr.RU:
 		suffix = " г. " + era
-	case bg:
+	case cldr.BG:
 		middle = "."
 		suffix = " " + era
 
 		if opts.Month.numeric() {
 			opts.Month = Month2Digit
 		}
-	case cy, mk:
+	case cldr.CY, cldr.MK:
 		middle = " "
 		suffix = " " + era
-	case cv:
+	case cldr.CV:
 		suffix = " ҫ. " + era
-	case hi:
-		if script != latn {
+	case cldr.HI:
+		if script != cldr.Latn {
 			middle = " " + era + " "
 			suffix = ""
 
@@ -52,37 +53,43 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 		}
 
 		fallthrough
-	case agq, ak, as, asa, bas, bem, bez, bgc, bho, bm, bo, brx, ce, cgg, ckb, csw, dav, dje, doi, dua, dyo, ebu, eo, ewo,
-		fur, gaa, gsw, guz, gv, ha, hu, ii, jgo, jmc, kab, kam, kde, khq, ki, kl, kln, kn, ko, ksb, ksf, ksh, kw, lag, lg,
-		lij, lkt, lmo, ln, lrc, lu, luo, luy, lv, mas, mg, mer, mfe, mgh, ml, mgo, mni, mua, my, naq, nd, nds, ne, nmg, nnh,
-		nqo, nso, nus, nyn, oc, os, pcm, prg, ps, raj, rn, rof, rw, rwk, sah, saq, sat, sbp, seh, ses, sg, shi, si, sn, st,
-		szl, ta, teo, tn, tok, twq, tzm, vai, vmw, vun, wae, xog, yav, yi, yo, za, zgh, zu:
+	case cldr.AGQ, cldr.AK, cldr.AS, cldr.ASA, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BGC, cldr.BHO, cldr.BM, cldr.BO,
+		cldr.BRX, cldr.CE, cldr.CGG, cldr.CKB, cldr.CSW, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DYO, cldr.EBU,
+		cldr.EO, cldr.EWO, cldr.FUR, cldr.GAA, cldr.GSW, cldr.GUZ, cldr.GV, cldr.HA, cldr.HU, cldr.II, cldr.JGO, cldr.JMC,
+		cldr.KAB, cldr.KAM, cldr.KDE, cldr.KHQ, cldr.KI, cldr.KL, cldr.KLN, cldr.KN, cldr.KO, cldr.KSB, cldr.KSF, cldr.KSH,
+		cldr.KW, cldr.LAG, cldr.LG, cldr.LIJ, cldr.LKT, cldr.LMO, cldr.LN, cldr.LRC, cldr.LU, cldr.LUO, cldr.LUY, cldr.LV,
+		cldr.MAS, cldr.MG, cldr.MER, cldr.MFE, cldr.MGH, cldr.ML, cldr.MGO, cldr.MNI, cldr.MUA, cldr.MY, cldr.NAQ, cldr.ND,
+		cldr.NDS, cldr.NE, cldr.NMG, cldr.NNH, cldr.NQO, cldr.NSO, cldr.NUS, cldr.NYN, cldr.OC, cldr.OS, cldr.PCM,
+		cldr.PRG, cldr.PS, cldr.RAJ, cldr.RN, cldr.ROF, cldr.RW, cldr.RWK, cldr.SAH, cldr.SAQ, cldr.SAT, cldr.SBP,
+		cldr.SEH, cldr.SES, cldr.SG, cldr.SHI, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TEO, cldr.TN, cldr.TOK,
+		cldr.TWQ, cldr.TZM, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI, cldr.YO, cldr.ZA,
+		cldr.ZGH, cldr.ZU:
 		layout = eraYearMonth
 		prefix = era + " "
 		suffix = ""
-	case se:
-		if region != regionFI {
+	case cldr.SE:
+		if region != cldr.RegionFI {
 			layout = eraYearMonth
 			prefix = era + " "
 			suffix = ""
 		}
-	case sd:
-		if script != deva {
+	case cldr.SD:
+		if script != cldr.Deva {
 			layout = eraYearMonth
 			prefix = era + " "
 			suffix = ""
 		}
-	case ks:
-		if script == deva {
+	case cldr.KS:
+		if script == cldr.Deva {
 			layout = eraYearMonth
 			prefix = era + " "
 			suffix = ""
 		}
-	case ig, kxv, mai, mr, sa, xnr:
+	case cldr.IG, cldr.KXV, cldr.MAI, cldr.MR, cldr.SA, cldr.XNR:
 		middle = " " + era + " "
 		suffix = ""
-	case pa:
-		if script == arab {
+	case cldr.PA:
+		if script == cldr.Arab {
 			layout = eraYearMonth
 			prefix = era + " "
 			suffix = ""
@@ -91,91 +98,91 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 		}
 
 		fallthrough
-	case gu, lo, uz:
+	case cldr.GU, cldr.LO, cldr.UZ:
 		middle = ", " + era + " "
 		suffix = ""
-	case kgp, wo:
+	case cldr.KGP, cldr.WO:
 		middle = ", "
 		suffix = " " + era
-	case tt:
+	case cldr.TT:
 		layout = eraYearMonth
 		prefix = era + " "
 		middle = " ел, "
 		suffix = ""
-	case es:
-		if region != regionCO {
+	case cldr.ES:
+		if region != cldr.RegionCO {
 			break
 		}
 
 		fallthrough
-	case gl, pt:
+	case cldr.GL, cldr.PT:
 		middle = " de "
-	case yue, zh:
+	case cldr.YUE, cldr.ZH:
 		opts.Month = MonthNumeric
 		layout = eraYearMonth
 		prefix = era
 		middle = ""
 		suffix = monthName
-	case dz:
+	case cldr.DZ:
 		layout = eraYearMonth
 		prefix = era + " "
 		middle = " སྤྱི་ཟླ་"
 		suffix = ""
-	case ja:
+	case cldr.JA:
 		layout = eraYearMonth
 		prefix = era
 		middle = ""
 		opts.Month = MonthNumeric
 		suffix = "月"
-	case eu:
+	case cldr.EU:
 		layout = eraYearMonth
 		prefix = era + " "
 		middle = ". urteko "
 		suffix = ""
-	case ff:
-		if script != adlm {
+	case cldr.FF:
+		if script != cldr.Adlm {
 			layout = eraYearMonth
 			prefix = era + " "
 			suffix = ""
 		}
-	case hy:
+	case cldr.HY:
 		layout = eraYearMonth
 		prefix = era + " "
 		middle = " թ. "
 		suffix = ""
-	case kk:
+	case cldr.KK:
 		layout = eraYearMonth
 		prefix = era + " "
 		middle = " ж. "
 		suffix = ""
-	case ka:
+	case cldr.KA:
 		middle = ". "
-	case ku:
+	case cldr.KU:
 		prefix = era + " "
 		middle = "a "
 		suffix = "an"
-	case ky:
+	case cldr.KY:
 		layout = eraYearMonth
 		prefix = era + " "
 		middle = "-ж. "
 		suffix = ""
-	case lt:
+	case cldr.LT:
 		opts.Month = Month2Digit
 		layout = eraYearMonth
 		middle = "-"
-	case mn:
+	case cldr.MN:
 		layout = eraYearMonth
 		prefix = era + " "
 		middle = " оны "
 		suffix = ""
-	case sl:
+	case cldr.SL:
 		month = fmtMonthName(locale.String(), "format", "abbreviated")
-	case ug:
+	case cldr.UG:
 		layout = eraYearMonth
-	case uk:
+	case cldr.UK:
 		suffix = " р. " + era
-	case kok:
-		if script != latn {
+	case cldr.KOK:
+		if script != cldr.Latn {
 			layout = eraYearMonth
 			prefix = era + " "
 			suffix = ""
@@ -198,7 +205,7 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits digits, opts Options) 
 	}
 }
 
-func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraYearMonthPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	lang, _, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
 	year := fmtYearPersian(locale)
@@ -217,16 +224,16 @@ func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) fm
 	suffix := ""
 
 	switch lang {
-	case fa:
+	case cldr.FA:
 		layout = eraMonthYear
 		prefix = ""
 		middle = " "
 		suffix = " " + era
-	case ckb, uz:
-		if region != regionAF {
+	case cldr.CKB, cldr.UZ:
+		if region != cldr.RegionAF {
 			prefix = ""
 		}
-	case lrc, mzn, ps:
+	case cldr.LRC, cldr.MZN, cldr.PS:
 		prefix = ""
 	}
 
@@ -244,7 +251,7 @@ func fmtEraYearMonthPersian(locale language.Tag, digits digits, opts Options) fm
 	}
 }
 
-func fmtEraYearMonthBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraYearMonthBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	year := fmtYearBuddhist(locale, digits, opts)
 	monthDigits := convertMonthDigits(digits, opts.Month)
 

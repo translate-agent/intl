@@ -1,16 +1,17 @@
 package intl
 
 import (
+	"go.expect.digital/intl/internal/cldr"
 	"golang.org/x/text/language"
 )
 
-func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraMonthGregorian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	var month fmtFunc
 
 	lang, script, _ := locale.Raw()
 	era := fmtEra(locale, opts.Era)
 	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
-	monthName := unitName(locale).Month
+	monthName := cldr.UnitName(locale).Month
 
 	prefix := era + " "
 	suffix := ""
@@ -21,29 +22,29 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) fmtF
 	}
 
 	switch lang {
-	case en, kaa, mhn:
+	case cldr.EN, cldr.KAA, cldr.MHN:
 		if withName {
 			prefix = era + " (" + monthName + ": "
 		} else {
 			prefix = ""
 			suffix = " " + era
 		}
-	case bg, cy, mk:
+	case cldr.BG, cldr.CY, cldr.MK:
 		if withName {
 			prefix = era + " (" + monthName + ": "
 		} else {
 			prefix = era + " "
 		}
-	case br, fo, ga, lt, uk, uz:
+	case cldr.BR, cldr.FO, cldr.GA, cldr.LT, cldr.UK, cldr.UZ:
 		opts.Month = Month2Digit
-	case hr, nb, nn, no, sk:
+	case cldr.HR, cldr.NB, cldr.NN, cldr.NO, cldr.SK:
 		if withName {
 			suffix = ".)"
 		} else {
 			suffix = "."
 		}
-	case hi:
-		if script != latn {
+	case cldr.HI:
+		if script != cldr.Latn {
 			break
 		}
 
@@ -51,11 +52,11 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) fmtF
 			prefix = ""
 			suffix = " " + era
 		}
-	case mn:
+	case cldr.MN:
 		month = fmtMonthName(locale.String(), "stand-alone", "narrow")
-	case wae:
+	case cldr.WAE:
 		month = fmtMonthName(locale.String(), "format", "abbreviated")
-	case ja, ko, zh, yue:
+	case cldr.JA, cldr.KO, cldr.ZH, cldr.YUE:
 		if withName {
 			prefix = era + " (" + monthName + ": "
 			suffix = monthName + ")"
@@ -71,10 +72,10 @@ func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) fmtF
 	return func(t timeReader) string { return prefix + month(t) + suffix }
 }
 
-func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraMonthPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
-	monthName := unitName(locale).Month
+	monthName := cldr.UnitName(locale).Month
 	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
 
 	prefix := era + " "
@@ -85,7 +86,7 @@ func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) fmtFun
 		suffix = ")"
 	}
 
-	if lang == fa {
+	if lang == cldr.FA {
 		if withName {
 			prefix = era + " (" + monthName + ": "
 		} else {
@@ -98,10 +99,10 @@ func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) fmtFun
 	return func(v timeReader) string { return prefix + month(v) + suffix }
 }
 
-func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraMonthBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	era := fmtEra(locale, opts.Era)
 	monthDigits := convertMonthDigits(digits, opts.Month)
-	monthName := unitName(locale).Month
+	monthName := cldr.UnitName(locale).Month
 	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
 
 	prefix := era + " "

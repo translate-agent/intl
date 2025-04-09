@@ -28,31 +28,9 @@ import (
 	"time"
 
 	ptime "github.com/yaa110/go-persian-calendar"
+	"go.expect.digital/intl/internal/cldr"
 	"golang.org/x/text/language"
 )
-
-type calendarType int
-
-const (
-	calendarTypeGregorian calendarType = iota
-	calendarTypeBuddhist
-	calendarTypePersian
-	calendarTypeIslamicUmalqura
-)
-
-// String implements [fmt.Stringer] interface.
-func (t calendarType) String() string {
-	switch t {
-	default:
-		return "gregorian"
-	case calendarTypeBuddhist:
-		return "buddhist"
-	case calendarTypePersian:
-		return "persian"
-	case calendarTypeIslamicUmalqura:
-		return "islamic-umalqura"
-	}
-}
 
 type Era byte
 
@@ -352,14 +330,14 @@ type DateTimeFormat struct {
 // This function initializes a [DateTimeFormat] with the default calendar based on the
 // given locale. It supports different calendar systems including Gregorian, Persian, and Buddhist calendars.
 func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
-	d := localeDigits(locale)
+	d := cldr.LocaleDigits(locale)
 
-	switch defaultCalendar(locale) {
+	switch cldr.DefaultCalendar(locale) {
 	default:
 		return DateTimeFormat{fmt: gregorianDateTimeFormat(locale, d, options)}
-	case calendarTypePersian:
+	case cldr.CalendarTypePersian:
 		return DateTimeFormat{fmt: persianDateTimeFormat(locale, d, options)}
-	case calendarTypeBuddhist:
+	case cldr.CalendarTypeBuddhist:
 		return DateTimeFormat{fmt: buddhistDateTimeFormat(locale, d, options)}
 	}
 }
@@ -376,19 +354,19 @@ func (f DateTimeFormat) Format(t time.Time) string {
 type fmtFunc func(timeReader) string
 
 // convertYearDigits formats year.
-func convertYearDigits(digits digits, opt Year) fmtFunc {
+func convertYearDigits(digits cldr.Digits, opt Year) fmtFunc {
 	if opt.twoDigit() {
-		return func(t timeReader) string { return digits.twoDigit(t.Year()) }
+		return func(t timeReader) string { return digits.TwoDigit(t.Year()) }
 	}
 
-	return func(t timeReader) string { return digits.numeric(t.Year()) }
+	return func(t timeReader) string { return digits.Numeric(t.Year()) }
 }
 
-func convertMonthDigits(digits digits, opt Month) fmtFunc {
-	f := digits.numeric
+func convertMonthDigits(digits cldr.Digits, opt Month) fmtFunc {
+	f := digits.Numeric
 
 	if opt.twoDigit() {
-		f = digits.twoDigit
+		f = digits.TwoDigit
 	}
 
 	return func(t timeReader) string { return f(int(t.Month())) }
@@ -399,7 +377,7 @@ func convertMonthDigits(digits digits, opt Month) fmtFunc {
 // TODO(jhorsts): ensure this is rectified before release v0.1.0 - when formatting of date is complete.
 // The "context" is always "stand-alone".
 func fmtMonthName(locale string, context, width string) fmtFunc {
-	indexes := monthLookup[locale]
+	indexes := cldr.MonthLookup[locale]
 
 	var i int
 
@@ -416,11 +394,11 @@ func fmtMonthName(locale string, context, width string) fmtFunc {
 		i++
 	}
 
-	var names calendarMonths
+	var names cldr.CalendarMonths
 
 	if i >= 0 && i < len(indexes) { // isInBounds()
-		if v := int(indexes[i]); v > 0 && v < len(calendarMonthNames) { // isInBounds()
-			names = calendarMonthNames[v]
+		if v := int(indexes[i]); v > 0 && v < len(cldr.CalendarMonthNames) { // isInBounds()
+			names = cldr.CalendarMonthNames[v]
 		}
 	}
 
@@ -436,18 +414,18 @@ func fmtMonthName(locale string, context, width string) fmtFunc {
 }
 
 // convertDayDigits formats day as numeric.
-func convertDayDigits(digits digits, opt Day) fmtFunc {
-	f := digits.numeric
+func convertDayDigits(digits cldr.Digits, opt Day) fmtFunc {
+	f := digits.Numeric
 
 	if opt.twoDigit() {
-		f = digits.twoDigit
+		f = digits.TwoDigit
 	}
 
 	return func(t timeReader) string { return f(t.Day()) }
 }
 
 //nolint:cyclop
-func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
+func gregorianDateTimeFormat(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	switch {
 	default:
 		return func(_ timeReader) string {
@@ -486,7 +464,7 @@ func gregorianDateTimeFormat(locale language.Tag, digits digits, opts Options) f
 }
 
 //nolint:cyclop
-func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
+func persianDateTimeFormat(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	gregorianToPersian := func(f fmtFunc) fmtFunc {
 		return func(t timeReader) string {
 			v, _ := t.(time.Time) // t is always [time.Time]
@@ -538,7 +516,7 @@ func persianDateTimeFormat(locale language.Tag, digits digits, opts Options) fmt
 }
 
 //nolint:cyclop
-func buddhistDateTimeFormat(locale language.Tag, digits digits, opts Options) fmtFunc {
+func buddhistDateTimeFormat(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	// convert Gregorian calendar time to Buddhist
 	gregorianToBuddhist := func(f fmtFunc) fmtFunc {
 		return func(t timeReader) string {

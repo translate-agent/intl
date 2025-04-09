@@ -14,7 +14,7 @@ import (
 	"text/template"
 	"time"
 
-	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/gen/cldr"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -110,7 +110,7 @@ func (g *Generator) write(out string, data *TemplateData) error {
 		return fmt.Errorf("parse cldr_data: %w", err)
 	}
 
-	name := path.Join(out, "cldr_data.go")
+	name := path.Join(out, "internal/cldr/data.go")
 
 	f, err := os.Create(name)
 	if err != nil {
@@ -246,7 +246,7 @@ func (g *Generator) mergeParent(log *slog.Logger) {
 	log = log.With("func", "mergeParent")
 
 	for _, locale := range g.cldr.Locales()[1:] {
-		// main language, skip it
+		// main language cldr.SK,ip it
 		parts := strings.Split(locale, "_")
 		if len(parts) == 1 {
 			continue
