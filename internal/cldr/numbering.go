@@ -20,6 +20,10 @@ import (
 // and triggers special handling in some methods.
 type Digits [10]rune
 
+func (d Digits) appendTwoDigit(b strings.Builder, number int) {
+	b.WriteString(d.TwoDigit(number))
+}
+
 func (d Digits) TwoDigit(number int) string {
 	if number < 10 { //nolint:mnd
 		return string(d[0]) + string(d[number])
@@ -30,6 +34,10 @@ func (d Digits) TwoDigit(number int) string {
 	beforeLast := number % 10 //nolint:mnd
 
 	return string(d[beforeLast]) + string(d[last])
+}
+
+func (d Digits) appendNumeric(b strings.Builder, number int) {
+	b.WriteString(d.Numeric(number))
 }
 
 func (d Digits) Numeric(number int) string {
