@@ -1,10 +1,11 @@
 package intl
 
 import (
+	"go.expect.digital/intl/internal/cldr"
 	"golang.org/x/text/language"
 )
 
-func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraYearGregorian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	lang, script, region := locale.Raw()
 	era := fmtEra(locale, opts.Era)
 	year := fmtYearGregorian(locale, digits, opts.Year)
@@ -13,68 +14,74 @@ func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) fmtFu
 	suffix := " " + era
 
 	switch lang {
-	case kok:
-		if script == latn {
+	case cldr.KOK:
+		if script == cldr.Latn {
 			break
 		}
 
 		fallthrough
-	case agq, ak, as, asa, az, bas, bem, bez, bgc, bho, bm, bo, ce, cgg, ckb, csw, dav, dje, doi, dua, dz, dyo, ebu, eo,
-		eu, ewo, fur, fy, gaa, gsw, gu, guz, gv, ha, hu, ig, ii, jmc, jgo, kab, kam, kde, khq, ki, kl, kln, kn, ko, ksb, ksf,
-		ksh, ku, kw, lag, lg, lij, lkt, lmo, ln, lo, lrc, lv, lu, luo, luy, mas, mer, mfe, mg, mgh, mgo, ml, mn, mni, mr, mt,
-		mua, my, naq, nd, nds, ne, nmg, nnh, nqo, nso, nus, nyn, oc, om, os, pa, pcm, prg, ps, qu, raj, rn, rof, rw, rwk, saq,
-		sat, sbp, seh, ses, sg, shi, si, sn, st, szl, ta, te, teo, tk, tn, tok, tr, twq, tzm, uz, vai, vmw, vun, wae, xog,
-		yav, yi, yo, za, zgh, zu:
+	case cldr.AGQ, cldr.AK, cldr.AS, cldr.ASA, cldr.AZ, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BGC, cldr.BHO, cldr.BM,
+		cldr.BO, cldr.CE, cldr.CGG, cldr.CKB, cldr.CSW, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DZ, cldr.DYO,
+		cldr.EBU, cldr.EO, cldr.EU, cldr.EWO, cldr.FUR, cldr.FY, cldr.GAA, cldr.GSW, cldr.GU, cldr.GUZ, cldr.GV, cldr.HA,
+		cldr.HU, cldr.IG, cldr.II, cldr.JMC, cldr.JGO, cldr.KAB, cldr.KAM, cldr.KDE, cldr.KHQ, cldr.KI, cldr.KL, cldr.KLN,
+		cldr.KN, cldr.KO, cldr.KSB, cldr.KSF, cldr.KSH, cldr.KU, cldr.KW, cldr.LAG, cldr.LG, cldr.LIJ, cldr.LKT, cldr.LMO,
+		cldr.LN, cldr.LO, cldr.LRC, cldr.LV, cldr.LU, cldr.LUO, cldr.LUY, cldr.MAS, cldr.MER, cldr.MFE, cldr.MG, cldr.MGH,
+		cldr.MGO, cldr.ML, cldr.MN, cldr.MNI, cldr.MR, cldr.MT, cldr.MUA, cldr.MY, cldr.NAQ, cldr.ND, cldr.NDS, cldr.NE,
+		cldr.NMG, cldr.NNH, cldr.NQO, cldr.NSO, cldr.NUS, cldr.NYN, cldr.OC, cldr.OM, cldr.OS, cldr.PA, cldr.PCM, cldr.PRG,
+		cldr.PS, cldr.QU, cldr.RAJ, cldr.RN, cldr.ROF, cldr.RW, cldr.RWK, cldr.SAQ, cldr.SAT, cldr.SBP, cldr.SEH, cldr.SES,
+		cldr.SG, cldr.SHI, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TE, cldr.TEO, cldr.TK, cldr.TN, cldr.TOK,
+		cldr.TR, cldr.TWQ, cldr.TZM, cldr.UZ, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI, cldr.YO,
+		cldr.ZA, cldr.ZGH, cldr.ZU:
 		prefix = era + " "
 		suffix = ""
-	case ks:
-		if script == deva {
+	case cldr.KS:
+		if script == cldr.Deva {
 			prefix = era + " "
 			suffix = ""
 		}
-	case hi:
-		if script == latn {
+	case cldr.HI:
+		if script == cldr.Latn {
 			prefix = era + " "
 			suffix = ""
 		}
-	case sd:
-		if script != deva {
+	case cldr.SD:
+		if script != cldr.Deva {
 			prefix = era + " "
 			suffix = ""
 		}
-	case ff:
-		if script != adlm {
+	case cldr.FF:
+		if script != cldr.Adlm {
 			prefix = era + " "
 			suffix = ""
 		}
-	case se:
-		if region != regionFI {
+	case cldr.SE:
+		if region != cldr.RegionFI {
 			prefix = era + " "
 			suffix = ""
 		}
-	case be, ru:
+	case cldr.BE, cldr.RU:
 		suffix = " г. " + era
-	case bg, cy, mk:
+	case cldr.BG, cldr.CY, cldr.MK:
 		suffix = " " + era
-	case cv:
+	case cldr.CV:
 		suffix = " ҫ. " + era
-	case kk:
+	case cldr.KK:
 		prefix = era + " "
 		suffix = " ж."
-	case hy:
+	case cldr.HY:
 		prefix = era + " "
 		suffix = " թ."
-	case ky:
+	case cldr.KY:
 		prefix = era + " "
 		suffix = "-ж."
-	case lt:
+	case cldr.LT:
 		suffix = " m. " + era
-	case tt:
+	case cldr.TT:
 		prefix = era + " "
 		suffix = " ел"
-	case sah:
+	case cldr.SAH:
 		suffix = " с. " + era
-	case ja, brx, yue, zh:
+	case cldr.JA, cldr.BRX, cldr.YUE, cldr.ZH:
 		prefix = era
 		suffix = ""
 	}
@@ -82,7 +89,7 @@ func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) fmtFu
 	return func(t timeReader) string { return prefix + year(t) + suffix }
 }
 
-func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraYearPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	yearDigits := convertYearDigits(digits, opts.Year)
@@ -91,10 +98,10 @@ func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) fmtFunc
 	suffix := " " + era
 
 	switch lang {
-	case ckb, lrc, mzn, ps, uz:
+	case cldr.CKB, cldr.LRC, cldr.MZN, cldr.PS, cldr.UZ:
 		prefix = era + " "
 		suffix = ""
-	case fa:
+	case cldr.FA:
 		suffix = " " + era
 	}
 
@@ -103,6 +110,6 @@ func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) fmtFunc
 	}
 }
 
-func fmtEraYearBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtEraYearBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	return fmtYearBuddhist(locale, digits, opts)
 }

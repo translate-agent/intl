@@ -1,6 +1,7 @@
 package intl
 
 import (
+	"go.expect.digital/intl/internal/cldr"
 	"golang.org/x/text/language"
 )
 
@@ -9,7 +10,7 @@ func fmtEra(locale language.Tag, opt Era) string {
 		opt = EraNarrow
 	}
 
-	era, ok := eraLookup[locale.String()]
+	era, ok := cldr.EraLookup[locale.String()]
 	if ok && opt > 0 && int(opt) <= len(era) { // isInBounds()
 		return era[opt-1]
 	}
@@ -17,13 +18,13 @@ func fmtEra(locale language.Tag, opt Era) string {
 	lang, _ := locale.Base()
 
 	if script, confidence := locale.Script(); confidence == language.Exact {
-		era, ok := eraLookup[lang.String()+"-"+script.String()]
+		era, ok := cldr.EraLookup[lang.String()+"-"+script.String()]
 		if ok && opt > 0 && int(opt) <= len(era) {
 			return era[opt-1]
 		}
 	}
 
-	if era, ok := eraLookup[lang.String()]; ok && opt > 0 && int(opt) <= len(era) {
+	if era, ok := cldr.EraLookup[lang.String()]; ok && opt > 0 && int(opt) <= len(era) {
 		return era[opt-1]
 	}
 

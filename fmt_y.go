@@ -1,22 +1,23 @@
 package intl
 
 import (
+	"go.expect.digital/intl/internal/cldr"
 	"golang.org/x/text/language"
 )
 
-func fmtYearGregorian(locale language.Tag, digits digits, opt Year) fmtFunc {
+func fmtYearGregorian(locale language.Tag, digits cldr.Digits, opt Year) fmtFunc {
 	var suffix string
 
 	switch lang, _ := locale.Base(); lang {
-	case bg, mk:
+	case cldr.BG, cldr.MK:
 		suffix = " г."
-	case bs, hr, hu, sr:
+	case cldr.BS, cldr.HR, cldr.HU, cldr.SR:
 		suffix = "."
-	case ja, yue, zh:
+	case cldr.JA, cldr.YUE, cldr.ZH:
 		suffix = "年"
-	case ko:
+	case cldr.KO:
 		suffix = "년"
-	case lv:
+	case cldr.LV:
 		suffix = ". g."
 	}
 
@@ -25,7 +26,7 @@ func fmtYearGregorian(locale language.Tag, digits digits, opt Year) fmtFunc {
 	return func(t timeReader) string { return yearDigits(t) + suffix }
 }
 
-func fmtYearBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtYearBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	prefix := fmtEra(locale, opts.Era) + " "
 	yearDigits := convertYearDigits(digits, opts.Year)
 
@@ -36,7 +37,7 @@ func fmtYearPersian(locale language.Tag) func(y string) string {
 	lang, _, region := locale.Raw()
 	prefix := ""
 
-	if lang != fa && (lang != uz || region != regionAF) {
+	if lang != cldr.FA && (lang != cldr.UZ || region != cldr.RegionAF) {
 		prefix = fmtEra(locale, EraNarrow) + " "
 	}
 

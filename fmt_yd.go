@@ -1,10 +1,11 @@
 package intl
 
 import (
+	"go.expect.digital/intl/internal/cldr"
 	"golang.org/x/text/language"
 )
 
-func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtYearDayGregorian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	lang, script, _ := locale.Raw()
 	year := fmtYearGregorian(locale, digits, opts.Year)
 
@@ -14,7 +15,7 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) fmtFu
 	)
 
 	withName := !opts.Year.twoDigit() || !opts.Day.numeric()
-	dayName := unitName(locale).Day
+	dayName := cldr.UnitName(locale).Day
 	layout := layoutYearDay
 	middle := " "
 	suffix := ""
@@ -25,18 +26,18 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) fmtFu
 	}
 
 	switch lang {
-	case bg, mk:
+	case cldr.BG, cldr.MK:
 		if withName {
 			middle = " (" + dayName + ": "
 		} else {
 			middle = " "
 		}
-	case kaa, en, mhn:
+	case cldr.KAA, cldr.EN, cldr.MHN:
 		if !withName {
 			layout = layoutDayYear
 		}
-	case hi:
-		if !withName && script == latn {
+	case cldr.HI:
+		if !withName && script == cldr.Latn {
 			layout = layoutDayYear
 		}
 	}
@@ -55,7 +56,7 @@ func fmtYearDayGregorian(locale language.Tag, digits digits, opts Options) fmtFu
 	}
 }
 
-func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtYearDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	year := fmtYearPersian(locale)
 	yearDigits := convertYearDigits(digits, opts.Year)
 
@@ -64,7 +65,7 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) fmtFunc
 	suffix := ""
 
 	if !opts.Year.twoDigit() || !opts.Day.numeric() {
-		dayName := unitName(locale).Day
+		dayName := cldr.UnitName(locale).Day
 		middle = " (" + dayName + ": "
 		suffix = ")"
 	}
@@ -76,14 +77,14 @@ func fmtYearDayPersian(locale language.Tag, digits digits, opts Options) fmtFunc
 	}
 }
 
-func fmtYearDayBuddhist(locale language.Tag, digits digits, opts Options) fmtFunc {
+func fmtYearDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	year := fmtYearBuddhist(locale, digits, opts)
 
 	middle := " "
 	suffix := ""
 
 	if !opts.Year.twoDigit() || !opts.Day.numeric() {
-		dayName := unitName(locale).Day
+		dayName := cldr.UnitName(locale).Day
 		middle = " (" + dayName + ": "
 		suffix = ")"
 	}
