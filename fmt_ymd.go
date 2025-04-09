@@ -836,7 +836,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits cldr.Digits, opts Opti
 		month = convertMonthDigits(digits, opts.Month)
 		dayDigits := convertDayDigits(digits, opts.Day)
 
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return dayDigits(t) + "/" + month(t) + " " + yearDigits(t)
 		}
 	case cldr.KO:
@@ -1301,7 +1301,7 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits cldr.Digits, opts Opti
 				month = convertMonthDigits(digits, opts.Month)
 				dayDigits := convertDayDigits(digits, opts.Day)
 
-				return func(t timeReader) string {
+				return func(t cldr.TimeReader) string {
 					return yearDigits(t) + "年" + month(t) + "月" + dayDigits(t) + "日"
 				}
 			}
@@ -1359,19 +1359,19 @@ func fmtYearMonthDayGregorian(locale language.Tag, digits cldr.Digits, opts Opti
 
 	switch layout {
 	default: // layoutYearMonthDay
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return prefix + yearDigits(t) + separator + month(t) + separator + dayDigits(t) + suffix
 		}
 	case layoutDayMonthYear:
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return dayDigits(t) + separator + month(t) + separator + yearDigits(t) + suffix
 		}
 	case layoutMonthDayYear:
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return month(t) + separator + dayDigits(t) + separator + yearDigits(t) + suffix
 		}
 	case layoutYearDayMonth:
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return yearDigits(t) + separator + dayDigits(t) + separator + month(t) + suffix
 		}
 	}
@@ -1437,12 +1437,12 @@ func fmtYearMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Option
 	dayDigits := convertDayDigits(digits, opts.Day)
 
 	if layout == layoutDayMonthYear {
-		return func(v timeReader) string {
+		return func(v cldr.TimeReader) string {
 			return dayDigits(v) + "/" + month(v) + "/" + yearDigits(v)
 		}
 	}
 
-	return func(v timeReader) string {
+	return func(v cldr.TimeReader) string {
 		return prefix + yearDigits(v) + separator + month(v) + separator + dayDigits(v)
 	}
 }
@@ -1461,7 +1461,7 @@ func fmtYearMonthDayBuddhist(_ language.Tag, digits cldr.Digits, opts Options) f
 	// year=2-digit,month=numeric,day=2-digit,out=02/1/24
 	// year=2-digit,month=2-digit,day=numeric,out=2/01/24
 	// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
-	return func(t timeReader) string {
+	return func(t cldr.TimeReader) string {
 		return dayDigits(t) + "/" + monthDigits(t) + "/" + yearDigits(t)
 	}
 }

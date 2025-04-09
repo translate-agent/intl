@@ -195,11 +195,11 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits cldr.Digits, opts Opti
 
 	switch layout {
 	default: // eraYearMonth
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return prefix + year(t) + middle + month(t) + suffix
 		}
 	case eraMonthYear:
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return prefix + month(t) + middle + year(t) + suffix
 		}
 	}
@@ -241,11 +241,11 @@ func fmtEraYearMonthPersian(locale language.Tag, digits cldr.Digits, opts Option
 
 	switch layout {
 	default: // eraYearMonth
-		return func(v timeReader) string {
+		return func(v cldr.TimeReader) string {
 			return prefix + year(yearDigits(v)) + middle + month(v) + suffix
 		}
 	case eraMonthYear:
-		return func(v timeReader) string {
+		return func(v cldr.TimeReader) string {
 			return prefix + month(v) + middle + year(yearDigits(v)) + suffix
 		}
 	}
@@ -255,7 +255,7 @@ func fmtEraYearMonthBuddhist(locale language.Tag, digits cldr.Digits, opts Optio
 	year := fmtYearBuddhist(locale, digits, opts)
 	monthDigits := convertMonthDigits(digits, opts.Month)
 
-	return func(t timeReader) string {
+	return func(t cldr.TimeReader) string {
 		return monthDigits(t) + " " + year(t)
 	}
 }

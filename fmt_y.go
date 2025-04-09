@@ -6,31 +6,29 @@ import (
 )
 
 func fmtYearGregorian(locale language.Tag, digits cldr.Digits, opt Year) fmtFunc {
-	var suffix string
+	fmt := cldr.Fmt{convertYearDigitsFmt(digits, opt)}
 
 	switch lang, _ := locale.Base(); lang {
+	default:
+		return fmt.Format
 	case cldr.BG, cldr.MK:
-		suffix = " г."
+		return append(fmt, cldr.Text(" г.")).Format
 	case cldr.BS, cldr.HR, cldr.HU, cldr.SR:
-		suffix = "."
+		return append(fmt, cldr.Text(".")).Format
 	case cldr.JA, cldr.YUE, cldr.ZH:
-		suffix = "年"
+		return append(fmt, cldr.Text("年")).Format
 	case cldr.KO:
-		suffix = "년"
+		return append(fmt, cldr.Text("년")).Format
 	case cldr.LV:
-		suffix = ". g."
+		return append(fmt, cldr.Text(". g.")).Format
 	}
-
-	yearDigits := convertYearDigits(digits, opt)
-
-	return func(t timeReader) string { return yearDigits(t) + suffix }
 }
 
 func fmtYearBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	prefix := fmtEra(locale, opts.Era) + " "
-	yearDigits := convertYearDigits(digits, opts.Year)
-
-	return func(t timeReader) string { return prefix + yearDigits(t) }
+	return cldr.Fmt{
+		cldr.Text(fmtEra(locale, opts.Era) + " "),
+		convertYearDigitsFmt(digits, opts.Year),
+	}.Format
 }
 
 func fmtYearPersian(locale language.Tag) func(y string) string {

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type timeReader interface {
+type TimeReader interface {
 	Year() int
 	Month() time.Month
 	Day() int
@@ -13,44 +13,64 @@ type timeReader interface {
 
 type Fmt []FmtFunc
 
-func (f Fmt) Format(t timeReader) string {
+func (f Fmt) Format(t TimeReader) string {
 	var b strings.Builder
 
 	for _, fn := range f {
-		fn(b, t)
+		fn.Format(&b, t)
 	}
 
 	return b.String()
 }
 
-type FmtFunc func(strings.Builder, timeReader)
-
-func MonthNumeric(digits Digits) FmtFunc {
-	return func(b strings.Builder, t timeReader) {
-		digits.appendNumeric(b, int(t.Month()))
-	}
+type FmtFunc interface {
+	Format(*strings.Builder, TimeReader)
 }
 
-func MonthTwoDigit(digits Digits) FmtFunc {
-	return func(b strings.Builder, t timeReader) {
-		digits.appendTwoDigit(b, int(t.Month()))
-	}
+type Text string
+
+func (t Text) Format(b *strings.Builder, _ TimeReader) {
+	b.WriteString(string(t))
 }
 
-func Month(months []string) FmtFunc {
-	return func(b strings.Builder, t timeReader) {
-		b.WriteString(months[t.Month()-1])
-	}
+type YearNumeric Digits
+
+func (y YearNumeric) Format(b *strings.Builder, t TimeReader) {
+	Digits(y).appendNumeric(b, t.Year())
 }
 
-func DayNumeric(digits Digits) FmtFunc {
-	return func(b strings.Builder, t timeReader) {
-		digits.appendNumeric(b, t.Day())
-	}
+type YearTwoDigit Digits
+
+func (y YearTwoDigit) Format(b *strings.Builder, t TimeReader) {
+	Digits(y).appendTwoDigit(b, t.Year())
 }
 
-func DayTwoDigit(digits Digits) FmtFunc {
-	return func(b strings.Builder, t timeReader) {
-		digits.appendTwoDigit(b, t.Day())
-	}
+type MonthNumeric Digits
+
+func (m MonthNumeric) Format(b *strings.Builder, t TimeReader) {
+	Digits(m).appendNumeric(b, int(t.Month()))
+}
+
+type MonthTwoDigit Digits
+
+func (m MonthTwoDigit) Format(b *strings.Builder, t TimeReader) {
+	Digits(m).appendTwoDigit(b, int(t.Month()))
+}
+
+type Month CalendarMonths
+
+func (m Month) Format(b *strings.Builder, t TimeReader) {
+	b.WriteString(m[t.Month()-1])
+}
+
+type DayNumeric Digits
+
+func (d DayNumeric) Format(b *strings.Builder, t TimeReader) {
+	Digits(d).appendNumeric(b, t.Day())
+}
+
+type DayTwoDigit Digits
+
+func (d DayTwoDigit) Format(b *strings.Builder, t TimeReader) {
+	Digits(d).appendTwoDigit(b, t.Day())
 }

@@ -434,12 +434,12 @@ func fmtYearMonthGregorian(locale language.Tag, digits cldr.Digits, opts Options
 	}
 
 	if layout == layoutMonthYear {
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return prefix + month(t) + middle + yearDigits(t) + suffix
 		}
 	}
 
-	return func(t timeReader) string {
+	return func(t cldr.TimeReader) string {
 		return prefix + yearDigits(t) + middle + month(t) + suffix
 	}
 }
@@ -450,14 +450,14 @@ func fmtYearMonthBuddhist(locale language.Tag, digits cldr.Digits, opts Options)
 	if lang, _ := locale.Base(); lang == cldr.TH {
 		monthDigits := convertMonthDigits(digits, opts.Month)
 
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return monthDigits(t) + "/" + yearDigits(t)
 		}
 	}
 
 	monthDigits := convertMonthDigits(digits, Month2Digit)
 
-	return func(t timeReader) string {
+	return func(t cldr.TimeReader) string {
 		return yearDigits(t) + "-" + monthDigits(t)
 	}
 }
@@ -476,7 +476,7 @@ func fmtYearMonthPersian(locale language.Tag, digits cldr.Digits, opts Options) 
 		// year=numeric,month=2-digit,out=١٠/١٤٠٢
 		// year=2-digit,month=numeric,out=١٠/٠٢
 		// year=2-digit,month=2-digit,out=١٠/٠٢
-		return func(v timeReader) string {
+		return func(v cldr.TimeReader) string {
 			return month(v) + "/" + yearDigits(v)
 		}
 	case cldr.FA:
@@ -498,7 +498,7 @@ func fmtYearMonthPersian(locale language.Tag, digits cldr.Digits, opts Options) 
 		prefix = fmtEra(locale, EraNarrow) + " "
 	}
 
-	return func(v timeReader) string {
+	return func(v cldr.TimeReader) string {
 		return prefix + yearDigits(v) + separator + month(v)
 	}
 }

@@ -381,12 +381,12 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits cldr.Digits, opts Optio
 	dayDigits := convertDayDigits(digits, opts.Day)
 
 	if layout == layoutDayMonth {
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return prefix + dayDigits(t) + separator + month(t) + suffix
 		}
 	}
 
-	return func(t timeReader) string {
+	return func(t cldr.TimeReader) string {
 		return prefix + month(t) + separator + dayDigits(t) + suffix
 	}
 }
@@ -406,7 +406,7 @@ func fmtEraMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Options
 	month := convertMonthDigits(digits, opts.Month)
 	dayDigits := convertDayDigits(digits, opts.Day)
 
-	return func(v timeReader) string { return prefix + month(v) + separator + dayDigits(v) }
+	return func(v cldr.TimeReader) string { return prefix + month(v) + separator + dayDigits(v) }
 }
 
 func fmtEraMonthDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
@@ -414,5 +414,5 @@ func fmtEraMonthDayBuddhist(locale language.Tag, digits cldr.Digits, opts Option
 	prefix := era + " "
 	month := fmtMonthDayBuddhist(locale, digits, opts)
 
-	return func(t timeReader) string { return prefix + month(t) }
+	return func(t cldr.TimeReader) string { return prefix + month(t) }
 }

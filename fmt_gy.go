@@ -86,7 +86,7 @@ func fmtEraYearGregorian(locale language.Tag, digits cldr.Digits, opts Options) 
 		suffix = ""
 	}
 
-	return func(t timeReader) string { return prefix + year(t) + suffix }
+	return func(t cldr.TimeReader) string { return prefix + year(t) + suffix }
 }
 
 func fmtEraYearPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
@@ -105,7 +105,7 @@ func fmtEraYearPersian(locale language.Tag, digits cldr.Digits, opts Options) fm
 		suffix = " " + era
 	}
 
-	return func(v timeReader) string {
+	return func(v cldr.TimeReader) string {
 		return prefix + yearDigits(v) + suffix
 	}
 }

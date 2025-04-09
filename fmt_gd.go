@@ -67,7 +67,7 @@ func fmtEraDayGregorian(locale language.Tag, digits cldr.Digits, opts Options) f
 
 	dayDigits := convertDayDigits(digits, opts.Day)
 
-	return func(t timeReader) string { return prefix + dayDigits(t) + suffix }
+	return func(t cldr.TimeReader) string { return prefix + dayDigits(t) + suffix }
 }
 
 func fmtEraDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
@@ -93,7 +93,7 @@ func fmtEraDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmt
 
 	dayDigits := convertDayDigits(digits, opts.Day)
 
-	return func(v timeReader) string { return prefix + dayDigits(v) + suffix }
+	return func(v cldr.TimeReader) string { return prefix + dayDigits(v) + suffix }
 }
 
 func fmtEraDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
@@ -107,5 +107,5 @@ func fmtEraDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fm
 
 	dayDigits := convertDayDigits(digits, opts.Day)
 
-	return func(t timeReader) string { return prefix + dayDigits(t) + suffix }
+	return func(t cldr.TimeReader) string { return prefix + dayDigits(t) + suffix }
 }

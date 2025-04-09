@@ -6,30 +6,26 @@ import (
 )
 
 func fmtMonthGregorian(locale language.Tag, digits cldr.Digits, opt Month) fmtFunc {
-	suffix := ""
+	fmt := cldr.Fmt{convertMonthDigitsFmt(digits, opt)}
 
 	switch lang, _ := locale.Base(); lang {
+	default:
+		return fmt.Format
 	case cldr.BR, cldr.FO, cldr.GA, cldr.LT, cldr.UK, cldr.UZ:
-		opt = Month2Digit
+		return cldr.Fmt{convertMonthDigitsFmt(digits, Month2Digit)}.Format
 	case cldr.HR, cldr.NB, cldr.NN, cldr.NO, cldr.SK:
-		suffix = "."
+		return append(fmt, cldr.Text(".")).Format
 	case cldr.JA, cldr.YUE, cldr.ZH, cldr.KO:
-		suffix = cldr.UnitName(locale).Month
+		return append(fmt, cldr.Text(cldr.UnitName(locale).Month)).Format
 	case cldr.MN:
-		return fmtMonthName(locale.String(), "stand-alone", "narrow")
+		return cldr.Fmt{cldr.Month(cldr.MonthNames(locale.String(), "stand-alone", "narrow"))}.Format
 	case cldr.WAE:
-		return fmtMonthName(locale.String(), "stand-alone", "abbreviated")
+		return cldr.Fmt{cldr.Month(cldr.MonthNames(locale.String(), "stand-alone", "abbreviated"))}.Format
 	}
-
-	monthDigits := convertMonthDigits(digits, opt)
-
-	return func(t timeReader) string { return monthDigits(t) + suffix }
 }
 
 func fmtMonthBuddhist(_ language.Tag, digits cldr.Digits, opt Month) fmtFunc {
-	monthDigits := convertMonthDigits(digits, opt)
-
-	return func(t timeReader) string { return monthDigits(t) }
+	return cldr.Fmt{convertMonthDigitsFmt(digits, opt)}.Format
 }
 
 func fmtMonthPersian(_ language.Tag, digits cldr.Digits, opt Month) fmtFunc {

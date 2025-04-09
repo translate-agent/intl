@@ -45,13 +45,13 @@ func fmtYearDayGregorian(locale language.Tag, digits cldr.Digits, opts Options) 
 	day := fmtDayGregorian(locale, digits, opts.Day)
 
 	if layout == layoutDayYear {
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return day(t) + middle + year(t) + suffix
 		}
 	}
 
 	// layoutYearDay
-	return func(t timeReader) string {
+	return func(t cldr.TimeReader) string {
 		return year(t) + middle + day(t) + suffix
 	}
 }
@@ -72,7 +72,7 @@ func fmtYearDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fm
 
 	day := fmtDayPersian(locale, digits, opts.Day)
 
-	return func(v timeReader) string {
+	return func(v cldr.TimeReader) string {
 		return prefix + year(yearDigits(v)) + middle + day(v) + suffix
 	}
 }
@@ -91,7 +91,7 @@ func fmtYearDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) f
 
 	day := fmtDayBuddhist(locale, digits, opts.Day)
 
-	return func(t timeReader) string {
+	return func(t cldr.TimeReader) string {
 		return year(t) + middle + day(t) + suffix
 	}
 }

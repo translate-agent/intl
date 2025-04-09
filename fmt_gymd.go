@@ -7,284 +7,362 @@ import (
 
 //nolint:cyclop,gocognit
 func fmtEraYearMonthDayGregorian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	var month fmtFunc
-
 	lang, script, region := locale.Raw()
+
 	era := fmtEra(locale, opts.Era)
-	yearDigits := convertYearDigits(digits, opts.Year)
+	year := convertYearDigitsFmt(digits, opts.Year)
+	month := convertMonthDigitsFmt(digits, Month2Digit)
 
-	const (
-		eraYearMonthDay = iota
-		eraMonthDayYear
-		eraDayMonthYear
-		dayMonthEraYear
-	)
-
-	monthOpt, monthDay := Month2Digit, Day2Digit
-	layout := eraYearMonthDay
-	prefix := era + " "
-	suffix := ""
-	separator := "-"
+	separator := cldr.Text("-")
 
 	switch lang {
+	default:
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, year, separator, month, separator, day}.Format
 	case cldr.EN:
 		switch region {
 		default:
-			monthOpt, monthDay = opts.Month, opts.Day
-			separator = "/"
-			prefix = ""
-			suffix = " " + era
+			month = convertMonthDigitsFmt(digits, opts.Month)
+			day := convertDayDigitsFmt(digits, opts.Day)
+			separator = cldr.Text("/")
+			suffix := cldr.Text(" " + era)
 
 			if script == cldr.Dsrt || script == cldr.Shaw || region == cldr.RegionZZ {
-				layout = eraMonthDayYear
-			} else {
-				layout = eraDayMonthYear
+				return cldr.Fmt{month, separator, day, separator, year, suffix}.Format
 			}
+
+			return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 		case cldr.RegionAE, cldr.RegionAS, cldr.RegionBI, cldr.RegionCA, cldr.RegionGU, cldr.RegionMH, cldr.RegionMP,
 			cldr.RegionPH, cldr.RegionPR, cldr.RegionUM, cldr.RegionUS,
 			cldr.RegionVI:
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraMonthDayYear
-			separator = "/"
-			prefix = ""
-			suffix = " " + era
+			month = convertMonthDigitsFmt(digits, opts.Month)
+			day := convertDayDigitsFmt(digits, opts.Day)
+			separator = cldr.Text("/")
+			suffix := cldr.Text(" " + era)
+
+			return cldr.Fmt{month, separator, day, separator, year, suffix}.Format
 		case cldr.RegionCH:
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraDayMonthYear
-			separator = "."
-			prefix = ""
-			suffix = " " + era
+			month = convertMonthDigitsFmt(digits, opts.Month)
+			day := convertDayDigitsFmt(digits, opts.Day)
+			separator = cldr.Text(".")
+			suffix := cldr.Text(" " + era)
+
+			return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 		case cldr.RegionGB:
-			separator = "/"
-			prefix = ""
-			suffix = " " + era
+			separator = cldr.Text("/")
+			suffix := cldr.Text(" " + era)
 
 			if script == cldr.Shaw {
-				monthOpt, monthDay = opts.Month, opts.Day
-				layout = eraMonthDayYear
-			} else {
-				layout = eraDayMonthYear
+				month = convertMonthDigitsFmt(digits, opts.Month)
+				day := convertDayDigitsFmt(digits, opts.Day)
+				return cldr.Fmt{month, separator, day, separator, year, suffix}.Format
 			}
+
+			day := convertDayDigitsFmt(digits, Day2Digit)
+
+			return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 		}
 	case cldr.BRX, cldr.LV, cldr.MNI:
-		layout = eraDayMonthYear
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, day, separator, month, separator, year}.Format
 	case cldr.DA, cldr.DSB, cldr.HSB, cldr.IE, cldr.KA, cldr.SQ:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraDayMonthYear
-		separator = "."
-		prefix = ""
-		suffix = " " + era
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day := convertDayDigitsFmt(digits, opts.Day)
+		separator = cldr.Text(".")
+		suffix := cldr.Text(" " + era)
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.MK:
-		monthOpt = opts.Month
-		monthDay = opts.Day
-		layout = eraDayMonthYear
-		prefix = ""
-		suffix = " г. " + era
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day := convertDayDigitsFmt(digits, opts.Day)
+		suffix := cldr.Text(" г. " + era)
 		separator = "."
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.ET, cldr.PL:
-		monthDay = opts.Day
-		layout = eraDayMonthYear
-		separator = "."
-		prefix = ""
-		suffix = " " + era
+		day := convertDayDigitsFmt(digits, opts.Day)
+		separator = cldr.Text(".")
+		suffix := cldr.Text(" " + era)
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.BE, cldr.CV, cldr.DE, cldr.FO, cldr.HY, cldr.NB, cldr.NN, cldr.NO, cldr.RO, cldr.RU:
-		layout = eraDayMonthYear
-		separator = "."
-		prefix = ""
-		suffix = " " + era
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		separator = cldr.Text(".")
+		suffix := cldr.Text(" " + era)
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.SR:
-		monthDay = opts.Day
-		layout = eraDayMonthYear
-		separator = "."
-		prefix = ""
-		suffix = ". " + era
+		day := convertDayDigitsFmt(digits, opts.Day)
+		separator = cldr.Text(".")
+		suffix := cldr.Text(". " + era)
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.BG:
-		layout = eraDayMonthYear
-		separator = "."
-		prefix = ""
-		suffix = " г. " + era
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		separator = cldr.Text(".")
+		suffix := cldr.Text(" г. " + era)
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.FI:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraMonthDayYear
-		separator = "."
-		prefix = ""
-		suffix = " " + era
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day := convertDayDigitsFmt(digits, opts.Day)
+		separator = cldr.Text(".")
+		suffix := cldr.Text(" " + era)
+
+		return cldr.Fmt{month, separator, day, separator, year, suffix}.Format
 	case cldr.FR:
-		prefix = ""
-		suffix = " " + era
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		suffix := cldr.Text(" " + era)
 
 		if region != cldr.RegionCA {
-			layout = eraDayMonthYear
-			separator = "/"
+			separator = cldr.Text("/")
+
+			return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 		}
+
+		return cldr.Fmt{year, separator, month, separator, day, suffix}.Format
 	case cldr.AM, cldr.AS, cldr.ES, cldr.GD, cldr.GL, cldr.HE, cldr.EL, cldr.ID, cldr.IS, cldr.JV, cldr.NL, cldr.SU,
 		cldr.SW, cldr.TA, cldr.XNR, cldr.UR, cldr.VI, cldr.YO:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraDayMonthYear
-		separator = "/"
-		prefix = ""
-		suffix = " " + era
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day := convertDayDigitsFmt(digits, opts.Day)
+		separator = cldr.Text("/")
+		suffix := cldr.Text(" " + era)
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.GA, cldr.IT, cldr.KEA, cldr.PT, cldr.SC, cldr.SYR, cldr.VEC:
-		layout = eraDayMonthYear
-		separator = "/"
-		prefix = ""
-		suffix = " " + era
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		separator = cldr.Text("/")
+		suffix := cldr.Text(" " + era)
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.CEB, cldr.CHR, cldr.BLO, cldr.FIL, cldr.KAA, cldr.MHN, cldr.ML, cldr.NE, cldr.OR, cldr.PS, cldr.SD,
 		cldr.SO, cldr.TI, cldr.XH, cldr.ZU:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraMonthDayYear
-		separator = "/"
-		prefix = ""
-		suffix = " " + era
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day := convertDayDigitsFmt(digits, opts.Day)
+		separator = cldr.Text("/")
+		suffix := cldr.Text(" " + era)
+
+		return cldr.Fmt{month, separator, day, separator, year, suffix}.Format
 	case cldr.CY:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraMonthDayYear
-		prefix = ""
-		suffix = " " + era
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day := convertDayDigitsFmt(digits, opts.Day)
+		suffix := cldr.Text(" " + era)
 		separator = "/"
+
+		return cldr.Fmt{month, separator, day, separator, year, suffix}.Format
 	case cldr.AR, cldr.IA, cldr.BN, cldr.CA, cldr.MAI, cldr.RM, cldr.UK, cldr.WO:
-		layout = eraDayMonthYear
-		prefix = ""
-		suffix = " " + era
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		suffix := cldr.Text(" " + era)
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.LT, cldr.SV:
-		prefix = ""
-		suffix = " " + era
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		suffix := cldr.Text(" " + era)
+
+		return cldr.Fmt{year, separator, month, separator, day, suffix}.Format
 	case cldr.BS:
 		if script != cldr.Cyrl {
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraDayMonthYear
-			separator = ". "
-			prefix = ""
-			suffix = ". " + era
+			month = convertMonthDigitsFmt(digits, opts.Month)
+			day := convertDayDigitsFmt(digits, opts.Day)
+			separator = cldr.Text(". ")
+			suffix := cldr.Text(". " + era)
+
+			return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 		}
+
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, year, separator, month, separator, day}.Format
 	case cldr.FF:
 		if script == cldr.Adlm {
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraDayMonthYear
-			prefix = ""
-			suffix = " " + era
+			month = convertMonthDigitsFmt(digits, opts.Month)
+			day := convertDayDigitsFmt(digits, opts.Day)
+			suffix := cldr.Text(" " + era)
+
+			return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 		}
+
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, year, separator, month, separator, day}.Format
 	case cldr.KS:
 		if script != cldr.Deva {
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraMonthDayYear
-			separator = "/"
-			prefix = ""
-			suffix = " " + era
+			month = convertMonthDigitsFmt(digits, opts.Month)
+			day := convertDayDigitsFmt(digits, opts.Day)
+			separator = cldr.Text("/")
+			suffix := cldr.Text(" " + era)
+
+			return cldr.Fmt{month, separator, day, separator, year, suffix}.Format
 		}
+
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, year, separator, month, separator, day}.Format
 	case cldr.UZ:
+		day := convertDayDigitsFmt(digits, Day2Digit)
 		if script != cldr.Cyrl {
-			layout = eraDayMonthYear
-			separator = "."
-			prefix = ""
-			suffix = " " + era
+			separator = cldr.Text(".")
+			suffix := cldr.Text(" " + era)
+
+			return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 		}
+
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, year, separator, month, separator, day}.Format
 	case cldr.AZ:
 		if script != cldr.Cyrl {
-			month = fmtMonthName(locale.String(), "format", "abbreviated")
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraDayMonthYear
-			separator = " "
+			month = cldr.Month(cldr.MonthNames(locale.String(), "format", "abbreviated"))
+			day := convertDayDigitsFmt(digits, opts.Day)
+			separator = cldr.Text(" ")
+
+			prefix := cldr.Text(era + " ")
+
+			return cldr.Fmt{prefix, day, separator, month, separator, year}.Format
 		}
+
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, year, separator, month, separator, day}.Format
 	case cldr.KU, cldr.TK, cldr.TR:
-		layout = eraDayMonthYear
-		separator = "."
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		separator = cldr.Text(".")
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, day, separator, month, separator, year}.Format
 	case cldr.HU:
-		separator = ". "
-		suffix = "."
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		separator = cldr.Text(". ")
+		suffix := cldr.Text(".")
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, year, separator, month, separator, day, suffix}.Format
 	case cldr.CS, cldr.SK, cldr.SL:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraDayMonthYear
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day := convertDayDigitsFmt(digits, opts.Day)
 		separator = ". "
-		prefix = ""
-		suffix = " " + era
+		suffix := cldr.Text(" " + era)
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.HR:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraDayMonthYear
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day := convertDayDigitsFmt(digits, opts.Day)
 		separator = ". "
-		prefix = ""
-		suffix = ". " + era
+		suffix := cldr.Text(". " + era)
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.HI:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraDayMonthYear
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day := convertDayDigitsFmt(digits, opts.Day)
 		separator = "/"
 
-		if script == cldr.Latn {
-			prefix = ""
-			suffix = " " + era
+		if script != cldr.Latn {
+			prefix := cldr.Text(era + " ")
+
+			return cldr.Fmt{prefix, day, separator, month, separator, year}.Format
 		}
+
+		suffix := cldr.Text(" " + era)
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.ZH:
+		dayOpt := Day2Digit
+
 		if script == cldr.Hant {
-			monthOpt, monthDay = opts.Month, opts.Day
-			separator = "/"
+			month = convertMonthDigitsFmt(digits, opts.Month)
+			dayOpt = opts.Day
+			separator = cldr.Text("/")
 		}
+
+		day := convertDayDigitsFmt(digits, dayOpt)
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, year, separator, month, separator, day}.Format
 	case cldr.KXV:
+		prefix := cldr.Text(era + " ")
+
 		if script != cldr.Deva && script != cldr.Orya && script != cldr.Telu {
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraDayMonthYear
-			separator = "/"
+			month = convertMonthDigitsFmt(digits, opts.Month)
+			day := convertDayDigitsFmt(digits, opts.Day)
+			separator = cldr.Text("/")
+
+			return cldr.Fmt{prefix, day, separator, month, separator, year}.Format
 		}
+
+		day := convertDayDigitsFmt(digits, Day2Digit)
+
+		return cldr.Fmt{prefix, year, separator, month, separator, day}.Format
 	case cldr.JA:
-		monthOpt, monthDay = opts.Month, opts.Day
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day := convertDayDigitsFmt(digits, opts.Day)
 		separator = "/"
-		prefix = era
+		prefix := cldr.Text(era)
+
+		return cldr.Fmt{prefix, year, separator, month, separator, day}.Format
 	case cldr.KO, cldr.MY:
-		monthOpt, monthDay = opts.Month, opts.Day
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day := convertDayDigitsFmt(digits, opts.Day)
 		separator = "/"
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, year, separator, month, separator, day}.Format
 	case cldr.MR, cldr.QU:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraDayMonthYear
-		separator = "/"
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day := convertDayDigitsFmt(digits, opts.Day)
+		separator = cldr.Text("/")
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, day, separator, month, separator, year}.Format
 	case cldr.TO:
-		layout = eraDayMonthYear
-		separator = " "
-		prefix = ""
-		suffix = " " + era
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		separator = cldr.Text(" ")
+		suffix := cldr.Text(" " + era)
+
+		return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
 	case cldr.KK:
-		layout = dayMonthEraYear
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		return cldr.Fmt{day, separator, month, separator, cldr.Text(era + " "), year}.Format
 	case cldr.LO:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = dayMonthEraYear
-		separator = "/"
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		month = convertMonthDigitsFmt(digits, opts.Month)
+		day = convertDayDigitsFmt(digits, opts.Day)
+		separator = cldr.Text("/")
+
+		return cldr.Fmt{day, separator, month, separator, cldr.Text(era + " "), year}.Format
 	case cldr.PA:
 		if script != cldr.Arab {
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = dayMonthEraYear
-			separator = "/"
+			month = convertMonthDigitsFmt(digits, opts.Month)
+			day := convertDayDigitsFmt(digits, opts.Day)
+			separator = cldr.Text("/")
+
+			return cldr.Fmt{day, separator, month, separator, cldr.Text(era + " "), year}.Format
 		}
+
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		prefix := cldr.Text(era + " ")
+
+		return cldr.Fmt{prefix, year, separator, month, separator, day}.Format
 	case cldr.KOK:
 		if script == cldr.Latn {
-			monthOpt = opts.Month
-			monthDay = opts.Day
-			layout = eraDayMonthYear
-			prefix = ""
-			suffix = " " + era
-		}
-	}
+			month = convertMonthDigitsFmt(digits, opts.Month)
+			day := convertDayDigitsFmt(digits, opts.Day)
+			suffix := cldr.Text(" " + era)
 
-	if month == nil {
-		month = convertMonthDigits(digits, monthOpt)
-	}
+			return cldr.Fmt{day, separator, month, separator, year, suffix}.Format
+		}
 
-	dayDigits := convertDayDigits(digits, monthDay)
+		day := convertDayDigitsFmt(digits, Day2Digit)
+		prefix := cldr.Text(era + " ")
 
-	switch layout {
-	default: // eraYearMonthDay
-		return func(t timeReader) string {
-			return prefix + yearDigits(t) + separator + month(t) + separator + dayDigits(t) + suffix
-		}
-	case eraMonthDayYear:
-		return func(t timeReader) string {
-			return prefix + month(t) + separator + dayDigits(t) + separator + yearDigits(t) + suffix
-		}
-	case eraDayMonthYear:
-		return func(t timeReader) string {
-			return prefix + dayDigits(t) + separator + month(t) + separator + yearDigits(t) + suffix
-		}
-	case dayMonthEraYear:
-		return func(t timeReader) string {
-			return dayDigits(t) + separator + month(t) + separator + era + " " + yearDigits(t)
-		}
+		return cldr.Fmt{prefix, year, separator, month, separator, day}.Format
 	}
 }
 
@@ -327,13 +405,13 @@ func fmtEraYearMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Opt
 
 	switch layout {
 	default: // eraMonthDayYear
-		return func(v timeReader) string {
+		return func(v cldr.TimeReader) string {
 			return month(v) + separator + dayDigits(v) + separator + yearDigits(v) + suffix
 		}
 	case eraYearMonthDay:
 		prefix := era + " "
 
-		return func(v timeReader) string {
+		return func(v cldr.TimeReader) string {
 			return prefix + yearDigits(v) + separator + month(v) + separator + dayDigits(v)
 		}
 	}
@@ -344,7 +422,7 @@ func fmtEraYearMonthDayBuddhist(locale language.Tag, digits cldr.Digits, opts Op
 	monthDigits := convertMonthDigits(digits, opts.Month)
 	dayDigits := convertDayDigits(digits, opts.Day)
 
-	return func(t timeReader) string {
+	return func(t cldr.TimeReader) string {
 		return dayDigits(t) + "/" + monthDigits(t) + "/" + year(t)
 	}
 }

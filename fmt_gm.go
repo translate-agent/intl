@@ -69,7 +69,7 @@ func fmtEraMonthGregorian(locale language.Tag, digits cldr.Digits, opts Options)
 		month = convertMonthDigits(digits, opts.Month)
 	}
 
-	return func(t timeReader) string { return prefix + month(t) + suffix }
+	return func(t cldr.TimeReader) string { return prefix + month(t) + suffix }
 }
 
 func fmtEraMonthPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
@@ -96,7 +96,7 @@ func fmtEraMonthPersian(locale language.Tag, digits cldr.Digits, opts Options) f
 
 	month := convertMonthDigits(digits, opts.Month)
 
-	return func(v timeReader) string { return prefix + month(v) + suffix }
+	return func(v cldr.TimeReader) string { return prefix + month(v) + suffix }
 }
 
 func fmtEraMonthBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
@@ -113,5 +113,5 @@ func fmtEraMonthBuddhist(locale language.Tag, digits cldr.Digits, opts Options) 
 		suffix = ")"
 	}
 
-	return func(t timeReader) string { return prefix + monthDigits(t) + suffix }
+	return func(t cldr.TimeReader) string { return prefix + monthDigits(t) + suffix }
 }

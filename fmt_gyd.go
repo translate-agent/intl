@@ -127,11 +127,11 @@ func fmtEraYearDayGregorian(locale language.Tag, digits cldr.Digits, opts Option
 
 	switch layout {
 	default: // eraYearDay
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return prefix + year(t) + middle + dayDigits(t) + suffix
 		}
 	case eraDayYear:
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return prefix + dayDigits(t) + middle + year(t) + suffix
 		}
 	}
@@ -160,7 +160,7 @@ func fmtEraYearDayPersian(locale language.Tag, digits cldr.Digits, opts Options)
 
 	dayDigits := convertDayDigits(digits, opts.Day)
 
-	return func(v timeReader) string {
+	return func(v cldr.TimeReader) string {
 		return prefix + year(yearDigits(v)) + middle + dayDigits(v) + suffix
 	}
 }
@@ -171,7 +171,7 @@ func fmtEraYearDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options
 	dayName := cldr.UnitName(locale).Day
 	middle, suffix := " ("+dayName+": ", ")"
 
-	return func(t timeReader) string {
+	return func(t cldr.TimeReader) string {
 		return year(t) + middle + dayDigits(t) + suffix
 	}
 }

@@ -6,37 +6,34 @@ import (
 )
 
 func fmtDayGregorian(locale language.Tag, digits cldr.Digits, opt Day) fmtFunc {
-	suffix := ""
+	fmt := cldr.Fmt{convertDayDigitsFmt(digits, opt)}
 
 	switch lang, _ := locale.Base(); lang {
+	default:
+		return fmt.Format
 	case cldr.BS:
 		if script, _ := locale.Script(); script == cldr.Cyrl {
-			break
+			return fmt.Format
 		}
 
-		suffix = "."
+		return append(fmt, cldr.Text(".")).Format
 	case cldr.CS, cldr.DA, cldr.DSB, cldr.FO, cldr.HR, cldr.HSB, cldr.IE, cldr.NB, cldr.NN, cldr.NO, cldr.SK, cldr.SL:
-		suffix = "."
+		return append(fmt, cldr.Text(".")).Format
 	case cldr.JA, cldr.YUE, cldr.ZH:
-		suffix = "日"
+		return append(fmt, cldr.Text("日")).Format
 	case cldr.KO:
-		suffix = "일"
+		return append(fmt, cldr.Text("일")).Format
 	case cldr.LT:
-		opt = Day2Digit
+		return cldr.Fmt{convertDayDigitsFmt(digits, Day2Digit)}.Format
 	case cldr.II:
-		suffix = "ꑍ"
+		return append(fmt, cldr.Text("ꑍ")).Format
 	}
-
-	dayDigits := convertDayDigits(digits, opt)
-
-	return func(t timeReader) string { return dayDigits(t) + suffix }
 }
 
 func fmtDayBuddhist(_ language.Tag, digits cldr.Digits, opt Day) fmtFunc {
-	dayDigits := convertDayDigits(digits, opt)
-	return func(t timeReader) string { return dayDigits(t) }
+	return cldr.Fmt{convertDayDigitsFmt(digits, opt)}.Format
 }
 
 func fmtDayPersian(_ language.Tag, digits cldr.Digits, opt Day) fmtFunc {
-	return convertDayDigits(digits, opt)
+	return cldr.Fmt{convertDayDigitsFmt(digits, opt)}.Format
 }

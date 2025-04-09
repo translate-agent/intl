@@ -20,8 +20,19 @@ import (
 // and triggers special handling in some methods.
 type Digits [10]rune
 
-func (d Digits) appendTwoDigit(b strings.Builder, number int) {
-	b.WriteString(d.TwoDigit(number))
+func (d Digits) appendTwoDigit(b *strings.Builder, number int) {
+	if number < 10 { //nolint:mnd
+		b.WriteRune(d[0])
+		b.WriteRune(d[number])
+
+		return
+	}
+
+	ones := number % 10      //nolint:mnd
+	tens := number / 10 % 10 //nolint:mnd
+
+	b.WriteRune(d[tens])
+	b.WriteRune(d[ones])
 }
 
 func (d Digits) TwoDigit(number int) string {
@@ -36,8 +47,26 @@ func (d Digits) TwoDigit(number int) string {
 	return string(d[beforeLast]) + string(d[last])
 }
 
-func (d Digits) appendNumeric(b strings.Builder, number int) {
-	b.WriteString(d.Numeric(number))
+func (d Digits) appendNumeric(b *strings.Builder, number int) {
+	// single digit
+	if number < 10 { //nolint:mnd
+		b.WriteRune(d[number])
+		return
+	}
+
+	const maxDigits = 4 // based on digits in the current Gregorian calendar year
+
+	// more than one digit
+	chars := make([]int, 0, maxDigits)
+
+	for number > 0 {
+		chars = append(chars, number%10) //nolint:mnd
+		number /= 10
+	}
+
+	for i := len(chars) - 1; i >= 0; i-- {
+		b.WriteRune(d[chars[i]])
+	}
 }
 
 func (d Digits) Numeric(number int) string {

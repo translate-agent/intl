@@ -469,12 +469,12 @@ func fmtMonthDayGregorian(locale language.Tag, digits cldr.Digits, opts Options)
 	dayDigits := convertDayDigits(digits, opts.Day)
 
 	if layout == layoutDayMonth {
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return dayDigits(t) + middle + month(t) + suffix
 		}
 	}
 
-	return func(t timeReader) string {
+	return func(t cldr.TimeReader) string {
 		return month(t) + middle + dayDigits(t) + suffix
 	}
 }
@@ -497,12 +497,12 @@ func fmtMonthDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) 
 	dayDigits := convertDayDigits(digits, opts.Day)
 
 	if layout == layoutDayMonth {
-		return func(t timeReader) string {
+		return func(t cldr.TimeReader) string {
 			return dayDigits(t) + "/" + monthDigits(t)
 		}
 	}
 
-	return func(t timeReader) string { return monthDigits(t) + "-" + dayDigits(t) }
+	return func(t cldr.TimeReader) string { return monthDigits(t) + "-" + dayDigits(t) }
 }
 
 func fmtMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
@@ -519,7 +519,7 @@ func fmtMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Options) f
 	month := convertMonthDigits(digits, opts.Month)
 	dayDigits := convertDayDigits(digits, opts.Day)
 
-	return func(v timeReader) string {
+	return func(v cldr.TimeReader) string {
 		return month(v) + middle + dayDigits(v)
 	}
 }
