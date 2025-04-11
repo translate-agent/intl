@@ -21,7 +21,8 @@ cldr:
 
 # testdata generates test cases and saves to tests.json
 testdata:
-  FROM node:23.11.0-alpine
+  ARG node_version=23.11.0
+  FROM node:$node_version-alpine
   WORKDIR /intl
   COPY testdata.js .
   COPY --dir +cldr/cldr/common/main .cldr/common/main
