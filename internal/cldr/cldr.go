@@ -1,5 +1,7 @@
 package cldr
 
+import "golang.org/x/text/language"
+
 func MonthNames(locale string, context, width string) CalendarMonths {
 	indexes := MonthLookup[locale]
 
@@ -25,4 +27,26 @@ func MonthNames(locale string, context, width string) CalendarMonths {
 	}
 
 	return CalendarMonths{}
+}
+
+func EraName(locale language.Tag) Era {
+	era, ok := EraLookup[locale.String()]
+	if ok {
+		return era
+	}
+
+	lang, _ := locale.Base()
+
+	if script, confidence := locale.Script(); confidence == language.Exact {
+		era, ok := EraLookup[lang.String()+"-"+script.String()]
+		if ok {
+			return era
+		}
+	}
+
+	if era, ok := EraLookup[lang.String()]; ok {
+		return era
+	}
+
+	return EraLookup["aa"]
 }

@@ -2,8 +2,35 @@ package intl
 
 import (
 	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
+
+func seqYear(locale language.Tag, opt Year) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+
+	year := symbols.Symbol_y
+	if opt == Year2Digit {
+		year = symbols.Symbol_yy
+	}
+
+	seq.Add(year)
+
+	switch lang, _ := locale.Base(); lang {
+	default:
+		return seq
+	case cldr.BG, cldr.MK:
+		return seq.Add(symbols.Txt00)
+	case cldr.BS, cldr.HR, cldr.HU, cldr.SR:
+		return seq.Add('.')
+	case cldr.JA, cldr.YUE, cldr.ZH:
+		return seq.Add(symbols.Txt年)
+	case cldr.KO:
+		return seq.Add(symbols.Txt년)
+	case cldr.LV:
+		return seq.Add(symbols.Txt01)
+	}
+}
 
 func fmtYearGregorian(locale language.Tag, digits cldr.Digits, opt Year) fmtFunc {
 	fmt := cldr.Fmt{convertYearDigitsFmt(digits, opt)}

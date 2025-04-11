@@ -2,25 +2,38 @@ package intl
 
 import (
 	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
 
-func fmtMonthGregorian(locale language.Tag, digits cldr.Digits, opt Month) fmtFunc {
-	fmt := cldr.Fmt{convertMonthDigitsFmt(digits, opt)}
+func seqMonth(locale language.Tag, opt Month) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	lang, _ := locale.Base()
 
-	switch lang, _ := locale.Base(); lang {
-	default:
-		return fmt.Format
+	switch lang {
 	case cldr.BR, cldr.FO, cldr.GA, cldr.LT, cldr.UK, cldr.UZ:
-		return cldr.Fmt{convertMonthDigitsFmt(digits, Month2Digit)}.Format
-	case cldr.HR, cldr.NB, cldr.NN, cldr.NO, cldr.SK:
-		return append(fmt, cldr.Text(".")).Format
-	case cldr.JA, cldr.YUE, cldr.ZH, cldr.KO:
-		return append(fmt, cldr.Text(cldr.UnitName(locale).Month)).Format
+		return seq.Add(symbols.Symbol_MM)
 	case cldr.MN:
-		return cldr.Fmt{cldr.Month(cldr.MonthNames(locale.String(), "stand-alone", "narrow"))}.Format
+		return seq.Add(symbols.Symbol_LLLLL)
 	case cldr.WAE:
-		return cldr.Fmt{cldr.Month(cldr.MonthNames(locale.String(), "stand-alone", "abbreviated"))}.Format
+		return seq.Add(symbols.Symbol_LLL)
+
+	}
+
+	month := symbols.Symbol_M
+	if opt == Month2Digit {
+		month = symbols.Symbol_MM
+	}
+
+	seq.Add(month)
+
+	switch lang {
+	default:
+		return seq
+	case cldr.HR, cldr.NB, cldr.NN, cldr.NO, cldr.SK:
+		return seq.Add('.')
+	case cldr.JA, cldr.YUE, cldr.ZH, cldr.KO:
+		return seq.Add(symbols.MonthUnit)
 	}
 }
 

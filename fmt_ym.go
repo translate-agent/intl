@@ -2,37 +2,34 @@ package intl
 
 import (
 	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
 
 //nolint:cyclop,gocognit
-func fmtYearMonthGregorian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	var month fmtFunc
-
+func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
-	yearDigits := convertYearDigits(digits, opts.Year)
+	seq := symbols.NewSeq(locale)
 
-	const (
-		layoutYearMonth = iota
-		layoutMonthYear
-	)
+	year := symbols.Symbol_y
+	if opts.Year == Year2Digit {
+		year = symbols.Symbol_yy
+	}
 
-	layout := layoutYearMonth
-	prefix := ""
-	middle := "-"
-	suffix := ""
+	month := symbols.Symbol_M
+	if opts.Month == Month2Digit {
+		month = symbols.Symbol_MM
+	}
 
 	switch lang {
 	default:
-		opts.Month = Month2Digit
+		return seq.Add(year, '-', symbols.Symbol_MM)
 	case cldr.AF, cldr.AS, cldr.IA, cldr.JV, cldr.MI, cldr.RM, cldr.TG, cldr.WO:
-		opts.Month = Month2Digit
-		layout = layoutMonthYear
+		return seq.Add(symbols.Symbol_MM, '-', year)
 	case cldr.EN:
 		switch region {
 		default:
-			layout = layoutMonthYear
-			middle = "/"
+			return seq.Add(month, '/', year)
 		case cldr.Region001, cldr.Region150, cldr.RegionAE, cldr.RegionAG, cldr.RegionAI, cldr.RegionAT, cldr.RegionAU,
 			cldr.RegionBB, cldr.RegionBE, cldr.RegionBM, cldr.RegionBS, cldr.RegionBW, cldr.RegionBZ, cldr.RegionCC,
 			cldr.RegionCK, cldr.RegionCM, cldr.RegionCX, cldr.RegionCY, cldr.RegionDE, cldr.RegionDG, cldr.RegionDK,
@@ -51,26 +48,23 @@ func fmtYearMonthGregorian(locale language.Tag, digits cldr.Digits, opts Options
 			// year=numeric,month=2-digit,out=01/2024
 			// year=2-digit,month=numeric,out=01/24
 			// year=2-digit,month=2-digit,out=01/24
-			layout = layoutMonthYear
-			middle = "/"
-
 			if script != cldr.Shaw {
-				opts.Month = Month2Digit
+				return seq.Add(symbols.Symbol_MM, '/', year)
 			}
+
+			return seq.Add(month, '/', year)
 		case cldr.RegionCA, cldr.RegionSE:
 			// year=numeric,month=numeric,out=2024-01
 			// year=numeric,month=2-digit,out=2024-01
 			// year=2-digit,month=numeric,out=24-01
 			// year=2-digit,month=2-digit,out=24-01
-			opts.Month = Month2Digit
+			return seq.Add(year, '-', symbols.Symbol_MM)
 		case cldr.RegionCH:
 			// year=numeric,month=numeric,out=01.2024
 			// year=numeric,month=2-digit,out=01.2024
 			// year=2-digit,month=numeric,out=01.24
 			// year=2-digit,month=2-digit,out=01.24
-			opts.Month = Month2Digit
-			layout = layoutMonthYear
-			middle = "."
+			return seq.Add(symbols.Symbol_MM, '.', year)
 		}
 	case cldr.AGQ, cldr.AK, cldr.AM, cldr.ASA, cldr.AST, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BLO, cldr.BM, cldr.BRX,
 		cldr.CA, cldr.CEB, cldr.CGG, cldr.CHR, cldr.CKB, cldr.CS, cldr.CY, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA,
@@ -81,333 +75,257 @@ func fmtYearMonthGregorian(locale language.Tag, digits cldr.Digits, opts Options
 		cldr.OM, cldr.PCM, cldr.RN, cldr.ROF, cldr.RWK, cldr.SA, cldr.SAQ, cldr.SBP, cldr.SES, cldr.SG, cldr.SHI, cldr.SK,
 		cldr.SL, cldr.SO, cldr.SU, cldr.SW, cldr.TEO, cldr.TWQ, cldr.TZM, cldr.UR, cldr.VAI, cldr.VUN, cldr.XH, cldr.XNR,
 		cldr.XOG, cldr.YAV, cldr.YO, cldr.ZGH:
-		layout = layoutMonthYear
-		middle = "/"
+		return seq.Add(month, '/', year)
 	case cldr.PA:
 		if script == cldr.Arab {
 			// year=numeric,month=numeric,out=۲۰۲۴-۰۱
 			// year=numeric,month=2-digit,out=۲۰۲۴-۰۱
 			// year=2-digit,month=numeric,out=۲۴-۰۱
 			// year=2-digit,month=2-digit,out=۲۴-۰۱
-			opts.Month = Month2Digit
-		} else {
-			layout = layoutMonthYear
-			middle = "/"
+			return seq.Add(year, '-', symbols.Symbol_MM)
 		}
+
+		return seq.Add(month, '/', year)
 	case cldr.KS:
 		if script == cldr.Deva {
 			// year=numeric,month=numeric,out=2024-01
 			// year=numeric,month=2-digit,out=2024-01
 			// year=2-digit,month=numeric,out=24-01
 			// year=2-digit,month=2-digit,out=24-01
-			opts.Month = Month2Digit
-		} else {
-			layout = layoutMonthYear
-			middle = "/"
+			return seq.Add(year, '-', symbols.Symbol_MM)
 		}
-	case cldr.HI:
-		layout = layoutMonthYear
-		middle = "/"
 
+		return seq.Add(month, '/', year)
+	case cldr.HI:
 		if script == cldr.Latn {
 			// year=numeric,month=numeric,out=01/2024
 			// year=numeric,month=2-digit,out=01/2024
 			// year=2-digit,month=numeric,out=01/24
 			// year=2-digit,month=2-digit,out=01/24
-			opts.Month = Month2Digit
+			return seq.Add(symbols.Symbol_MM, '/', year)
 		}
+
+		return seq.Add(month, '/', year)
 	case cldr.AR:
-		layout = layoutMonthYear
-		middle = "\u200f/"
+		return seq.Add(month, symbols.Txt02, year)
 	case cldr.AZ, cldr.CV, cldr.FO, cldr.HY, cldr.KK, cldr.KU, cldr.OS, cldr.PL, cldr.RO, cldr.RU, cldr.TK, cldr.TT,
 		cldr.UK:
-		opts.Month = Month2Digit
-		layout = layoutMonthYear
-		middle = "."
+		return seq.Add(symbols.Symbol_MM, '.', year)
 	case cldr.UZ:
-		opts.Month = Month2Digit
-		layout = layoutMonthYear
-
 		if script == cldr.Cyrl {
 			// year=numeric,month=numeric,out=01/2024
 			// year=numeric,month=2-digit,out=01/2024
 			// year=2-digit,month=numeric,out=01/24
 			// year=2-digit,month=2-digit,out=01/24
-			middle = "/"
-		} else {
-			middle = "."
+			return seq.Add(symbols.Symbol_MM, '/', year)
 		}
+
+		return seq.Add(symbols.Symbol_MM, '.', year)
 	case cldr.BE, cldr.DA, cldr.DSB, cldr.ET, cldr.HSB, cldr.IE, cldr.KA, cldr.LB, cldr.NB, cldr.NN, cldr.NO, cldr.SMN,
 		cldr.SQ:
-		layout = layoutMonthYear
-		middle = "."
+		return seq.Add(month, '.', year)
 	case cldr.BG:
-		opts.Month = Month2Digit
-		layout = layoutMonthYear
-		middle = "."
-		suffix = " г."
+		return seq.Add(symbols.Symbol_MM, '.', year, symbols.Txt00)
 	case cldr.MK:
-		layout = layoutMonthYear
-		middle = "."
-		suffix = " г."
+		return seq.Add(month, '.', year, symbols.Txt00)
 	case cldr.BN, cldr.CCP, cldr.GU, cldr.KN, cldr.MR, cldr.OR, cldr.TA, cldr.TE, cldr.TO:
-		layout = layoutMonthYear
-
 		if opts.Month.numeric() {
-			middle = "/"
+			return seq.Add(month, '/', year)
 		}
+
+		return seq.Add(month, '-', year)
 	case cldr.BR, cldr.GA, cldr.IT, cldr.IU, cldr.KEA, cldr.KGP, cldr.PT, cldr.SC, cldr.SEH, cldr.SYR, cldr.VEC, cldr.YRL:
-		opts.Month = Month2Digit
-		layout = layoutMonthYear
-		middle = "/"
+		return seq.Add(symbols.Symbol_MM, '/', year)
 	case cldr.BS:
-		layout = layoutMonthYear
-
 		if script == cldr.Cyrl {
-			opts.Month = Month2Digit
-			middle = "."
-			suffix = "."
-
-			break
+			return seq.Add(symbols.Symbol_MM, '.', year, '.')
 		}
-
-		middle = "/"
 
 		if !opts.Month.numeric() {
-			middle = ". "
-			suffix = "."
+			return seq.Add(symbols.Symbol_M, '.', ' ', year, '.')
 		}
 
-		if opts.Month.numeric() {
-			opts.Month = Month2Digit
-		} else {
-			opts.Month = MonthNumeric
-		}
+		return seq.Add(symbols.Symbol_MM, '/', year)
 	case cldr.DE:
-		layout = layoutMonthYear
-		middle = "."
-
 		if opts.Month.numeric() {
-			middle = "/"
+			return seq.Add(month, '/', year)
 		}
-	case cldr.DZ, cldr.SI: // noop
+
+		return seq.Add(month, '.', year)
+	case cldr.DZ, cldr.SI:
+		return seq.Add(year, '-', month)
 	case cldr.ES:
 		switch region {
 		default:
-			opts.Month = MonthNumeric
-			layout = layoutMonthYear
-			middle = "/"
+			return seq.Add(symbols.Symbol_M, '/', year)
 		case cldr.RegionAR:
 			// year=numeric,month=numeric,out=1-2024
 			// year=numeric,month=2-digit,out=1/2024
 			// year=2-digit,month=numeric,out=1-24
 			// year=2-digit,month=2-digit,out=1/24
-			layout = layoutMonthYear
-
 			if !opts.Month.numeric() {
-				middle = "/"
+				return seq.Add(symbols.Symbol_M, '/', year)
 			}
 
-			opts.Month = MonthNumeric
+			return seq.Add(symbols.Symbol_M, '-', year)
 		case cldr.RegionCL:
 			// year=numeric,month=numeric,out=01-2024
 			// year=numeric,month=2-digit,out=1/2024
 			// year=2-digit,month=numeric,out=01-24
 			// year=2-digit,month=2-digit,out=1/24
-			layout = layoutMonthYear
-
 			if opts.Month.numeric() {
-				opts.Month = Month2Digit
-			} else {
-				opts.Month = MonthNumeric
-				middle = "/"
+				return seq.Add(symbols.Symbol_MM, '-', year)
 			}
+
+			return seq.Add(symbols.Symbol_M, '/', year)
 		case cldr.RegionMX, cldr.RegionUS:
 			// year=numeric,month=numeric,out=1/2024
 			// year=numeric,month=2-digit,out=01/2024
 			// year=2-digit,month=numeric,out=1/24
 			// year=2-digit,month=2-digit,out=01/24
-			layout = layoutMonthYear
-			middle = "/"
+			return seq.Add(month, '/', year)
 		case cldr.RegionPA, cldr.RegionPR:
 			// year=numeric,month=numeric,out=01/2024
 			// year=numeric,month=2-digit,out=1/2024
 			// year=2-digit,month=numeric,out=01/24
 			// year=2-digit,month=2-digit,out=1/24
-			layout = layoutMonthYear
-			middle = "/"
-
 			if opts.Month.numeric() {
-				opts.Month = Month2Digit
-			} else {
-				opts.Month = MonthNumeric
+				return seq.Add(symbols.Symbol_MM, '/', year)
 			}
+
+			return seq.Add(symbols.Symbol_M, '/', year)
 		}
 	case cldr.TI:
-		opts.Month = MonthNumeric
-		layout = layoutMonthYear
-		middle = "/"
+		return seq.Add(symbols.Symbol_M, '/', year)
 	case cldr.YUE:
 		if script == cldr.Hans {
 			// year=numeric,month=numeric,out=2024年1月
 			// year=numeric,month=2-digit,out=2024年1月
 			// year=2-digit,month=numeric,out=24年1月
 			// year=2-digit,month=2-digit,out=24年1月
-			opts.Month = MonthNumeric
-			middle = "年"
-			suffix = "月"
-		} else {
-			middle = "/"
+			return seq.Add(year, symbols.Txt年, symbols.Symbol_M, symbols.Txt月)
 		}
+
+		return seq.Add(year, '/', month)
 	case cldr.EU, cldr.JA:
-		middle = "/"
+		return seq.Add(year, '/', month)
 	case cldr.FI, cldr.HE:
-		opts.Month = MonthNumeric
-		layout = layoutMonthYear
-		middle = "."
+		return seq.Add(symbols.Symbol_M, '.', year)
 	case cldr.FF:
-		layout = layoutMonthYear
-
 		if script != cldr.Adlm {
-			middle = "/"
+			return seq.Add(month, '/', year)
 		}
-	case cldr.FR:
-		opts.Month = Month2Digit
 
+		return seq.Add(month, '-', year)
+	case cldr.FR:
 		switch region {
 		default:
-			layout = layoutMonthYear
-			middle = "/"
+			return seq.Add(symbols.Symbol_MM, '/', year)
 		case cldr.RegionCA: // noop
-		// year=numeric,month=numeric,out=2024-01
-		// year=numeric,month=2-digit,out=2024-01
-		// year=2-digit,month=numeric,out=24-01
-		// year=2-digit,month=2-digit,out=24-01
+			// year=numeric,month=numeric,out=2024-01
+			// year=numeric,month=2-digit,out=2024-01
+			// year=2-digit,month=numeric,out=24-01
+			// year=2-digit,month=2-digit,out=24-01
+			return seq.Add(year, '-', symbols.Symbol_MM)
 		case cldr.RegionCH:
 			// year=numeric,month=numeric,out=01.2024
 			// year=numeric,month=2-digit,out=01.2024
 			// year=2-digit,month=numeric,out=01.24
 			// year=2-digit,month=2-digit,out=01.24
-			layout = layoutMonthYear
-			middle = "."
+			return seq.Add(symbols.Symbol_MM, '.', year)
 		}
 	case cldr.NL:
-		layout = layoutMonthYear
-
 		if region == cldr.RegionBE {
 			// year=numeric,month=numeric,out=1/2024
 			// year=numeric,month=2-digit,out=01/2024
 			// year=2-digit,month=numeric,out=1/24
 			// year=2-digit,month=2-digit,out=01/24
-			middle = "/"
-		}
-	case cldr.FY, cldr.KOK, cldr.MS, cldr.UG:
-		layout = layoutMonthYear
-	case cldr.GSW:
-		if !opts.Month.numeric() {
-			layout = layoutMonthYear
-			middle = "."
-		}
-	case cldr.HR:
-		opts.Month = Month2Digit
-		layout = layoutMonthYear
-		middle = ". "
-		suffix = "."
-	case cldr.HU:
-		middle = ". "
-		suffix = "."
-	case cldr.IS:
-		layout = layoutMonthYear
-		middle = ". "
-	case cldr.KKJ:
-		opts.Month = Month2Digit
-		layout = layoutMonthYear
-		middle = " "
-	case cldr.KO:
-		opts.Month = MonthNumeric
-		middle = ". "
-		suffix = "."
-	case cldr.LV:
-		opts.Month = Month2Digit
-		layout = layoutMonthYear
-		middle = "."
-		suffix = "."
-	case cldr.MN:
-		month = fmtMonthName(locale.String(), "stand-alone", "narrow")
-		middle = " "
-	case cldr.YI:
-		if !opts.Month.numeric() {
-			layout = layoutMonthYear
-			middle = "/"
+			return seq.Add(month, '/', year)
 		}
 
-		opts.Month = Month2Digit
+		return seq.Add(month, '-', year)
+	case cldr.FY, cldr.KOK, cldr.MS, cldr.UG:
+		return seq.Add(month, '-', year)
+	case cldr.GSW:
+		if !opts.Month.numeric() {
+			return seq.Add(month, '.', year)
+		}
+
+		return seq.Add(year, '-', month)
+	case cldr.HR:
+		return seq.Add(symbols.Symbol_MM, '.', ' ', year, '.')
+	case cldr.HU:
+		return seq.Add(year, '.', ' ', month, '.')
+	case cldr.IS:
+		return seq.Add(month, '.', ' ', year)
+	case cldr.KKJ:
+		return seq.Add(symbols.Symbol_MM, ' ', year)
+	case cldr.KO:
+		return seq.Add(year, '.', ' ', symbols.Symbol_M, '.')
+	case cldr.LV:
+		return seq.Add(symbols.Symbol_MM, '.', year, '.')
+	case cldr.MN:
+		return seq.Add(year, ' ', symbols.Symbol_LLLLL)
+	case cldr.YI:
+		if !opts.Month.numeric() {
+			return seq.Add(month, '/', year)
+		}
+
+		return seq.Add(year, '-', symbols.Symbol_MM)
 	case cldr.SD:
 		if script == cldr.Deva {
 			// year=numeric,month=numeric,out=1/2024
 			// year=numeric,month=2-digit,out=01/2024
 			// year=2-digit,month=numeric,out=1/24
 			// year=2-digit,month=2-digit,out=01/24
-			layout = layoutMonthYear
-			middle = "/"
-		} else {
-			opts.Month = Month2Digit
+			return seq.Add(month, '/', year)
 		}
-	case cldr.SE:
-		opts.Month = Month2Digit
 
+		return seq.Add(year, '-', symbols.Symbol_MM)
+	case cldr.SE:
 		if region == cldr.RegionFI {
 			// year=numeric,month=numeric,out=01.2024
 			// year=numeric,month=2-digit,out=01.2024
 			// year=2-digit,month=numeric,out=01.24
 			// year=2-digit,month=2-digit,out=01.24
-			layout = layoutMonthYear
-			middle = "."
+			return seq.Add(symbols.Symbol_MM, '.', year)
 		}
+
+		return seq.Add(year, '-', symbols.Symbol_MM)
 	case cldr.SR:
-		layout = layoutMonthYear
-		suffix = "."
-
 		if opts.Month.numeric() {
-			middle = ". "
-		} else {
-			middle = "."
+			return seq.Add(month, '.', ' ', year, '.')
 		}
+
+		return seq.Add(month, '.', year, '.')
 	case cldr.TR:
-		layout = layoutMonthYear
-		middle = "."
-
 		if opts.Month.numeric() {
-			middle = "/"
+			return seq.Add(symbols.Symbol_MM, '/', year)
 		}
 
-		opts.Month = Month2Digit
+		return seq.Add(symbols.Symbol_MM, '.', year)
 	case cldr.VI:
-		layout = layoutMonthYear
-
 		if opts.Month.numeric() {
-			middle = "/"
-		} else {
-			prefix = "tháng "
-			middle = ", "
+			return seq.Add(month, '/', year)
 		}
-	case cldr.ZH:
-		middle = "/"
 
+		return seq.Add(symbols.Txt04, month, ',', ' ', year)
+	case cldr.ZH:
 		switch script {
 		case cldr.Hant:
 			switch region {
 			default:
-			// year=numeric,month=numeric,out=2024/1
-			// year=numeric,month=2-digit,out=2024/01
-			// year=2-digit,month=numeric,out=24/1
-			// year=2-digit,month=2-digit,out=24/01
+				// year=numeric,month=numeric,out=2024/1
+				// year=numeric,month=2-digit,out=2024/01
+				// year=2-digit,month=numeric,out=24/1
+				// year=2-digit,month=2-digit,out=24/01
+				return seq.Add(year, '/', month)
 			case cldr.RegionHK, cldr.RegionMO:
 				// year=numeric,month=numeric,out=1/2024
 				// year=numeric,month=2-digit,out=01/2024
 				// year=2-digit,month=numeric,out=1/24
 				// year=2-digit,month=2-digit,out=01/24
-				layout = layoutMonthYear
+				return seq.Add(month, '/', year)
 			}
 		case cldr.Hans:
 			// year=numeric,month=numeric,out=1/2024
@@ -415,32 +333,17 @@ func fmtYearMonthGregorian(locale language.Tag, digits cldr.Digits, opts Options
 			// year=2-digit,month=numeric,out=1/24
 			// year=2-digit,month=2-digit,out=01/24
 			if region == cldr.RegionHK {
-				layout = layoutMonthYear
-				break
+				return seq.Add(month, '/', year)
 			}
 
 			fallthrough
 		default:
 			if !opts.Month.numeric() {
-				opts.Month = MonthNumeric
-				middle = "年"
-				suffix = "月"
+				return seq.Add(year, symbols.Txt年, symbols.Symbol_M, symbols.Txt月)
 			}
+
+			return seq.Add(year, '/', month)
 		}
-	}
-
-	if month == nil {
-		month = convertMonthDigits(digits, opts.Month)
-	}
-
-	if layout == layoutMonthYear {
-		return func(t cldr.TimeReader) string {
-			return prefix + month(t) + middle + yearDigits(t) + suffix
-		}
-	}
-
-	return func(t cldr.TimeReader) string {
-		return prefix + yearDigits(t) + middle + month(t) + suffix
 	}
 }
 

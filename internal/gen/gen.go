@@ -790,6 +790,10 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 			era.Narrow = "AP"
 			era.Short = "AP"
 			era.Long = "AP"
+		case "ru":
+			era.Narrow = "н.э."
+			era.Short = "н. э."
+			era.Long = "от Рождества Христова"
 		case "th":
 			era.Narrow = "พ.ศ."
 			era.Short = "พ.ศ."

@@ -2,16 +2,15 @@ package intl
 
 import (
 	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
 
-func fmtEraYearGregorian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
+func seqEraYear(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
-	era := fmtEra(locale, opts.Era)
-	year := fmtYearGregorian(locale, digits, opts.Year)
-
-	prefix := ""
-	suffix := " " + era
+	seq := symbols.NewSeq(locale)
+	era := symbolEra(opts.Era)
+	year := seqYear(locale, opts.Year)
 
 	switch lang {
 	case cldr.KOK:
@@ -32,61 +31,50 @@ func fmtEraYearGregorian(locale language.Tag, digits cldr.Digits, opts Options) 
 		cldr.SG, cldr.SHI, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TE, cldr.TEO, cldr.TK, cldr.TN, cldr.TOK,
 		cldr.TR, cldr.TWQ, cldr.TZM, cldr.UZ, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI, cldr.YO,
 		cldr.ZA, cldr.ZGH, cldr.ZU:
-		prefix = era + " "
-		suffix = ""
+		return seq.Add(era, ' ').AddSeq(year)
 	case cldr.KS:
 		if script == cldr.Deva {
-			prefix = era + " "
-			suffix = ""
+			return seq.Add(era, ' ').AddSeq(year)
 		}
 	case cldr.HI:
 		if script == cldr.Latn {
-			prefix = era + " "
-			suffix = ""
+			return seq.Add(era, ' ').AddSeq(year)
 		}
 	case cldr.SD:
 		if script != cldr.Deva {
-			prefix = era + " "
-			suffix = ""
+			return seq.Add(era, ' ').AddSeq(year)
 		}
 	case cldr.FF:
 		if script != cldr.Adlm {
-			prefix = era + " "
-			suffix = ""
+			return seq.Add(era, ' ').AddSeq(year)
 		}
 	case cldr.SE:
 		if region != cldr.RegionFI {
-			prefix = era + " "
-			suffix = ""
+			return seq.Add(era, ' ').AddSeq(year)
 		}
 	case cldr.BE, cldr.RU:
-		suffix = " г. " + era
+		return seq.AddSeq(year).Add(symbols.Txt00, symbols.TxtNNBSP, era)
 	case cldr.BG, cldr.CY, cldr.MK:
-		suffix = " " + era
+		return seq.AddSeq(year).Add(symbols.TxtNNBSP, era)
 	case cldr.CV:
-		suffix = " ҫ. " + era
+		return seq.AddSeq(year).Add(' ', symbols.Txtҫ, '.', ' ', era)
 	case cldr.KK:
-		prefix = era + " "
-		suffix = " ж."
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txtж, '.')
 	case cldr.HY:
-		prefix = era + " "
-		suffix = " թ."
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txtթ, '.')
 	case cldr.KY:
-		prefix = era + " "
-		suffix = "-ж."
+		return seq.Add(era, ' ').AddSeq(year).Add('-', symbols.Txtж, '.')
 	case cldr.LT:
-		suffix = " m. " + era
+		return seq.AddSeq(year).Add(' ', 'm', '.', ' ', era)
 	case cldr.TT:
-		prefix = era + " "
-		suffix = " ел"
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txt05)
 	case cldr.SAH:
-		suffix = " с. " + era
+		return seq.AddSeq(year).Add(' ', symbols.Txtс, '.', ' ', era)
 	case cldr.JA, cldr.BRX, cldr.YUE, cldr.ZH:
-		prefix = era
-		suffix = ""
+		return seq.Add(era).AddSeq(year)
 	}
 
-	return func(t cldr.TimeReader) string { return prefix + year(t) + suffix }
+	return seq.AddSeq(year).Add(' ', era)
 }
 
 func fmtEraYearPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {

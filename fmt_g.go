@@ -2,8 +2,20 @@ package intl
 
 import (
 	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
+
+func symbolEra(opt Era) symbols.Symbol {
+	switch opt {
+	default:
+		return symbols.Symbol_GGGGG
+	case EraShort:
+		return symbols.Symbol_G
+	case EraLong:
+		return symbols.Symbol_GGGG
+	}
+}
 
 func fmtEra(locale language.Tag, opt Era) string {
 	if opt.und() {
