@@ -106,10 +106,10 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits cldr.Digits, opts Optio
 		separator = "."
 	case cldr.BG:
 		opts.Month = Month2Digit
-		prefix = era + " "
+		prefix = era + " "
 		separator = "."
 	case cldr.CY:
-		prefix = era + " "
+		prefix = era + " "
 	case cldr.PL:
 		opts.Month = Month2Digit
 		separator = "."
@@ -117,7 +117,7 @@ func fmtEraMonthDayGregorian(locale language.Tag, digits cldr.Digits, opts Optio
 		separator = "."
 	case cldr.MK:
 		opts.Day = DayNumeric
-		prefix = era + " "
+		prefix = era + " "
 		separator = "."
 	case cldr.NB, cldr.NN, cldr.NO:
 		opts.Month = MonthNumeric
@@ -399,7 +399,6 @@ func fmtEraMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Options
 
 	switch lang {
 	case cldr.FA, cldr.PS:
-		prefix = era + " "
 		separator = "/"
 	}
 

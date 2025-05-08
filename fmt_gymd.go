@@ -45,7 +45,7 @@ func seqEraYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.DA, cldr.DSB, cldr.HSB, cldr.IE, cldr.KA, cldr.SQ:
 		return seq.Add(opts.Day.symbol(), '.', opts.Month.symbolFormat(), '.', year, ' ', era)
 	case cldr.MK:
-		return seq.Add(opts.Day.symbol(), '.', opts.Month.symbolFormat(), '.', year, symbols.Txt00, symbols.TxtNNBSP, era)
+		return seq.Add(opts.Day.symbol(), '.', opts.Month.symbolFormat(), '.', year, ' ', symbols.Txt00, ' ', era)
 	case cldr.ET, cldr.PL:
 		return seq.Add(opts.Day.symbol(), '.', month, '.', year, ' ', era)
 	case cldr.BE, cldr.CV, cldr.DE, cldr.FO, cldr.HY, cldr.NB, cldr.NN, cldr.NO, cldr.RO, cldr.RU:
@@ -53,7 +53,7 @@ func seqEraYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.SR:
 		return seq.Add(opts.Day.symbol(), '.', month, '.', year, '.', ' ', era)
 	case cldr.BG:
-		return seq.Add(day, '.', month, '.', year, symbols.Txt00, symbols.TxtNNBSP, era)
+		return seq.Add(day, '.', month, '.', year, ' ', symbols.Txt00, ' ', era)
 	case cldr.FI:
 		return seq.Add(opts.Month.symbolFormat(), '.', opts.Day.symbol(), '.', year, ' ', era)
 	case cldr.FR:
@@ -67,11 +67,9 @@ func seqEraYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', year, ' ', era)
 	case cldr.GA, cldr.IT, cldr.KEA, cldr.PT, cldr.SC, cldr.SYR, cldr.VEC:
 		return seq.Add(day, '/', month, '/', year, ' ', era)
-	case cldr.CEB, cldr.CHR, cldr.BLO, cldr.FIL, cldr.KAA, cldr.MHN, cldr.ML, cldr.NE, cldr.OR, cldr.PS, cldr.SD,
+	case cldr.CEB, cldr.CHR, cldr.CY, cldr.BLO, cldr.FIL, cldr.KAA, cldr.MHN, cldr.ML, cldr.NE, cldr.OR, cldr.PS, cldr.SD,
 		cldr.SO, cldr.TI, cldr.XH, cldr.ZU:
 		return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), '/', year, ' ', era)
-	case cldr.CY:
-		return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), '/', year, symbols.TxtNNBSP, era)
 	case cldr.AR, cldr.IA, cldr.BN, cldr.CA, cldr.MAI, cldr.RM, cldr.UK, cldr.WO:
 		return seq.Add(day, '-', month, '-', year, ' ', era)
 	case cldr.LT, cldr.SV:
@@ -189,8 +187,6 @@ func fmtEraYearMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Opt
 		if !opts.Era.narrow() {
 			separator = "-"
 		}
-	case cldr.FA:
-		suffix = " " + era
 	}
 
 	month := convertMonthDigits(digits, opts.Month)

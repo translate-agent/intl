@@ -41,7 +41,6 @@ func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 			cldr.RegionSG, cldr.RegionSH, cldr.RegionSI, cldr.RegionSL, cldr.RegionSS, cldr.RegionSX, cldr.RegionSZ,
 			cldr.RegionTC, cldr.RegionTK, cldr.RegionTO, cldr.RegionTT, cldr.RegionTV, cldr.RegionTZ, cldr.RegionUG,
 			cldr.RegionVC, cldr.RegionVG, cldr.RegionVU, cldr.RegionWS, cldr.RegionZM:
-
 			if script == cldr.Shaw {
 				return seq.Add(month, '/', day)
 			}

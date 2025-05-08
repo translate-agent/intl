@@ -20,7 +20,7 @@ func seqYear(locale language.Tag, opt Year) *symbols.Seq {
 	default:
 		return seq
 	case cldr.BG, cldr.MK:
-		return seq.Add(symbols.Txt00)
+		return seq.Add(' ', symbols.Txt00)
 	case cldr.BS, cldr.HR, cldr.HU, cldr.SR:
 		return seq.Add('.')
 	case cldr.JA, cldr.YUE, cldr.ZH:
@@ -39,7 +39,7 @@ func fmtYearGregorian(locale language.Tag, digits cldr.Digits, opt Year) fmtFunc
 	default:
 		return fmt.Format
 	case cldr.BG, cldr.MK:
-		return append(fmt, cldr.Text(" г.")).Format
+		return append(fmt, cldr.Text(" г.")).Format
 	case cldr.BS, cldr.HR, cldr.HU, cldr.SR:
 		return append(fmt, cldr.Text(".")).Format
 	case cldr.JA, cldr.YUE, cldr.ZH:

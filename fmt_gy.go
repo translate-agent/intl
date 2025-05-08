@@ -53,9 +53,7 @@ func seqEraYear(locale language.Tag, opts Options) *symbols.Seq {
 			return seq.Add(era, ' ').AddSeq(year)
 		}
 	case cldr.BE, cldr.RU:
-		return seq.AddSeq(year).Add(symbols.Txt00, symbols.TxtNNBSP, era)
-	case cldr.BG, cldr.CY, cldr.MK:
-		return seq.AddSeq(year).Add(symbols.TxtNNBSP, era)
+		return seq.AddSeq(year).Add(' ', symbols.Txt00, ' ', era)
 	case cldr.CV:
 		return seq.AddSeq(year).Add(' ', symbols.Txtҫ, '.', ' ', era)
 	case cldr.KK:
@@ -89,8 +87,6 @@ func fmtEraYearPersian(locale language.Tag, digits cldr.Digits, opts Options) fm
 	case cldr.CKB, cldr.LRC, cldr.MZN, cldr.PS, cldr.UZ:
 		prefix = era + " "
 		suffix = ""
-	case cldr.FA:
-		suffix = " " + era
 	}
 
 	return func(v cldr.TimeReader) string {

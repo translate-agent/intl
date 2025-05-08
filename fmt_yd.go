@@ -22,14 +22,6 @@ func seqYearDay(locale language.Tag, opts Options) *symbols.Seq {
 		} else {
 			seq.AddSeq(day)
 		}
-	case cldr.BG, cldr.MK:
-		seq.AddSeq(year).Add(symbols.TxtNNBSP)
-
-		if withName {
-			seq.Add('(', symbols.DayUnit, ':', symbols.TxtNNBSP).AddSeq(day).Add(')')
-		} else {
-			seq.AddSeq(day)
-		}
 	case cldr.EN, cldr.KAA, cldr.MHN:
 		if withName {
 			seq.AddSeq(year).Add(' ').Add('(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')

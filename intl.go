@@ -42,6 +42,17 @@ const (
 	EraLong
 )
 
+// MustParseEra converts a string representation of an era format to the [Era] type.
+// It panics if the input string is not a valid era format.
+func MustParseEra(s string) Era {
+	v, err := ParseEra(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
+
 // String returns the string representation of the [Era].
 // It converts the [Era] constant to its corresponding string value.
 //
@@ -91,17 +102,6 @@ func ParseEra(s string) (Era, error) {
 	}
 }
 
-// MustParseEra converts a string representation of an era format to the [Era] type.
-// It panics if the input string is not a valid era format.
-func MustParseEra(s string) Era {
-	v, err := ParseEra(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return v
-}
-
 // Year is year option for [Options].
 type Year byte
 
@@ -110,6 +110,17 @@ const (
 	YearNumeric
 	Year2Digit
 )
+
+// MustParseYear converts a string representation of a year format to the [Year] type.
+// It panics if the input string is not a valid year format.
+func MustParseYear(s string) Year {
+	v, err := ParseYear(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
 
 // String returns the string representation of the [Year].
 // It converts the [Year] constant to its corresponding string value.
@@ -162,17 +173,6 @@ func ParseYear(s string) (Year, error) {
 	}
 }
 
-// MustParseYear converts a string representation of a year format to the [Year] type.
-// It panics if the input string is not a valid year format.
-func MustParseYear(s string) Year {
-	v, err := ParseYear(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return v
-}
-
 // Month represents the format for displaying months.
 type Month byte
 
@@ -184,6 +184,17 @@ const (
 	MonthShort
 	MonthNarrow
 )
+
+// MustParseMonth converts a string representation of a month format to the [Month] type.
+// It panics if the input string is not a valid month format.
+func MustParseMonth(s string) Month {
+	v, err := ParseMonth(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
 
 // String returns the string representation of the [Month].
 // It converts the [Month] constant to its corresponding string value.
@@ -216,8 +227,9 @@ func (m Month) und() bool      { return m == MonthUnd }
 func (m Month) numeric() bool  { return m == MonthNumeric }
 func (m Month) twoDigit() bool { return m == Month2Digit }
 
-func (m Month) symbolFormat() symbols.Symbol     { return m.symbol("format") }
-func (m Month) symbolStandAlone() symbols.Symbol { return m.symbol("stand-alone") }
+func (m Month) symbolFormat() symbols.Symbol { return m.symbol("format") }
+
+// func (m Month) symbolStandAlone() symbols.Symbol { return m.symbol("stand-alone") }
 
 func (m Month) symbol(context string) symbols.Symbol {
 	switch m {
@@ -269,17 +281,6 @@ func ParseMonth(s string) (Month, error) {
 	}
 }
 
-// MustParseMonth converts a string representation of a month format to the [Month] type.
-// It panics if the input string is not a valid month format.
-func MustParseMonth(s string) Month {
-	v, err := ParseMonth(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return v
-}
-
 // Day represents the format for displaying days.
 type Day byte
 
@@ -288,6 +289,17 @@ const (
 	DayNumeric
 	Day2Digit
 )
+
+// MustParseDay converts a string representation of a year format to the [Day] type.
+// It panics if the input string is not a valid day format.
+func MustParseDay(s string) Day {
+	v, err := ParseDay(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
 
 // String returns the string representation of the Day format.
 // It converts the Day constant to its corresponding string value.
@@ -340,17 +352,6 @@ func ParseDay(s string) (Day, error) {
 	}
 }
 
-// MustParseDay converts a string representation of a year format to the [Day] type.
-// It panics if the input string is not a valid day format.
-func MustParseDay(s string) Day {
-	v, err := ParseDay(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return v
-}
-
 // Options defines configuration parameters for [NewDateTimeFormat].
 // It allows customization of the date and time representations in formatted output.
 type Options struct {
@@ -394,7 +395,7 @@ func (f DateTimeFormat) Format(t time.Time) string {
 // fmtFunc is date time formatter for a particular calendar.
 type fmtFunc func(cldr.TimeReader) string
 
-func convertYearDigitsFmt(digits cldr.Digits, opt Year) cldr.FmtFunc {
+func convertYearDigitsFmt(digits cldr.Digits, opt Year) cldr.FmtFunc { //nolint:ireturn
 	if opt.twoDigit() {
 		return cldr.YearTwoDigit(digits)
 	}
@@ -411,7 +412,7 @@ func convertYearDigits(digits cldr.Digits, opt Year) fmtFunc {
 	return func(t cldr.TimeReader) string { return digits.Numeric(t.Year()) }
 }
 
-func convertMonthDigitsFmt(digits cldr.Digits, opt Month) cldr.FmtFunc {
+func convertMonthDigitsFmt(digits cldr.Digits, opt Month) cldr.FmtFunc { //nolint:ireturn
 	if opt.twoDigit() {
 		return cldr.MonthTwoDigit(digits)
 	}
@@ -459,7 +460,7 @@ func convertDayDigits(digits cldr.Digits, opt Day) fmtFunc {
 }
 
 // convertDayDigits formats day as numeric.
-func convertDayDigitsFmt(digits cldr.Digits, opt Day) cldr.FmtFunc {
+func convertDayDigitsFmt(digits cldr.Digits, opt Day) cldr.FmtFunc { //nolint:ireturn
 	if opt.twoDigit() {
 		return cldr.DayTwoDigit(digits)
 	}

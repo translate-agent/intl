@@ -17,7 +17,6 @@ func seqMonth(locale language.Tag, opt Month) *symbols.Seq {
 		return seq.Add(symbols.Symbol_LLLLL)
 	case cldr.WAE:
 		return seq.Add(symbols.Symbol_LLL)
-
 	}
 
 	month := symbols.Symbol_M

@@ -125,9 +125,9 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 		cldr.SQ:
 		return seq.Add(month, '.', year)
 	case cldr.BG:
-		return seq.Add(symbols.Symbol_MM, '.', year, symbols.Txt00)
+		return seq.Add(symbols.Symbol_MM, '.', year, ' ', symbols.Txt00)
 	case cldr.MK:
-		return seq.Add(month, '.', year, symbols.Txt00)
+		return seq.Add(month, '.', year, ' ', symbols.Txt00)
 	case cldr.BN, cldr.CCP, cldr.GU, cldr.KN, cldr.MR, cldr.OR, cldr.TA, cldr.TE, cldr.TO:
 		if opts.Month.numeric() {
 			return seq.Add(month, '/', year)

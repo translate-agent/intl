@@ -22,10 +22,10 @@ func seqEraMonth(locale language.Tag, opts Options) *symbols.Seq {
 		return seq.Add(month, ' ', era)
 	case cldr.BG, cldr.CY, cldr.MK:
 		if withName {
-			return seq.Add(era, symbols.TxtNNBSP, '(', symbols.MonthUnit, ':', symbols.TxtNNBSP, month, ')')
+			return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', month, ')')
 		}
 
-		return seq.Add(era, symbols.TxtNNBSP, month)
+		return seq.Add(era, ' ', month)
 	case cldr.BR, cldr.FO, cldr.GA, cldr.LT, cldr.UK, cldr.UZ:
 		month = Month2Digit.symbolFormat()
 
@@ -76,7 +76,6 @@ func seqEraMonth(locale language.Tag, opts Options) *symbols.Seq {
 }
 
 func fmtEraMonthPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	monthName := cldr.UnitName(locale).Month
 	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
@@ -87,14 +86,6 @@ func fmtEraMonthPersian(locale language.Tag, digits cldr.Digits, opts Options) f
 	if withName {
 		prefix = era + " (" + monthName + ": "
 		suffix = ")"
-	}
-
-	if lang == cldr.FA {
-		if withName {
-			prefix = era + " (" + monthName + ": "
-		} else {
-			prefix = era + " "
-		}
 	}
 
 	month := convertMonthDigits(digits, opts.Month)

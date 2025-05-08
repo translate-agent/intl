@@ -34,14 +34,11 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits cldr.Digits, opts Opti
 		suffix = " г. " + era
 	case cldr.BG:
 		middle = "."
-		suffix = " " + era
+		suffix = " " + era
 
 		if opts.Month.numeric() {
 			opts.Month = Month2Digit
 		}
-	case cldr.CY, cldr.MK:
-		middle = " "
-		suffix = " " + era
 	case cldr.CV:
 		suffix = " ҫ. " + era
 	case cldr.HI:
@@ -227,8 +224,7 @@ func fmtEraYearMonthPersian(locale language.Tag, digits cldr.Digits, opts Option
 	case cldr.FA:
 		layout = eraMonthYear
 		prefix = ""
-		middle = " "
-		suffix = " " + era
+		suffix = " " + era
 	case cldr.CKB, cldr.UZ:
 		if region != cldr.RegionAF {
 			prefix = ""

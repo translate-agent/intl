@@ -171,7 +171,7 @@ func seqYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		// year=2-digit,month=numeric,day=2-digit,out=02.01.24 г.
 		// year=2-digit,month=2-digit,day=numeric,out=2.01.24 г.
 		// year=2-digit,month=2-digit,day=2-digit,out=02.01.24 г.
-		return seq.Add(day, '.', symbols.Symbol_MM, '.', year, symbols.Txt00)
+		return seq.Add(day, '.', symbols.Symbol_MM, '.', year, ' ', symbols.Txt00)
 	case cldr.MK:
 		// year=numeric,month=numeric,day=numeric,out=2.1.2024 г.
 		// year=numeric,month=numeric,day=2-digit,out=02.1.2024 г.
@@ -181,7 +181,7 @@ func seqYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		// year=2-digit,month=numeric,day=2-digit,out=02.1.24 г.
 		// year=2-digit,month=2-digit,day=numeric,out=2.01.24 г.
 		// year=2-digit,month=2-digit,day=2-digit,out=02.01.24 г.
-		return seq.Add(day, '.', month, '.', year, symbols.Txt00)
+		return seq.Add(day, '.', month, '.', year, ' ', symbols.Txt00)
 	case cldr.EN:
 		switch region {
 		default:

@@ -45,7 +45,7 @@ func fmtEraYearDayGregorian(locale language.Tag, digits cldr.Digits, opts Option
 		opts.Day = Day2Digit
 		middle = " m. " + era + " (" + dayName + ": "
 	case cldr.BG, cldr.CY, cldr.MK:
-		middle = " " + era + " (" + dayName + ": "
+		middle = " " + era + " (" + dayName + ": "
 	case cldr.BS:
 		if script != cldr.Cyrl {
 			suffix = ".)"
@@ -155,7 +155,7 @@ func fmtEraYearDayPersian(locale language.Tag, digits cldr.Digits, opts Options)
 		}
 	case cldr.FA:
 		era := fmtEra(locale, opts.Era)
-		middle = " " + era + " (" + dayName + ": "
+		middle = " " + era + " (" + dayName + ": "
 	}
 
 	dayDigits := convertDayDigits(digits, opts.Day)

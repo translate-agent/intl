@@ -7,6 +7,7 @@ import (
 
 type Symbol byte
 
+//nolint:asciicheck,revive
 const (
 	TxtSpace            Symbol = ' '  // " "
 	TxtNumberSign       Symbol = '#'  // "#"
@@ -31,7 +32,7 @@ const (
 	Txtж                         // "ж"
 	Txtթ                         // "թ"
 	TxtNNBSP                     // " "
-	Txt00                        // " г."
+	Txt00                        // "г."
 	Txt01                        // ". g."
 	Txt02                        // "\u200f/"
 	Txt03                        // "ꆪ-"
@@ -103,7 +104,7 @@ func (s Symbol) String() string {
 	case Txtթ:
 		return "թ"
 	case Txt00:
-		return " г."
+		return "г."
 	case Txt01:
 		return ". g."
 	case Txt02:
@@ -146,15 +147,17 @@ func (s *Seq) Func() func(cldr.TimeReader) string {
 	for _, symbol := range s.symbols {
 		if symbol < symbolStart {
 			fmt = append(fmt, cldr.Text(symbol.String()))
+			continue
 		}
 
+		//nolint:exhaustive
 		switch symbol {
 		case Symbol_G:
-			fmt = append(fmt, cldr.Text(cldr.Era(cldr.EraName(s.locale))[1]))
+			fmt = append(fmt, cldr.Text(cldr.EraName(s.locale)[1]))
 		case Symbol_GGGG:
-			fmt = append(fmt, cldr.Text(cldr.Era(cldr.EraName(s.locale))[2]))
+			fmt = append(fmt, cldr.Text(cldr.EraName(s.locale)[2]))
 		case Symbol_GGGGG:
-			fmt = append(fmt, cldr.Text(cldr.Era(cldr.EraName(s.locale))[0]))
+			fmt = append(fmt, cldr.Text(cldr.EraName(s.locale)[0]))
 		case Symbol_y:
 			fmt = append(fmt, cldr.YearNumeric(digits))
 		case Symbol_yy:
@@ -182,5 +185,6 @@ func (s *Seq) Func() func(cldr.TimeReader) string {
 			fmt = append(fmt, cldr.Text(cldr.UnitName(s.locale).Day))
 		}
 	}
+
 	return fmt.Format
 }

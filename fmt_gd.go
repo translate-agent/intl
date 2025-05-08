@@ -10,9 +10,10 @@ func seqEraDay(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, _ := locale.Raw()
 	seq := symbols.NewSeq(locale)
 
-	era := symbols.Symbol_GGGGG
+	var era symbols.Symbol
+
 	switch opts.Era {
-	case EraNarrow:
+	default:
 		era = symbols.Symbol_GGGGG
 	case EraShort:
 		era = symbols.Symbol_G
@@ -50,12 +51,6 @@ func seqEraDay(locale language.Tag, opts Options) *symbols.Seq {
 		}
 
 		return seq.Add(day, ' ', era)
-	case cldr.BG, cldr.CY, cldr.MK:
-		if withName {
-			return seq.Add(era, symbols.TxtNNBSP, '(', symbols.DayUnit, ':', symbols.TxtNNBSP, day, ')')
-		}
-
-		return seq.Add(era, symbols.TxtNNBSP, day)
 	case cldr.BS:
 		if script == cldr.Cyrl {
 			if withName {
@@ -94,24 +89,15 @@ func seqEraDay(locale language.Tag, opts Options) *symbols.Seq {
 }
 
 func fmtEraDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	lang, _ := locale.Base()
 	era := fmtEra(locale, opts.Era)
 	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
 
-	prefix := era + " "
+	prefix := era + " "
 	suffix := ""
 
 	if withName {
 		prefix = era + " (" + cldr.UnitName(locale).Day + ": "
 		suffix = ")"
-	}
-
-	if lang == cldr.FA {
-		if withName {
-			prefix = era + " (" + cldr.UnitName(locale).Day + ": "
-		} else {
-			prefix = era + " "
-		}
 	}
 
 	dayDigits := convertDayDigits(digits, opts.Day)
@@ -121,7 +107,7 @@ func fmtEraDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmt
 
 func fmtEraDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
 	era := fmtEra(locale, opts.Era)
-	prefix, suffix := era+" ", ""
+	prefix, suffix := era+" ", ""
 	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
 
 	if withName {
