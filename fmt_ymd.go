@@ -10,21 +10,9 @@ import (
 func seqYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
 	seq := symbols.NewSeq(locale)
-
-	year := symbols.Symbol_y
-	if opts.Year.twoDigit() {
-		year = symbols.Symbol_yy
-	}
-
-	month := symbols.Symbol_M
-	if opts.Month.twoDigit() {
-		month = symbols.Symbol_MM
-	}
-
-	day := symbols.Symbol_d
-	if opts.Day.twoDigit() {
-		day = symbols.Symbol_dd
-	}
+	year := opts.Year.symbol()
+	month := opts.Month.symbolFormat()
+	day := opts.Day.symbol()
 
 	switch lang {
 	default:
@@ -1252,8 +1240,8 @@ func seqYearMonthDayPersian(locale language.Tag, opts Options) *symbols.Seq {
 	lang, _, region := locale.Raw()
 	seq := symbols.NewSeq(locale)
 	year := opts.Year.symbol()
-	month := Month2Digit.symbol("format")
-	day := Day2Digit.symbol()
+	month := symbols.Symbol_MM
+	day := symbols.Symbol_dd
 
 	switch lang {
 	case cldr.CKB: // ckb-IR
@@ -1282,7 +1270,7 @@ func seqYearMonthDayPersian(locale language.Tag, opts Options) *symbols.Seq {
 		}
 	}
 
-	return seq.Add(EraShort.symbol(), ' ', year, '-', month, '-', day)
+	return seq.Add(symbols.Symbol_G, ' ', year, '-', month, '-', day)
 }
 
 func seqYearMonthDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
@@ -1295,5 +1283,5 @@ func seqYearMonthDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
 	// year=2-digit,month=numeric,day=2-digit,out=02/1/24
 	// year=2-digit,month=2-digit,day=numeric,out=2/01/24
 	// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
-	return symbols.NewSeq(locale).Add(opts.Day.symbol(), '/', opts.Month.symbol("format"), '/', opts.Year.symbol())
+	return symbols.NewSeq(locale).Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', opts.Year.symbol())
 }

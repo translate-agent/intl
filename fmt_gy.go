@@ -83,10 +83,12 @@ func seqEraYearPersian(locale language.Tag, opts Options) *symbols.Seq {
 
 	switch lang {
 	default:
-		return seq.Add(year, ' ', era)
+		seq.Add(year, ' ', era)
 	case cldr.CKB, cldr.LRC, cldr.MZN, cldr.PS, cldr.UZ:
-		return seq.Add(era, ' ', year)
+		seq.Add(era, ' ', year)
 	}
+
+	return seq
 }
 
 func seqEraYearBuddhist(locale language.Tag, opts Options) *symbols.Seq {

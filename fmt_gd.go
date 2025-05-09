@@ -9,23 +9,8 @@ import (
 func seqEraDay(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, _ := locale.Raw()
 	seq := symbols.NewSeq(locale)
-
-	var era symbols.Symbol
-
-	switch opts.Era {
-	default:
-		era = symbols.Symbol_GGGGG
-	case EraShort:
-		era = symbols.Symbol_G
-	case EraLong:
-		era = symbols.Symbol_GGGG
-	}
-
-	day := symbols.Symbol_d
-	if opts.Day.twoDigit() {
-		day = symbols.Symbol_dd
-	}
-
+	era := opts.Era.symbol()
+	day := opts.Day.symbol()
 	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
 
 	switch lang {

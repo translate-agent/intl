@@ -36,7 +36,7 @@ func seqEraYearDay(locale language.Tag, opts Options) *symbols.Seq {
 			AddSeq(year).Add(' ', symbols.Txtс, '.', ' ', era, ' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 	case cldr.LT:
 		return seq.
-			AddSeq(year).Add(' ', symbols.Txtm, '.', ' ', era, ' ', '(', symbols.DayUnit, ':', ' ', Day2Digit.symbol(), ')')
+			AddSeq(year).Add(' ', symbols.Txtm, '.', ' ', era, ' ', '(', symbols.DayUnit, ':', ' ', symbols.Symbol_dd, ')')
 	case cldr.AGQ, cldr.AK, cldr.AS, cldr.ASA, cldr.AZ, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BGC, cldr.BHO, cldr.BM,
 		cldr.BO, cldr.CE, cldr.CGG, cldr.CKB, cldr.CSW, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DYO, cldr.DZ,
 		cldr.EBU, cldr.EO, cldr.EU, cldr.EWO, cldr.FUR, cldr.FY, cldr.GAA, cldr.GSW, cldr.GU, cldr.GUZ, cldr.GV, cldr.HA,

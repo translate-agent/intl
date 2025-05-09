@@ -10,16 +10,8 @@ import (
 func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
 	seq := symbols.NewSeq(locale)
-
-	year := symbols.Symbol_y
-	if opts.Year == Year2Digit {
-		year = symbols.Symbol_yy
-	}
-
-	month := symbols.Symbol_M
-	if opts.Month == Month2Digit {
-		month = symbols.Symbol_MM
-	}
+	year := opts.Year.symbol()
+	month := opts.Month.symbolFormat()
 
 	switch lang {
 	default:
@@ -348,21 +340,22 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 }
 
 func seqYearMonthBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	lang, _ := locale.Base()
 	seq := symbols.NewSeq(locale)
 	year := opts.Year.symbol()
 
-	if lang, _ := locale.Base(); lang == cldr.TH {
-		return seq.Add(opts.Month.symbol("format"), '/', year)
+	if lang == cldr.TH {
+		return seq.Add(opts.Month.symbolFormat(), '/', year)
 	}
 
-	return seq.Add(year, '-', Month2Digit.symbol("format"))
+	return seq.Add(year, '-', symbols.Symbol_MM)
 }
 
 func seqYearMonthPersian(locale language.Tag, opts Options) *symbols.Seq {
 	lang, _, region := locale.Raw()
 	seq := symbols.NewSeq(locale)
 	year := opts.Year.symbol()
-	month := opts.Month.symbol("format")
+	month := opts.Month.symbolFormat()
 
 	switch lang {
 	case cldr.CKB: // ckb-IR
@@ -370,22 +363,25 @@ func seqYearMonthPersian(locale language.Tag, opts Options) *symbols.Seq {
 		// year=numeric,month=2-digit,out=١٠/١٤٠٢
 		// year=2-digit,month=numeric,out=١٠/٠٢
 		// year=2-digit,month=2-digit,out=١٠/٠٢
-		return seq.Add(month, '/', year)
+		seq.Add(month, '/', year)
 	case cldr.FA:
-		return seq.Add(year, '/', month)
+		seq.Add(year, '/', month)
 	case cldr.PS:
-		return seq.Add(EraNarrow.symbol(), ' ', year, '/', month)
+		seq.Add(symbols.Symbol_GGGGG, ' ', year, '/', month)
 	case cldr.UZ:
 		if region == cldr.RegionAF {
 			// year=numeric,month=numeric,out=۱۴۰۲-۱۰
 			// year=numeric,month=2-digit,out=۱۴۰۲-۱۰
 			// year=2-digit,month=numeric,out=۰۲-۱۰
 			// year=2-digit,month=2-digit,out=۰۲-۱۰
-			return seq.Add(year, '-', month)
+			seq.Add(year, '-', month)
+			break
 		}
 
 		fallthrough
 	default:
-		return seq.Add(EraNarrow.symbol(), ' ', year, '-', month)
+		seq.Add(symbols.Symbol_GGGGG, ' ', year, '-', month)
 	}
+
+	return seq
 }

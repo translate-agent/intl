@@ -7,33 +7,33 @@ import (
 )
 
 func seqDay(locale language.Tag, opt Day) *symbols.Seq {
+	lang, _ := locale.Base()
 	seq := symbols.NewSeq(locale)
 
-	day := symbols.Symbol_d
-	if opt.twoDigit() {
-		day = symbols.Symbol_dd
-	}
+	day := opt.symbol()
 
-	switch lang, _ := locale.Base(); lang {
+	switch lang {
 	default:
-		return seq.Add(day)
+		seq.Add(day)
 	case cldr.BS:
-		if script, _ := locale.Script(); script == cldr.Cyrl {
-			return seq.Add(day)
-		}
+		seq.Add(day)
 
-		return seq.Add(day, '.')
+		if script, _ := locale.Script(); script != cldr.Cyrl {
+			seq.Add('.')
+		}
 	case cldr.CS, cldr.DA, cldr.DSB, cldr.FO, cldr.HR, cldr.HSB, cldr.IE, cldr.NB, cldr.NN, cldr.NO, cldr.SK, cldr.SL:
-		return seq.Add(day, '.')
+		seq.Add(day, '.')
 	case cldr.JA, cldr.YUE, cldr.ZH:
-		return seq.Add(day, symbols.Txt日)
+		seq.Add(day, symbols.Txt日)
 	case cldr.KO:
-		return seq.Add(day, symbols.Txt일)
+		seq.Add(day, symbols.Txt일)
 	case cldr.LT:
-		return seq.Add(symbols.Symbol_dd)
+		seq.Add(symbols.Symbol_dd)
 	case cldr.II:
-		return seq.Add(day, symbols.Txtꑍ)
+		seq.Add(day, symbols.Txtꑍ)
 	}
+
+	return seq
 }
 
 func seqDayBuddhist(locale language.Tag, opt Day) *symbols.Seq {

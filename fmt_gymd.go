@@ -10,15 +10,12 @@ import (
 func seqEraYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
 	seq := symbols.NewSeq(locale)
-
 	era := opts.Era.symbol()
 	year := opts.Year.symbol()
-	month := Month2Digit.symbolFormat()
-	day := Day2Digit.symbol()
+	month := symbols.Symbol_MM
+	day := symbols.Symbol_dd
 
 	switch lang {
-	default:
-		return seq.Add(era, ' ', year, '-', month, '-', Day2Digit.symbol())
 	case cldr.EN:
 		switch region {
 		default:
@@ -49,7 +46,7 @@ func seqEraYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.ET, cldr.PL:
 		return seq.Add(opts.Day.symbol(), '.', month, '.', year, ' ', era)
 	case cldr.BE, cldr.CV, cldr.DE, cldr.FO, cldr.HY, cldr.NB, cldr.NN, cldr.NO, cldr.RO, cldr.RU:
-		return seq.Add(symbols.Symbol_dd, '.', month, '.', year, ' ', era)
+		return seq.Add(day, '.', month, '.', year, ' ', era)
 	case cldr.SR:
 		return seq.Add(opts.Day.symbol(), '.', month, '.', year, '.', ' ', era)
 	case cldr.BG:
@@ -75,35 +72,25 @@ func seqEraYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.LT, cldr.SV:
 		return seq.Add(year, '-', month, '-', day, ' ', era)
 	case cldr.BS:
-		if script == cldr.Cyrl {
-			return seq.Add(era, ' ', year, '-', month, '-', day)
+		if script != cldr.Cyrl {
+			return seq.Add(opts.Day.symbol(), '.', ' ', opts.Month.symbolFormat(), '.', ' ', year, '.', ' ', era)
 		}
-
-		return seq.Add(opts.Day.symbol(), '.', ' ', opts.Month.symbolFormat(), '.', ' ', year, '.', ' ', era)
 	case cldr.FF:
 		if script == cldr.Adlm {
 			return seq.Add(opts.Day.symbol(), '-', opts.Month.symbolFormat(), '-', year, ' ', era)
 		}
-
-		return seq.Add(era, ' ', year, '-', month, '-', day)
 	case cldr.KS:
-		if script == cldr.Deva {
-			return seq.Add(era, ' ', year, '-', month, '-', day)
+		if script != cldr.Deva {
+			return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), '/', year, ' ', era)
 		}
-
-		return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), '/', year, ' ', era)
 	case cldr.UZ:
 		if script != cldr.Cyrl {
 			return seq.Add(day, '.', month, '.', year, ' ', era)
 		}
-
-		return seq.Add(era, ' ', year, '-', month, '-', day)
 	case cldr.AZ:
-		if script == cldr.Cyrl {
-			return seq.Add(era, ' ', year, '-', month, '-', day)
+		if script != cldr.Cyrl {
+			return seq.Add(era, ' ', opts.Day.symbol(), ' ', symbols.Symbol_MMM, ' ', year)
 		}
-
-		return seq.Add(era, ' ', opts.Day.symbol(), ' ', symbols.Symbol_MMM, ' ', year)
 	case cldr.KU, cldr.TK, cldr.TR:
 		return seq.Add(era, ' ', day, '.', month, '.', year)
 	case cldr.HU:
@@ -122,14 +109,10 @@ func seqEraYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		if script == cldr.Hant {
 			return seq.Add(era, ' ', year, '/', opts.Month.symbolFormat(), '/', opts.Day.symbol())
 		}
-
-		return seq.Add(era, ' ', year, '-', month, '-', day)
 	case cldr.KXV:
-		if script == cldr.Deva || script == cldr.Orya || script == cldr.Telu {
-			return seq.Add(era, ' ', year, '-', month, '-', day)
+		if script != cldr.Deva && script != cldr.Orya && script != cldr.Telu {
+			return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', year)
 		}
-
-		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', year)
 	case cldr.JA:
 		return seq.Add(era, year, '/', opts.Month.symbolFormat(), '/', opts.Day.symbol())
 	case cldr.KO, cldr.MY:
@@ -139,22 +122,21 @@ func seqEraYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.TO:
 		return seq.Add(day, ' ', month, ' ', year, ' ', era)
 	case cldr.KK:
-		return seq.Add(Day2Digit.symbol(), '-', month, '-', era, ' ', year)
+		return seq.Add(day, '-', month, '-', era, ' ', year)
 	case cldr.LO:
 		return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', era, ' ', year)
 	case cldr.PA:
-		if script == cldr.Arab {
-			return seq.Add(era, ' ', year, '-', month, '-', day)
+		if script != cldr.Arab {
+			return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', era, ' ', year)
 		}
 
-		return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', era, ' ', year)
 	case cldr.KOK:
 		if script == cldr.Latn {
 			return seq.Add(opts.Day.symbol(), '-', opts.Month.symbolFormat(), '-', year, ' ', era)
 		}
-
-		return seq.Add(era, ' ', year, '-', month, '-', day)
 	}
+
+	return seq.Add(era, ' ', year, '-', month, '-', day)
 }
 
 func seqEraYearMonthDayPersian(locale language.Tag, opts Options) *symbols.Seq {

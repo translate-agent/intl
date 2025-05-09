@@ -12,7 +12,7 @@ func seqEraYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 	seq := symbols.NewSeq(locale)
 	era := opts.Era.symbol()
 	year := seqYear(locale, opts.Year)
-	month := opts.Month.symbol("format")
+	month := opts.Month.symbolFormat()
 
 	switch lang {
 	case cldr.AZ, cldr.QU, cldr.TE, cldr.TK, cldr.TR:
@@ -24,7 +24,7 @@ func seqEraYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 			opts.Month = Month2Digit
 		}
 
-		return seq.Add(opts.Month.symbol("format"), '.').AddSeq(year).Add(' ', era)
+		return seq.Add(opts.Month.symbolFormat(), '.').AddSeq(year).Add(' ', era)
 	case cldr.CV:
 		return seq.Add(month, ' ').AddSeq(year).Add(' ', symbols.Txtҫ, '.', ' ', era)
 	case cldr.HI:
@@ -84,7 +84,7 @@ func seqEraYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.GL, cldr.PT:
 		return seq.Add(month, ' ', symbols.Txt07, ' ').AddSeq(year).Add(' ', era)
 	case cldr.JA, cldr.YUE, cldr.ZH:
-		return seq.Add(era).AddSeq(year).Add(MonthNumeric.symbol("format"), symbols.MonthUnit)
+		return seq.Add(era).AddSeq(year).Add(symbols.Symbol_M, symbols.MonthUnit)
 	case cldr.DZ:
 		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txt06, month)
 	case cldr.EU:
@@ -100,11 +100,11 @@ func seqEraYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.KY:
 		return seq.Add(era, ' ').AddSeq(year).Add('-', symbols.Txtж, '.', ' ', month)
 	case cldr.LT:
-		return seq.AddSeq(year).Add('-', Month2Digit.symbol("format"), ' ', era)
+		return seq.AddSeq(year).Add('-', symbols.Symbol_MM, ' ', era)
 	case cldr.MN:
 		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txt10, ' ', month)
 	case cldr.SL:
-		return seq.Add(MonthLong.symbol("format"), ' ').AddSeq(year).Add(' ', era)
+		return seq.Add(symbols.Symbol_MMM, ' ').AddSeq(year).Add(' ', era)
 	case cldr.UG:
 		return seq.AddSeq(year).Add(' ', month, ' ', era)
 	case cldr.UK:
@@ -122,7 +122,7 @@ func seqEraYearMonthPersian(locale language.Tag, opts Options) *symbols.Seq {
 	lang, _, region := locale.Raw()
 	seq := symbols.NewSeq(locale)
 	year := seqYearPersian(locale, opts.Year)
-	month := opts.Month.symbol("format")
+	month := opts.Month.symbolFormat()
 
 	switch lang {
 	case cldr.FA:
@@ -139,5 +139,5 @@ func seqEraYearMonthPersian(locale language.Tag, opts Options) *symbols.Seq {
 }
 
 func seqEraYearMonthBuddhist(locale language.Tag, opts Options) *symbols.Seq {
-	return symbols.NewSeq(locale).Add(opts.Month.symbol("format"), ' ').AddSeq(seqYearBuddhist(locale, opts))
+	return symbols.NewSeq(locale).Add(opts.Month.symbolFormat(), ' ').AddSeq(seqYearBuddhist(locale, opts))
 }

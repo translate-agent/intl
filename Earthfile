@@ -69,9 +69,8 @@ lint:
   WORKDIR /intl
   COPY go.mod go.sum *.go .golangci.yml .
   COPY --dir internal .
-  COPY +testdata/tests.json .
-  RUN echo $GO_VERSION
   COPY +data/data.go internal/cldr/
+  COPY +testdata/tests.json .
   RUN \
     --mount=type=cache,id=go-mod,target=/go/pkg/mod \
     --mount=type=cache,id=go-build,target=/root/.cache/go-build \

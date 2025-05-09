@@ -10,16 +10,8 @@ import (
 func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
 	seq := symbols.NewSeq(locale)
-
-	month := symbols.Symbol_M
-	if opts.Month == Month2Digit {
-		month = symbols.Symbol_MM
-	}
-
-	day := symbols.Symbol_d
-	if opts.Day == Day2Digit {
-		day = symbols.Symbol_dd
-	}
+	month := opts.Month.symbolFormat()
+	day := opts.Day.symbol()
 
 	switch lang {
 	default:
@@ -360,10 +352,11 @@ func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 }
 
 func seqMonthDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	lang, _ := locale.Base()
 	seq := symbols.NewSeq(locale)
-	month := opts.Month.symbol("format")
+	month := opts.Month.symbolFormat()
 
-	if lang, _ := locale.Base(); lang == cldr.TH {
+	if lang == cldr.TH {
 		return seq.Add(opts.Day.symbol(), '/', month)
 	}
 
@@ -371,12 +364,13 @@ func seqMonthDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
 }
 
 func seqMonthDayPersian(locale language.Tag, opts Options) *symbols.Seq {
+	lang, _ := locale.Base()
 	seq := symbols.NewSeq(locale)
 
-	switch lang, _ := locale.Base(); lang {
+	switch lang {
+	default:
+		return seq.Add(symbols.Symbol_MM, '-', symbols.Symbol_dd)
 	case cldr.FA, cldr.PS:
-		return seq.Add(opts.Month.symbol("format"), '/', opts.Day.symbol())
+		return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol())
 	}
-
-	return seq.Add(symbols.Symbol_MM, '-', symbols.Symbol_dd)
 }

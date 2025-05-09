@@ -7,29 +7,23 @@ import (
 )
 
 func seqYear(locale language.Tag, opt Year) *symbols.Seq {
-	seq := symbols.NewSeq(locale)
+	lang, _ := locale.Base()
+	seq := symbols.NewSeq(locale).Add(opt.symbol())
 
-	year := symbols.Symbol_y
-	if opt == Year2Digit {
-		year = symbols.Symbol_yy
-	}
-
-	seq.Add(year)
-
-	switch lang, _ := locale.Base(); lang {
-	default:
-		return seq
+	switch lang {
 	case cldr.BG, cldr.MK:
-		return seq.Add(' ', symbols.Txt00)
+		seq.Add(' ', symbols.Txt00)
 	case cldr.BS, cldr.HR, cldr.HU, cldr.SR:
-		return seq.Add('.')
+		seq.Add('.')
 	case cldr.JA, cldr.YUE, cldr.ZH:
-		return seq.Add(symbols.Txt年)
+		seq.Add(symbols.Txt年)
 	case cldr.KO:
-		return seq.Add(symbols.Txt년)
+		seq.Add(symbols.Txt년)
 	case cldr.LV:
-		return seq.Add(symbols.Txt01)
+		seq.Add(symbols.Txt01)
 	}
+
+	return seq
 }
 
 func seqYearBuddhist(locale language.Tag, opts Options) *symbols.Seq {
@@ -37,11 +31,11 @@ func seqYearBuddhist(locale language.Tag, opts Options) *symbols.Seq {
 }
 
 func seqYearPersian(locale language.Tag, opt Year) *symbols.Seq {
-	seq := symbols.NewSeq(locale)
 	lang, _, region := locale.Raw()
+	seq := symbols.NewSeq(locale)
 
 	if lang != cldr.FA && (lang != cldr.UZ || region != cldr.RegionAF) {
-		seq.Add(EraNarrow.symbol(), ' ')
+		seq.Add(symbols.Symbol_GGGGG, ' ')
 	}
 
 	return seq.Add(opt.symbol())

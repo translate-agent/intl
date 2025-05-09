@@ -27,7 +27,7 @@ func seqEraMonth(locale language.Tag, opts Options) *symbols.Seq {
 
 		return seq.Add(era, ' ', month)
 	case cldr.BR, cldr.FO, cldr.GA, cldr.LT, cldr.UK, cldr.UZ:
-		month = Month2Digit.symbolFormat()
+		month = symbols.Symbol_MM
 
 		if withName {
 			return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', month, ')')
