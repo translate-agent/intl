@@ -9,7 +9,7 @@ import (
 func seqEraMonth(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, _ := locale.Raw()
 	seq := symbols.NewSeq(locale)
-	era := symbolEra(opts.Era)
+	era := opts.Era.symbol()
 	month := opts.Month.symbolFormat()
 	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
 
@@ -75,37 +75,28 @@ func seqEraMonth(locale language.Tag, opts Options) *symbols.Seq {
 	return seq.Add(era, ' ', month)
 }
 
-func fmtEraMonthPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	era := fmtEra(locale, opts.Era)
-	monthName := cldr.UnitName(locale).Month
+func seqEraMonthPersian(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	month := opts.Month.symbolFormat()
 	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
 
-	prefix := era + " "
-	suffix := ""
-
 	if withName {
-		prefix = era + " (" + monthName + ": "
-		suffix = ")"
+		return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', month, ')')
 	}
 
-	month := convertMonthDigits(digits, opts.Month)
-
-	return func(v cldr.TimeReader) string { return prefix + month(v) + suffix }
+	return seq.Add(era, ' ', month)
 }
 
-func fmtEraMonthBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	era := fmtEra(locale, opts.Era)
-	monthDigits := convertMonthDigits(digits, opts.Month)
-	monthName := cldr.UnitName(locale).Month
+func seqEraMonthBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	month := opts.Month.symbolFormat()
 	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
 
-	prefix := era + " "
-	suffix := ""
-
 	if withName {
-		prefix = era + " (" + monthName + ": "
-		suffix = ")"
+		return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', month, ')')
 	}
 
-	return func(t cldr.TimeReader) string { return prefix + monthDigits(t) + suffix }
+	return seq.Add(era, ' ', month)
 }

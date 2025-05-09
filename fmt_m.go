@@ -36,10 +36,28 @@ func seqMonth(locale language.Tag, opt Month) *symbols.Seq {
 	}
 }
 
-func fmtMonthBuddhist(_ language.Tag, digits cldr.Digits, opt Month) fmtFunc {
-	return cldr.Fmt{convertMonthDigitsFmt(digits, opt)}.Format
+func seqMonthBuddhist(locale language.Tag, opt Month) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+
+	month := symbols.Symbol_M
+	if opt == Month2Digit {
+		month = symbols.Symbol_MM
+	}
+
+	seq.Add(month)
+
+	return seq
 }
 
-func fmtMonthPersian(_ language.Tag, digits cldr.Digits, opt Month) fmtFunc {
-	return convertMonthDigits(digits, opt)
+func seqMonthPersian(locale language.Tag, opt Month) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+
+	month := symbols.Symbol_M
+	if opt == Month2Digit {
+		month = symbols.Symbol_MM
+	}
+
+	seq.Add(month)
+
+	return seq
 }

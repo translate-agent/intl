@@ -359,47 +359,24 @@ func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	}
 }
 
-func fmtMonthDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	const (
-		layoutMonthDay = iota
-		layoutDayMonth
-	)
-
-	layout := layoutMonthDay
+func seqMonthDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	month := opts.Month.symbol("format")
 
 	if lang, _ := locale.Base(); lang == cldr.TH {
-		layout = layoutDayMonth
-	} else {
-		opts.Day = Day2Digit
+		return seq.Add(opts.Day.symbol(), '/', month)
 	}
 
-	monthDigits := convertMonthDigits(digits, opts.Month)
-	dayDigits := convertDayDigits(digits, opts.Day)
-
-	if layout == layoutDayMonth {
-		return func(t cldr.TimeReader) string {
-			return dayDigits(t) + "/" + monthDigits(t)
-		}
-	}
-
-	return func(t cldr.TimeReader) string { return monthDigits(t) + "-" + dayDigits(t) }
+	return seq.Add(month, '-', symbols.Symbol_dd)
 }
 
-func fmtMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	middle := "-"
+func seqMonthDayPersian(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
 
 	switch lang, _ := locale.Base(); lang {
-	default:
-		opts.Month = Month2Digit
-		opts.Day = Day2Digit
 	case cldr.FA, cldr.PS:
-		middle = "/"
+		return seq.Add(opts.Month.symbol("format"), '/', opts.Day.symbol())
 	}
 
-	month := convertMonthDigits(digits, opts.Month)
-	dayDigits := convertDayDigits(digits, opts.Day)
-
-	return func(v cldr.TimeReader) string {
-		return month(v) + middle + dayDigits(v)
-	}
+	return seq.Add(symbols.Symbol_MM, '-', symbols.Symbol_dd)
 }

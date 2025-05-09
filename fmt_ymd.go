@@ -1248,35 +1248,14 @@ func seqYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	}
 }
 
-func fmtYearMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
+func seqYearMonthDayPersian(locale language.Tag, opts Options) *symbols.Seq {
 	lang, _, region := locale.Raw()
-
-	yearDigits := convertYearDigits(digits, opts.Year)
-
-	const (
-		layoutYearMonthDay = iota
-		layoutDayMonthYear
-	)
-
-	layout := layoutYearMonthDay
-
-	// "lrc", "mzn", "ps", "uz"
-	// year=numeric,month=numeric,day=numeric,out=AP ۱۴۰۲-۱۰-۱۲
-	// year=numeric,month=numeric,day=2-digit,out=AP ۱۴۰۲-۱۰-۱۲
-	// year=numeric,month=2-digit,day=numeric,out=AP ۱۴۰۲-۱۰-۱۲
-	// year=numeric,month=2-digit,day=2-digit,out=AP ۱۴۰۲-۱۰-۱۲
-	// year=2-digit,month=numeric,day=numeric,out=AP ۰۲-۱۰-۱۲
-	// year=2-digit,month=numeric,day=2-digit,out=AP ۰۲-۱۰-۱۲
-	// year=2-digit,month=2-digit,day=numeric,out=AP ۰۲-۱۰-۱۲
-	// year=2-digit,month=2-digit,day=2-digit,out=AP ۰۲-۱۰-۱۲
-	opts.Month = Month2Digit
-	opts.Day = Day2Digit
-	prefix := ""
-	separator := "-"
+	seq := symbols.NewSeq(locale)
+	year := opts.Year.symbol()
+	month := Month2Digit.symbol("format")
+	day := Day2Digit.symbol()
 
 	switch lang {
-	default:
-		prefix = "AP "
 	case cldr.CKB: // ckb-IR
 		// year=numeric,month=numeric,day=numeric,out=١٢/١٠/١٤٠٢
 		// year=numeric,month=numeric,day=2-digit,out=١٢/١٠/١٤٠٢
@@ -1286,8 +1265,7 @@ func fmtYearMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Option
 		// year=2-digit,month=numeric,day=2-digit,out=١٢/١٠/٠٢
 		// year=2-digit,month=2-digit,day=numeric,out=١٢/١٠/٠٢
 		// year=2-digit,month=2-digit,day=2-digit,out=١٢/١٠/٠٢
-		layout = layoutDayMonthYear
-		separator = "/"
+		return seq.Add(day, '/', month, '/', year)
 	case cldr.FA: // fa-IR
 		// year=numeric,month=numeric,day=numeric,out=۱۴۰۲/۱۰/۱۲
 		// year=numeric,month=numeric,day=2-digit,out=۱۴۰۲/۱۰/۱۲
@@ -1297,32 +1275,17 @@ func fmtYearMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Option
 		// year=2-digit,month=numeric,day=2-digit,out=۰۲/۱۰/۱۲
 		// year=2-digit,month=2-digit,day=numeric,out=۰۲/۱۰/۱۲
 		// year=2-digit,month=2-digit,day=2-digit,out=۰۲/۱۰/۱۲
-		separator = "/"
+		return seq.Add(year, '/', month, '/', day)
 	case cldr.UZ:
-		if region != cldr.RegionAF {
-			prefix = "AP "
+		if region == cldr.RegionAF {
+			return seq.Add(year, '-', month, '-', day)
 		}
 	}
 
-	month := convertMonthDigits(digits, opts.Month)
-	dayDigits := convertDayDigits(digits, opts.Day)
-
-	if layout == layoutDayMonthYear {
-		return func(v cldr.TimeReader) string {
-			return dayDigits(v) + "/" + month(v) + "/" + yearDigits(v)
-		}
-	}
-
-	return func(v cldr.TimeReader) string {
-		return prefix + yearDigits(v) + separator + month(v) + separator + dayDigits(v)
-	}
+	return seq.Add(EraShort.symbol(), ' ', year, '-', month, '-', day)
 }
 
-func fmtYearMonthDayBuddhist(_ language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	yearDigits := convertYearDigits(digits, opts.Year)
-	monthDigits := convertMonthDigits(digits, opts.Month)
-	dayDigits := convertDayDigits(digits, opts.Day)
-
+func seqYearMonthDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
 	// th-TH
 	// year=numeric,month=numeric,day=numeric,out=2/1/2024
 	// year=numeric,month=numeric,day=2-digit,out=02/1/2024
@@ -1332,7 +1295,5 @@ func fmtYearMonthDayBuddhist(_ language.Tag, digits cldr.Digits, opts Options) f
 	// year=2-digit,month=numeric,day=2-digit,out=02/1/24
 	// year=2-digit,month=2-digit,day=numeric,out=2/01/24
 	// year=2-digit,month=2-digit,day=2-digit,out=02/01/24
-	return func(t cldr.TimeReader) string {
-		return dayDigits(t) + "/" + monthDigits(t) + "/" + yearDigits(t)
-	}
+	return symbols.NewSeq(locale).Add(opts.Day.symbol(), '/', opts.Month.symbol("format"), '/', opts.Year.symbol())
 }

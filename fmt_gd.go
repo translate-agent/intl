@@ -88,33 +88,28 @@ func seqEraDay(locale language.Tag, opts Options) *symbols.Seq {
 	}
 }
 
-func fmtEraDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	era := fmtEra(locale, opts.Era)
+func seqEraDayPersian(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	day := opts.Day.symbol()
 	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
 
-	prefix := era + " "
-	suffix := ""
-
 	if withName {
-		prefix = era + " (" + cldr.UnitName(locale).Day + ": "
-		suffix = ")"
+		return seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
 	}
 
-	dayDigits := convertDayDigits(digits, opts.Day)
-
-	return func(v cldr.TimeReader) string { return prefix + dayDigits(v) + suffix }
+	return seq.Add(era, ' ', day)
 }
 
-func fmtEraDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	era := fmtEra(locale, opts.Era)
-	prefix, suffix := era+" ", ""
+func seqEraDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	day := opts.Day.symbol()
 	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
 
 	if withName {
-		prefix, suffix = era+" ("+cldr.UnitName(locale).Day+": ", ")"
+		return seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
 	}
 
-	dayDigits := convertDayDigits(digits, opts.Day)
-
-	return func(t cldr.TimeReader) string { return prefix + dayDigits(t) + suffix }
+	return seq.Add(era, ' ', day)
 }

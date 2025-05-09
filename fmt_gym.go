@@ -2,51 +2,34 @@ package intl
 
 import (
 	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
 
 //nolint:cyclop
-func fmtEraYearMonthGregorian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	var month fmtFunc
-
+func seqEraYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
-	era := fmtEra(locale, opts.Era)
-	year := fmtYearGregorian(locale, digits, opts.Year)
-	monthName := cldr.UnitName(locale).Month
-
-	const (
-		// eraYearMonth includes "era year month" and "year month era".
-		eraYearMonth = iota
-		// eraMonthYear includes "era month year" and "month year era".
-		eraMonthYear
-	)
-
-	layout := eraMonthYear
-	prefix := ""
-	middle := " "
-	suffix := " " + era
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	year := seqYear(locale, opts.Year)
+	month := opts.Month.symbol("format")
 
 	switch lang {
 	case cldr.AZ, cldr.QU, cldr.TE, cldr.TK, cldr.TR:
-		prefix = era + " "
-		suffix = ""
+		return seq.Add(era, ' ', month, ' ').AddSeq(year)
 	case cldr.BE, cldr.RU:
-		suffix = " г. " + era
+		return seq.Add(month, ' ').AddSeq(year).Add(' ', symbols.Txt00, ' ', era)
 	case cldr.BG:
-		middle = "."
-		suffix = " " + era
-
 		if opts.Month.numeric() {
 			opts.Month = Month2Digit
 		}
+
+		return seq.Add(opts.Month.symbol("format"), '.').AddSeq(year).Add(' ', era)
 	case cldr.CV:
-		suffix = " ҫ. " + era
+		return seq.Add(month, ' ').AddSeq(year).Add(' ', symbols.Txtҫ, '.', ' ', era)
 	case cldr.HI:
 		if script != cldr.Latn {
-			middle = " " + era + " "
-			suffix = ""
-
-			break
+			return seq.Add(month, ' ', era, ' ').AddSeq(year)
 		}
 
 		fallthrough
@@ -61,51 +44,37 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits cldr.Digits, opts Opti
 		cldr.SEH, cldr.SES, cldr.SG, cldr.SHI, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TEO, cldr.TN, cldr.TOK,
 		cldr.TWQ, cldr.TZM, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI, cldr.YO, cldr.ZA,
 		cldr.ZGH, cldr.ZU:
-		layout = eraYearMonth
-		prefix = era + " "
-		suffix = ""
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', month)
 	case cldr.SE:
 		if region != cldr.RegionFI {
-			layout = eraYearMonth
-			prefix = era + " "
-			suffix = ""
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', month)
 		}
 	case cldr.SD:
 		if script != cldr.Deva {
-			layout = eraYearMonth
-			prefix = era + " "
-			suffix = ""
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', month)
 		}
 	case cldr.KS:
 		if script == cldr.Deva {
-			layout = eraYearMonth
-			prefix = era + " "
-			suffix = ""
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', month)
 		}
 	case cldr.IG, cldr.KXV, cldr.MAI, cldr.MR, cldr.SA, cldr.XNR:
-		middle = " " + era + " "
-		suffix = ""
+		return seq.Add(month, ' ', era, ' ').AddSeq(year)
+	case cldr.FF:
+		if script != cldr.Adlm {
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', month)
+		}
 	case cldr.PA:
 		if script == cldr.Arab {
-			layout = eraYearMonth
-			prefix = era + " "
-			suffix = ""
-
-			break
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', month)
 		}
 
 		fallthrough
 	case cldr.GU, cldr.LO, cldr.UZ:
-		middle = ", " + era + " "
-		suffix = ""
+		return seq.Add(month, ',', ' ', era, ' ').AddSeq(year)
 	case cldr.KGP, cldr.WO:
-		middle = ", "
-		suffix = " " + era
+		return seq.Add(month, ',', ' ').AddSeq(year).Add(' ', era)
 	case cldr.TT:
-		layout = eraYearMonth
-		prefix = era + " "
-		middle = " ел, "
-		suffix = ""
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txt05, ',', ' ', month)
 	case cldr.ES:
 		if region != cldr.RegionCO {
 			break
@@ -113,145 +82,62 @@ func fmtEraYearMonthGregorian(locale language.Tag, digits cldr.Digits, opts Opti
 
 		fallthrough
 	case cldr.GL, cldr.PT:
-		middle = " de "
-	case cldr.YUE, cldr.ZH:
-		opts.Month = MonthNumeric
-		layout = eraYearMonth
-		prefix = era
-		middle = ""
-		suffix = monthName
+		return seq.Add(month, ' ', symbols.Txt07, ' ').AddSeq(year).Add(' ', era)
+	case cldr.JA, cldr.YUE, cldr.ZH:
+		return seq.Add(era).AddSeq(year).Add(MonthNumeric.symbol("format"), symbols.MonthUnit)
 	case cldr.DZ:
-		layout = eraYearMonth
-		prefix = era + " "
-		middle = " སྤྱི་ཟླ་"
-		suffix = ""
-	case cldr.JA:
-		layout = eraYearMonth
-		prefix = era
-		middle = ""
-		opts.Month = MonthNumeric
-		suffix = "月"
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txt06, month)
 	case cldr.EU:
-		layout = eraYearMonth
-		prefix = era + " "
-		middle = ". urteko "
-		suffix = ""
-	case cldr.FF:
-		if script != cldr.Adlm {
-			layout = eraYearMonth
-			prefix = era + " "
-			suffix = ""
-		}
+		return seq.Add(era, ' ').AddSeq(year).Add('.', ' ', symbols.Txt08, ' ', month)
 	case cldr.HY:
-		layout = eraYearMonth
-		prefix = era + " "
-		middle = " թ. "
-		suffix = ""
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txtթ, '.', ' ', month)
 	case cldr.KK:
-		layout = eraYearMonth
-		prefix = era + " "
-		middle = " ж. "
-		suffix = ""
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txtж, '.', ' ', month)
 	case cldr.KA:
-		middle = ". "
+		return seq.Add(month, '.', ' ').AddSeq(year).Add(' ', era)
 	case cldr.KU:
-		prefix = era + " "
-		middle = "a "
-		suffix = "an"
+		return seq.Add(era, ' ', month, 'a', ' ').AddSeq(year).Add(symbols.Txt09)
 	case cldr.KY:
-		layout = eraYearMonth
-		prefix = era + " "
-		middle = "-ж. "
-		suffix = ""
+		return seq.Add(era, ' ').AddSeq(year).Add('-', symbols.Txtж, '.', ' ', month)
 	case cldr.LT:
-		opts.Month = Month2Digit
-		layout = eraYearMonth
-		middle = "-"
+		return seq.AddSeq(year).Add('-', Month2Digit.symbol("format"), ' ', era)
 	case cldr.MN:
-		layout = eraYearMonth
-		prefix = era + " "
-		middle = " оны "
-		suffix = ""
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txt10, ' ', month)
 	case cldr.SL:
-		month = fmtMonthName(locale.String(), "format", "abbreviated")
+		return seq.Add(MonthLong.symbol("format"), ' ').AddSeq(year).Add(' ', era)
 	case cldr.UG:
-		layout = eraYearMonth
+		return seq.AddSeq(year).Add(' ', month, ' ', era)
 	case cldr.UK:
-		suffix = " р. " + era
+		return seq.Add(month, ' ').AddSeq(year).Add(' ', symbols.Txtр, '.', ' ', era)
 	case cldr.KOK:
 		if script != cldr.Latn {
-			layout = eraYearMonth
-			prefix = era + " "
-			suffix = ""
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', month)
 		}
 	}
 
-	if month == nil {
-		month = convertMonthDigits(digits, opts.Month)
-	}
-
-	switch layout {
-	default: // eraYearMonth
-		return func(t cldr.TimeReader) string {
-			return prefix + year(t) + middle + month(t) + suffix
-		}
-	case eraMonthYear:
-		return func(t cldr.TimeReader) string {
-			return prefix + month(t) + middle + year(t) + suffix
-		}
-	}
+	return seq.Add(month, ' ').AddSeq(year).Add(' ', era)
 }
 
-func fmtEraYearMonthPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
+func seqEraYearMonthPersian(locale language.Tag, opts Options) *symbols.Seq {
 	lang, _, region := locale.Raw()
-	era := fmtEra(locale, opts.Era)
-	year := fmtYearPersian(locale)
-	yearDigits := convertYearDigits(digits, opts.Year)
-
-	const (
-		// eraYearMonth includes "era year month" and "year month era".
-		eraYearMonth = iota
-		// eraMonthYear includes "era month year" and "month year era".
-		eraMonthYear
-	)
-
-	layout := eraYearMonth
-	prefix := era + " "
-	middle := " "
-	suffix := ""
+	seq := symbols.NewSeq(locale)
+	year := seqYearPersian(locale, opts.Year)
+	month := opts.Month.symbol("format")
 
 	switch lang {
 	case cldr.FA:
-		layout = eraMonthYear
-		prefix = ""
-		suffix = " " + era
+		return seq.Add(month, ' ').AddSeq(year).Add(' ', opts.Era.symbol())
 	case cldr.CKB, cldr.UZ:
 		if region != cldr.RegionAF {
-			prefix = ""
+			return seq.AddSeq(year).Add(' ', month)
 		}
 	case cldr.LRC, cldr.MZN, cldr.PS:
-		prefix = ""
+		return seq.AddSeq(year).Add(' ', month)
 	}
 
-	month := convertMonthDigits(digits, opts.Month)
-
-	switch layout {
-	default: // eraYearMonth
-		return func(v cldr.TimeReader) string {
-			return prefix + year(yearDigits(v)) + middle + month(v) + suffix
-		}
-	case eraMonthYear:
-		return func(v cldr.TimeReader) string {
-			return prefix + month(v) + middle + year(yearDigits(v)) + suffix
-		}
-	}
+	return seq.Add(opts.Era.symbol(), ' ').AddSeq(year).Add(' ', month)
 }
 
-func fmtEraYearMonthBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	year := fmtYearBuddhist(locale, digits, opts)
-	monthDigits := convertMonthDigits(digits, opts.Month)
-
-	return func(t cldr.TimeReader) string {
-		return monthDigits(t) + " " + year(t)
-	}
+func seqEraYearMonthBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	return symbols.NewSeq(locale).Add(opts.Month.symbol("format"), ' ').AddSeq(seqYearBuddhist(locale, opts))
 }

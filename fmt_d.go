@@ -36,10 +36,10 @@ func seqDay(locale language.Tag, opt Day) *symbols.Seq {
 	}
 }
 
-func fmtDayBuddhist(_ language.Tag, digits cldr.Digits, opt Day) fmtFunc {
-	return cldr.Fmt{convertDayDigitsFmt(digits, opt)}.Format
+func seqDayBuddhist(locale language.Tag, opt Day) *symbols.Seq {
+	return symbols.NewSeq(locale).Add(opt.symbol())
 }
 
-func fmtDayPersian(_ language.Tag, digits cldr.Digits, opt Day) fmtFunc {
-	return cldr.Fmt{convertDayDigitsFmt(digits, opt)}.Format
+func seqDayPersian(locale language.Tag, opt Day) *symbols.Seq {
+	return symbols.NewSeq(locale).Add(opt.symbol())
 }

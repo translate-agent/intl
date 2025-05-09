@@ -9,7 +9,7 @@ import (
 func seqEraYear(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
 	seq := symbols.NewSeq(locale)
-	era := symbolEra(opts.Era)
+	era := opts.Era.symbol()
 	year := seqYear(locale, opts.Year)
 
 	switch lang {
@@ -75,25 +75,20 @@ func seqEraYear(locale language.Tag, opts Options) *symbols.Seq {
 	return seq.AddSeq(year).Add(' ', era)
 }
 
-func fmtEraYearPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
+func seqEraYearPersian(locale language.Tag, opts Options) *symbols.Seq {
 	lang, _ := locale.Base()
-	era := fmtEra(locale, opts.Era)
-	yearDigits := convertYearDigits(digits, opts.Year)
-
-	prefix := ""
-	suffix := " " + era
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	year := opts.Year.symbol()
 
 	switch lang {
+	default:
+		return seq.Add(year, ' ', era)
 	case cldr.CKB, cldr.LRC, cldr.MZN, cldr.PS, cldr.UZ:
-		prefix = era + " "
-		suffix = ""
-	}
-
-	return func(v cldr.TimeReader) string {
-		return prefix + yearDigits(v) + suffix
+		return seq.Add(era, ' ', year)
 	}
 }
 
-func fmtEraYearBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	return fmtYearBuddhist(locale, digits, opts)
+func seqEraYearBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	return seqYearBuddhist(locale, opts)
 }

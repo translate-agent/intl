@@ -19,6 +19,7 @@ const (
 	TxtFullStop         Symbol = '.'  // "."
 	TxtSolidus          Symbol = '/'  // "/"
 	TxtColon            Symbol = ':'  // ":"
+	Txta                Symbol = 'a'  // "a"
 	Txtm                Symbol = 'm'  // "m"
 
 	Txt日     Symbol = iota + 128 // "日"
@@ -32,12 +33,18 @@ const (
 	Txtж                         // "ж"
 	Txtթ                         // "թ"
 	TxtNNBSP                     // " "
+	Txtр                         // "р"
 	Txt00                        // "г."
 	Txt01                        // ". g."
 	Txt02                        // "\u200f/"
 	Txt03                        // "ꆪ-"
 	Txt04                        // "tháng "
 	Txt05                        // "ел"
+	Txt06                        // "སྤྱི་ཟླ་"
+	Txt07                        // "de"
+	Txt08                        // "urteko"
+	Txt09                        // "an"
+	Txt10                        // "оны"
 
 	symbolStart  // the start of CLDR symbols
 	MonthUnit    // "month" in the local language
@@ -60,29 +67,9 @@ const (
 func (s Symbol) String() string {
 	switch s {
 	default:
-		return ""
-	case TxtFullStop:
-		return "."
-	case TxtComma:
-		return ","
-	case TxtSpace:
-		return " "
+		return string(s)
 	case TxtNNBSP:
 		return " "
-	case TxtSolidus:
-		return "/"
-	case TxtHyphenMinus:
-		return "-"
-	case TxtColon:
-		return ":"
-	case TxtLeftParenthesis:
-		return "("
-	case TxtRightParenthesis:
-		return ")"
-	case TxtNumberSign:
-		return "#"
-	case Txtm:
-		return "m"
 	case Txt日:
 		return "日"
 	case Txt일:
@@ -103,6 +90,8 @@ func (s Symbol) String() string {
 		return "ж"
 	case Txtթ:
 		return "թ"
+	case Txtр:
+		return "р"
 	case Txt00:
 		return "г."
 	case Txt01:
@@ -115,6 +104,16 @@ func (s Symbol) String() string {
 		return "tháng "
 	case Txt05:
 		return "ел"
+	case Txt06:
+		return "སྤྱི་ཟླ་"
+	case Txt07:
+		return "de"
+	case Txt08:
+		return "urteko"
+	case Txt09:
+		return "an"
+	case Txt10:
+		return "оны"
 	}
 }
 
@@ -127,12 +126,14 @@ func NewSeq(locale language.Tag) *Seq {
 	return &Seq{locale: locale}
 }
 
+// Add appends one or more [Symbol] to the [Seq].
 func (s *Seq) Add(symbol ...Symbol) *Seq {
 	s.symbols = append(s.symbols, symbol...)
 
 	return s
 }
 
+// AddSeq appends another [Seq].
 func (s *Seq) AddSeq(seq *Seq) *Seq {
 	s.symbols = append(s.symbols, seq.symbols...)
 

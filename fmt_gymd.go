@@ -11,7 +11,7 @@ func seqEraYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
 	seq := symbols.NewSeq(locale)
 
-	era := symbolEra(opts.Era)
+	era := opts.Era.symbol()
 	year := opts.Year.symbol()
 	month := Month2Digit.symbolFormat()
 	day := Day2Digit.symbol()
@@ -157,61 +157,34 @@ func seqEraYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	}
 }
 
-func fmtEraYearMonthDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
+func seqEraYearMonthDayPersian(locale language.Tag, opts Options) *symbols.Seq {
 	lang, _, region := locale.Raw()
-
-	era := fmtEra(locale, opts.Era)
-	yearDigits := convertYearDigits(digits, opts.Year)
-
-	const (
-		eraYearMonthDay = iota
-		eraMonthDayYear
-	)
-
-	layout := eraMonthDayYear
-	separator := "/"
-	suffix := " " + era
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	year := opts.Year.symbol()
+	month := opts.Month.symbolFormat()
+	day := opts.Day.symbol()
 
 	switch lang {
 	case cldr.CKB:
 		if region == cldr.RegionIR {
-			layout = eraYearMonthDay
-			separator = "-"
+			return seq.Add(era, ' ', year, '-', month, '-', day)
 		}
 	case cldr.LRC, cldr.MZN, cldr.UZ:
-		layout = eraYearMonthDay
-		separator = "-"
+		return seq.Add(era, ' ', year, '-', month, '-', day)
 	case cldr.PS:
-		layout = eraYearMonthDay
-
 		if !opts.Era.narrow() {
-			separator = "-"
+			return seq.Add(era, ' ', year, '-', month, '-', day)
 		}
+
+		return seq.Add(era, ' ', year, '/', month, '/', day)
 	}
 
-	month := convertMonthDigits(digits, opts.Month)
-	dayDigits := convertDayDigits(digits, opts.Day)
-
-	switch layout {
-	default: // eraMonthDayYear
-		return func(v cldr.TimeReader) string {
-			return month(v) + separator + dayDigits(v) + separator + yearDigits(v) + suffix
-		}
-	case eraYearMonthDay:
-		prefix := era + " "
-
-		return func(v cldr.TimeReader) string {
-			return prefix + yearDigits(v) + separator + month(v) + separator + dayDigits(v)
-		}
-	}
+	return seq.Add(month, '/', day, '/', year, ' ', era)
 }
 
-func fmtEraYearMonthDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	year := fmtYearBuddhist(locale, digits, opts)
-	monthDigits := convertMonthDigits(digits, opts.Month)
-	dayDigits := convertDayDigits(digits, opts.Day)
+func seqEraYearMonthDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	year := seqYearBuddhist(locale, opts)
 
-	return func(t cldr.TimeReader) string {
-		return dayDigits(t) + "/" + monthDigits(t) + "/" + year(t)
-	}
+	return symbols.NewSeq(locale).Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/').AddSeq(year)
 }

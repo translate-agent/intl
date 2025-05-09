@@ -42,42 +42,26 @@ func seqYearDay(locale language.Tag, opts Options) *symbols.Seq {
 	return seq
 }
 
-func fmtYearDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	year := fmtYearPersian(locale)
-	yearDigits := convertYearDigits(digits, opts.Year)
-
-	prefix := ""
-	middle := " "
-	suffix := ""
+func seqYearDayPersian(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	year := seqYearPersian(locale, opts.Year)
+	day := opts.Day.symbol()
 
 	if !opts.Year.twoDigit() || !opts.Day.numeric() {
-		dayName := cldr.UnitName(locale).Day
-		middle = " (" + dayName + ": "
-		suffix = ")"
+		return seq.AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ', day).Add(')')
 	}
 
-	day := fmtDayPersian(locale, digits, opts.Day)
-
-	return func(v cldr.TimeReader) string {
-		return prefix + year(yearDigits(v)) + middle + day(v) + suffix
-	}
+	return seq.AddSeq(year).Add(' ', day)
 }
 
-func fmtYearDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	year := fmtYearBuddhist(locale, digits, opts)
-
-	middle := " "
-	suffix := ""
+func seqYearDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	year := seqYearBuddhist(locale, opts)
+	day := opts.Day.symbol()
 
 	if !opts.Year.twoDigit() || !opts.Day.numeric() {
-		dayName := cldr.UnitName(locale).Day
-		middle = " (" + dayName + ": "
-		suffix = ")"
+		return seq.AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ', day).Add(')')
 	}
 
-	day := fmtDayBuddhist(locale, digits, opts.Day)
-
-	return func(t cldr.TimeReader) string {
-		return year(t) + middle + day(t) + suffix
-	}
+	return seq.AddSeq(year).Add(' ', day)
 }

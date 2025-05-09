@@ -347,31 +347,22 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 	}
 }
 
-func fmtYearMonthBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	yearDigits := convertYearDigits(digits, opts.Year)
+func seqYearMonthBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	year := opts.Year.symbol()
 
 	if lang, _ := locale.Base(); lang == cldr.TH {
-		monthDigits := convertMonthDigits(digits, opts.Month)
-
-		return func(t cldr.TimeReader) string {
-			return monthDigits(t) + "/" + yearDigits(t)
-		}
+		return seq.Add(opts.Month.symbol("format"), '/', year)
 	}
 
-	monthDigits := convertMonthDigits(digits, Month2Digit)
-
-	return func(t cldr.TimeReader) string {
-		return yearDigits(t) + "-" + monthDigits(t)
-	}
+	return seq.Add(year, '-', Month2Digit.symbol("format"))
 }
 
-func fmtYearMonthPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
+func seqYearMonthPersian(locale language.Tag, opts Options) *symbols.Seq {
 	lang, _, region := locale.Raw()
-	yearDigits := convertYearDigits(digits, opts.Year)
-	month := convertMonthDigits(digits, Month2Digit)
-
-	prefix := ""
-	separator := "-"
+	seq := symbols.NewSeq(locale)
+	year := opts.Year.symbol()
+	month := opts.Month.symbol("format")
 
 	switch lang {
 	case cldr.CKB: // ckb-IR
@@ -379,29 +370,22 @@ func fmtYearMonthPersian(locale language.Tag, digits cldr.Digits, opts Options) 
 		// year=numeric,month=2-digit,out=١٠/١٤٠٢
 		// year=2-digit,month=numeric,out=١٠/٠٢
 		// year=2-digit,month=2-digit,out=١٠/٠٢
-		return func(v cldr.TimeReader) string {
-			return month(v) + "/" + yearDigits(v)
-		}
+		return seq.Add(month, '/', year)
 	case cldr.FA:
-		separator = "/"
+		return seq.Add(year, '/', month)
 	case cldr.PS:
-		prefix = fmtEra(locale, EraNarrow) + " "
-		separator = "/"
+		return seq.Add(EraNarrow.symbol(), ' ', year, '/', month)
 	case cldr.UZ:
 		if region == cldr.RegionAF {
 			// year=numeric,month=numeric,out=۱۴۰۲-۱۰
 			// year=numeric,month=2-digit,out=۱۴۰۲-۱۰
 			// year=2-digit,month=numeric,out=۰۲-۱۰
 			// year=2-digit,month=2-digit,out=۰۲-۱۰
-			break
+			return seq.Add(year, '-', month)
 		}
 
 		fallthrough
 	default:
-		prefix = fmtEra(locale, EraNarrow) + " "
-	}
-
-	return func(v cldr.TimeReader) string {
-		return prefix + yearDigits(v) + separator + month(v)
+		return seq.Add(EraNarrow.symbol(), ' ', year, '-', month)
 	}
 }
