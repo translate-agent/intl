@@ -2,41 +2,44 @@ package intl
 
 import (
 	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
 
-func fmtDayGregorian(locale language.Tag, digits cldr.Digits, opt Day) fmtFunc {
-	suffix := ""
+func seqDay(locale language.Tag, opt Day) *symbols.Seq {
+	lang, _ := locale.Base()
+	seq := symbols.NewSeq(locale)
 
-	switch lang, _ := locale.Base(); lang {
+	day := opt.symbol()
+
+	switch lang {
+	default:
+		seq.Add(day)
 	case cldr.BS:
-		if script, _ := locale.Script(); script == cldr.Cyrl {
-			break
-		}
+		seq.Add(day)
 
-		suffix = "."
+		if script, _ := locale.Script(); script != cldr.Cyrl {
+			seq.Add('.')
+		}
 	case cldr.CS, cldr.DA, cldr.DSB, cldr.FO, cldr.HR, cldr.HSB, cldr.IE, cldr.NB, cldr.NN, cldr.NO, cldr.SK, cldr.SL:
-		suffix = "."
+		seq.Add(day, '.')
 	case cldr.JA, cldr.YUE, cldr.ZH:
-		suffix = "日"
+		seq.Add(day, symbols.Txt日)
 	case cldr.KO:
-		suffix = "일"
+		seq.Add(day, symbols.Txt일)
 	case cldr.LT:
-		opt = Day2Digit
+		seq.Add(symbols.Symbol_dd)
 	case cldr.II:
-		suffix = "ꑍ"
+		seq.Add(day, symbols.Txtꑍ)
 	}
 
-	dayDigits := convertDayDigits(digits, opt)
-
-	return func(t timeReader) string { return dayDigits(t) + suffix }
+	return seq
 }
 
-func fmtDayBuddhist(_ language.Tag, digits cldr.Digits, opt Day) fmtFunc {
-	dayDigits := convertDayDigits(digits, opt)
-	return func(t timeReader) string { return dayDigits(t) }
+func seqDayBuddhist(locale language.Tag, opt Day) *symbols.Seq {
+	return symbols.NewSeq(locale).Add(opt.symbol())
 }
 
-func fmtDayPersian(_ language.Tag, digits cldr.Digits, opt Day) fmtFunc {
-	return convertDayDigits(digits, opt)
+func seqDayPersian(locale language.Tag, opt Day) *symbols.Seq {
+	return symbols.NewSeq(locale).Add(opt.symbol())
 }

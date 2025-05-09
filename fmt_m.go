@@ -2,36 +2,39 @@ package intl
 
 import (
 	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
 
-func fmtMonthGregorian(locale language.Tag, digits cldr.Digits, opt Month) fmtFunc {
-	suffix := ""
+func seqMonth(locale language.Tag, opt Month) *symbols.Seq {
+	lang, _ := locale.Base()
+	seq := symbols.NewSeq(locale)
 
-	switch lang, _ := locale.Base(); lang {
+	switch lang {
+	default:
+		seq.Add(opt.symbolFormat())
+
+		switch lang {
+		case cldr.HR, cldr.NB, cldr.NN, cldr.NO, cldr.SK:
+			seq.Add('.')
+		case cldr.JA, cldr.YUE, cldr.ZH, cldr.KO:
+			seq.Add(symbols.MonthUnit)
+		}
 	case cldr.BR, cldr.FO, cldr.GA, cldr.LT, cldr.UK, cldr.UZ:
-		opt = Month2Digit
-	case cldr.HR, cldr.NB, cldr.NN, cldr.NO, cldr.SK:
-		suffix = "."
-	case cldr.JA, cldr.YUE, cldr.ZH, cldr.KO:
-		suffix = cldr.UnitName(locale).Month
+		seq.Add(symbols.Symbol_MM)
 	case cldr.MN:
-		return fmtMonthName(locale.String(), "stand-alone", "narrow")
+		seq.Add(symbols.Symbol_LLLLL)
 	case cldr.WAE:
-		return fmtMonthName(locale.String(), "stand-alone", "abbreviated")
+		seq.Add(symbols.Symbol_LLL)
 	}
 
-	monthDigits := convertMonthDigits(digits, opt)
-
-	return func(t timeReader) string { return monthDigits(t) + suffix }
+	return seq
 }
 
-func fmtMonthBuddhist(_ language.Tag, digits cldr.Digits, opt Month) fmtFunc {
-	monthDigits := convertMonthDigits(digits, opt)
-
-	return func(t timeReader) string { return monthDigits(t) }
+func seqMonthBuddhist(locale language.Tag, opt Month) *symbols.Seq {
+	return symbols.NewSeq(locale).Add(opt.symbolFormat())
 }
 
-func fmtMonthPersian(_ language.Tag, digits cldr.Digits, opt Month) fmtFunc {
-	return convertMonthDigits(digits, opt)
+func seqMonthPersian(locale language.Tag, opt Month) *symbols.Seq {
+	return symbols.NewSeq(locale).Add(opt.symbolFormat())
 }
