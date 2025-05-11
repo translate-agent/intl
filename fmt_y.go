@@ -2,44 +2,41 @@ package intl
 
 import (
 	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
 
-func fmtYearGregorian(locale language.Tag, digits cldr.Digits, opt Year) fmtFunc {
-	var suffix string
+func seqYear(locale language.Tag, opt Year) *symbols.Seq {
+	lang, _ := locale.Base()
+	seq := symbols.NewSeq(locale).Add(opt.symbol())
 
-	switch lang, _ := locale.Base(); lang {
+	switch lang {
 	case cldr.BG, cldr.MK:
-		suffix = " г."
+		seq.Add(' ', symbols.Txt00)
 	case cldr.BS, cldr.HR, cldr.HU, cldr.SR:
-		suffix = "."
+		seq.Add('.')
 	case cldr.JA, cldr.YUE, cldr.ZH:
-		suffix = "年"
+		seq.Add(symbols.Txt年)
 	case cldr.KO:
-		suffix = "년"
+		seq.Add(symbols.Txt년)
 	case cldr.LV:
-		suffix = ". g."
+		seq.Add(symbols.Txt01)
 	}
 
-	yearDigits := convertYearDigits(digits, opt)
-
-	return func(t timeReader) string { return yearDigits(t) + suffix }
+	return seq
 }
 
-func fmtYearBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	prefix := fmtEra(locale, opts.Era) + " "
-	yearDigits := convertYearDigits(digits, opts.Year)
-
-	return func(t timeReader) string { return prefix + yearDigits(t) }
+func seqYearBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	return symbols.NewSeq(locale).Add(opts.Era.symbol(), ' ', opts.Year.symbol())
 }
 
-func fmtYearPersian(locale language.Tag) func(y string) string {
+func seqYearPersian(locale language.Tag, opt Year) *symbols.Seq {
 	lang, _, region := locale.Raw()
-	prefix := ""
+	seq := symbols.NewSeq(locale)
 
 	if lang != cldr.FA && (lang != cldr.UZ || region != cldr.RegionAF) {
-		prefix = fmtEra(locale, EraNarrow) + " "
+		seq.Add(symbols.Symbol_GGGGG, ' ')
 	}
 
-	return func(y string) string { return prefix + y }
+	return seq.Add(opt.symbol())
 }

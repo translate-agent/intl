@@ -29,6 +29,7 @@ import (
 
 	ptime "github.com/yaa110/go-persian-calendar"
 	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
 
@@ -40,6 +41,17 @@ const (
 	EraShort
 	EraLong
 )
+
+// MustParseEra converts a string representation of an era format to the [Era] type.
+// It panics if the input string is not a valid era format.
+func MustParseEra(s string) Era {
+	v, err := ParseEra(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
 
 // String returns the string representation of the [Era].
 // It converts the [Era] constant to its corresponding string value.
@@ -67,6 +79,17 @@ func (e Era) narrow() bool { return e == EraNarrow }
 func (e Era) short() bool  { return e == EraShort }
 func (e Era) long() bool   { return e == EraLong }
 
+func (e Era) symbol() symbols.Symbol {
+	switch e {
+	default:
+		return symbols.Symbol_GGGGG
+	case EraShort:
+		return symbols.Symbol_G
+	case EraLong:
+		return symbols.Symbol_GGGG
+	}
+}
+
 // ParseEra converts a string representation of a year format to the [Era] type.
 //
 // Parameters:
@@ -90,17 +113,6 @@ func ParseEra(s string) (Era, error) {
 	}
 }
 
-// MustParseEra converts a string representation of an era format to the [Era] type.
-// It panics if the input string is not a valid era format.
-func MustParseEra(s string) Era {
-	v, err := ParseEra(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return v
-}
-
 // Year is year option for [Options].
 type Year byte
 
@@ -109,6 +121,17 @@ const (
 	YearNumeric
 	Year2Digit
 )
+
+// MustParseYear converts a string representation of a year format to the [Year] type.
+// It panics if the input string is not a valid year format.
+func MustParseYear(s string) Year {
+	v, err := ParseYear(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
 
 // String returns the string representation of the [Year].
 // It converts the [Year] constant to its corresponding string value.
@@ -132,6 +155,14 @@ func (y Year) und() bool      { return y == YearUnd }
 func (y Year) numeric() bool  { return y == YearNumeric }
 func (y Year) twoDigit() bool { return y == Year2Digit }
 
+func (y Year) symbol() symbols.Symbol {
+	if y.twoDigit() {
+		return symbols.Symbol_yy
+	}
+
+	return symbols.Symbol_y
+}
+
 // ParseYear converts a string representation of a year format to the [Year] type.
 //
 // Parameters:
@@ -153,17 +184,6 @@ func ParseYear(s string) (Year, error) {
 	}
 }
 
-// MustParseYear converts a string representation of a year format to the [Year] type.
-// It panics if the input string is not a valid year format.
-func MustParseYear(s string) Year {
-	v, err := ParseYear(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return v
-}
-
 // Month represents the format for displaying months.
 type Month byte
 
@@ -175,6 +195,17 @@ const (
 	MonthShort
 	MonthNarrow
 )
+
+// MustParseMonth converts a string representation of a month format to the [Month] type.
+// It panics if the input string is not a valid month format.
+func MustParseMonth(s string) Month {
+	v, err := ParseMonth(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
 
 // String returns the string representation of the [Month].
 // It converts the [Month] constant to its corresponding string value.
@@ -207,6 +238,32 @@ func (m Month) und() bool      { return m == MonthUnd }
 func (m Month) numeric() bool  { return m == MonthNumeric }
 func (m Month) twoDigit() bool { return m == Month2Digit }
 
+func (m Month) symbolFormat() symbols.Symbol { return m.symbol("format") }
+
+// func (m Month) symbolStandAlone() symbols.Symbol { return m.symbol("stand-alone") }
+
+// TODO(jhorsts): define iota for context values.
+func (m Month) symbol(context string) symbols.Symbol {
+	switch m {
+	default: // M
+		return symbols.Symbol_M
+	case Month2Digit:
+		return symbols.Symbol_MM
+	case MonthNarrow:
+		if context == "format" {
+			return symbols.Symbol_MMMMM
+		}
+
+		return symbols.Symbol_LLLLL
+	case MonthLong:
+		if context == "format" {
+			return symbols.Symbol_MMM
+		}
+
+		return symbols.Symbol_LLL
+	}
+}
+
 // ParseMonth converts a string representation of a month format to the [Month] type.
 //
 // Parameters:
@@ -236,17 +293,6 @@ func ParseMonth(s string) (Month, error) {
 	}
 }
 
-// MustParseMonth converts a string representation of a month format to the [Month] type.
-// It panics if the input string is not a valid month format.
-func MustParseMonth(s string) Month {
-	v, err := ParseMonth(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return v
-}
-
 // Day represents the format for displaying days.
 type Day byte
 
@@ -255,6 +301,17 @@ const (
 	DayNumeric
 	Day2Digit
 )
+
+// MustParseDay converts a string representation of a year format to the [Day] type.
+// It panics if the input string is not a valid day format.
+func MustParseDay(s string) Day {
+	v, err := ParseDay(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
 
 // String returns the string representation of the Day format.
 // It converts the Day constant to its corresponding string value.
@@ -278,6 +335,14 @@ func (d Day) und() bool      { return d == DayUnd }
 func (d Day) numeric() bool  { return d == DayNumeric }
 func (d Day) twoDigit() bool { return d == Day2Digit }
 
+func (d Day) symbol() symbols.Symbol {
+	if d.twoDigit() {
+		return symbols.Symbol_dd
+	}
+
+	return symbols.Symbol_d
+}
+
 // ParseDay converts a string representation of a year format to the [Day] type.
 //
 // Parameters:
@@ -297,17 +362,6 @@ func ParseDay(s string) (Day, error) {
 	case "2-digit":
 		return Day2Digit, nil
 	}
-}
-
-// MustParseDay converts a string representation of a year format to the [Day] type.
-// It panics if the input string is not a valid day format.
-func MustParseDay(s string) Day {
-	v, err := ParseDay(s)
-	if err != nil {
-		panic(err)
-	}
-
-	return v
 }
 
 // Options defines configuration parameters for [NewDateTimeFormat].
@@ -330,15 +384,13 @@ type DateTimeFormat struct {
 // This function initializes a [DateTimeFormat] with the default calendar based on the
 // given locale. It supports different calendar systems including Gregorian, Persian, and Buddhist calendars.
 func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
-	d := cldr.LocaleDigits(locale)
-
 	switch cldr.DefaultCalendar(locale) {
 	default:
-		return DateTimeFormat{fmt: gregorianDateTimeFormat(locale, d, options)}
+		return DateTimeFormat{fmt: gregorianDateTimeFormat(locale, options)}
 	case cldr.CalendarTypePersian:
-		return DateTimeFormat{fmt: persianDateTimeFormat(locale, d, options)}
+		return DateTimeFormat{fmt: persianDateTimeFormat(locale, options)}
 	case cldr.CalendarTypeBuddhist:
-		return DateTimeFormat{fmt: buddhistDateTimeFormat(locale, d, options)}
+		return DateTimeFormat{fmt: buddhistDateTimeFormat(locale, options)}
 	}
 }
 
@@ -347,225 +399,140 @@ func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
 // This method applies the formatting options specified in the [DateTimeFormat] instance
 // to the provided time value.
 func (f DateTimeFormat) Format(t time.Time) string {
-	return f.fmt(timeReader(t))
+	return f.fmt(cldr.TimeReader(t))
 }
 
 // fmtFunc is date time formatter for a particular calendar.
-type fmtFunc func(timeReader) string
+type fmtFunc func(cldr.TimeReader) string
 
-// convertYearDigits formats year.
-func convertYearDigits(digits cldr.Digits, opt Year) fmtFunc {
-	if opt.twoDigit() {
-		return func(t timeReader) string { return digits.TwoDigit(t.Year()) }
+//nolint:cyclop
+func gregorianDateTimeFormat(locale language.Tag, opts Options) fmtFunc {
+	var seq *symbols.Seq
+
+	switch {
+	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
+		seq = seqEraYearMonthDay(locale, opts)
+	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und():
+		seq = seqEraYearMonth(locale, opts)
+	case !opts.Era.und() && !opts.Year.und() && !opts.Day.und():
+		seq = seqEraYearDay(locale, opts)
+	case !opts.Era.und() && !opts.Year.und():
+		seq = seqEraYear(locale, opts)
+	case !opts.Era.und() && !opts.Month.und() && !opts.Day.und():
+		seq = seqEraMonthDay(locale, opts)
+	case !opts.Era.und() && !opts.Month.und():
+		seq = seqEraMonth(locale, opts)
+	case !opts.Era.und() && !opts.Day.und():
+		seq = seqEraDay(locale, opts)
+	case !opts.Era.und():
+		seq = seqEraYearMonthDay(locale, opts)
+	case !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
+		seq = seqYearMonthDay(locale, opts)
+	case !opts.Year.und() && !opts.Month.und():
+		seq = seqYearMonth(locale, opts)
+	case !opts.Year.und() && !opts.Day.und():
+		seq = seqYearDay(locale, opts)
+	case !opts.Year.und():
+		seq = seqYear(locale, opts.Year)
+	case !opts.Month.und() && !opts.Day.und():
+		seq = seqMonthDay(locale, opts)
+	case !opts.Month.und():
+		seq = seqMonth(locale, opts.Month)
+	case !opts.Day.und():
+		seq = seqDay(locale, opts.Day)
 	}
 
-	return func(t timeReader) string { return digits.Numeric(t.Year()) }
-}
-
-func convertMonthDigits(digits cldr.Digits, opt Month) fmtFunc {
-	f := digits.Numeric
-
-	if opt.twoDigit() {
-		f = digits.TwoDigit
-	}
-
-	return func(t timeReader) string { return f(int(t.Month())) }
-}
-
-// fmtMonthName formats month as name.
-//
-// TODO(jhorsts): ensure this is rectified before release v0.1.0 - when formatting of date is complete.
-// The "context" is always "stand-alone".
-func fmtMonthName(locale string, context, width string) fmtFunc {
-	indexes := cldr.MonthLookup[locale]
-
-	var i int
-
-	// "abbreviated" width index is 0
-	switch width {
-	case "wide":
-		i += 2 // 1*2
-	case "narrow":
-		i += 4 // 2*2
-	}
-
-	// "format" context index is 0
-	if context == "stand-alone" {
-		i++
-	}
-
-	var names cldr.CalendarMonths
-
-	if i >= 0 && i < len(indexes) { // isInBounds()
-		if v := int(indexes[i]); v > 0 && v < len(cldr.CalendarMonthNames) { // isInBounds()
-			names = cldr.CalendarMonthNames[v]
-		}
-	}
-
-	return func(t timeReader) string {
-		i := int(t.Month() - 1)
-
-		if i >= 0 && i < len(names) { // isInBounds()
-			return names[i]
-		}
-
-		return ""
-	}
-}
-
-// convertDayDigits formats day as numeric.
-func convertDayDigits(digits cldr.Digits, opt Day) fmtFunc {
-	f := digits.Numeric
-
-	if opt.twoDigit() {
-		f = digits.TwoDigit
-	}
-
-	return func(t timeReader) string { return f(t.Day()) }
+	return seq.Func()
 }
 
 //nolint:cyclop
-func gregorianDateTimeFormat(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
+func persianDateTimeFormat(locale language.Tag, opts Options) fmtFunc {
+	var seq *symbols.Seq
+
 	switch {
-	default:
-		return func(_ timeReader) string {
-			return ""
-		}
-	case !opts.Era.und() && (!opts.Year.und() && !opts.Month.und() && !opts.Day.und() ||
-		opts.Year.und() && opts.Month.und() && opts.Day.und()):
-		return fmtEraYearMonthDayGregorian(locale, digits, opts)
-	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und() && opts.Day.und():
-		return fmtEraYearMonthGregorian(locale, digits, opts)
-	case !opts.Era.und() && !opts.Year.und() && opts.Month.und() && opts.Day.und():
-		return fmtEraYearGregorian(locale, digits, opts)
-	case !opts.Era.und() && opts.Year.und() && !opts.Month.und() && opts.Day.und():
-		return fmtEraMonthGregorian(locale, digits, opts)
-	case !opts.Era.und() && !opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		return fmtEraYearDayGregorian(locale, digits, opts)
-	case !opts.Era.und() && opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		return fmtEraDayGregorian(locale, digits, opts)
-	case !opts.Era.und() && opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		return fmtEraMonthDayGregorian(locale, digits, opts)
+	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
+		seq = seqEraYearMonthDayPersian(locale, opts)
+	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und():
+		seq = seqEraYearMonthPersian(locale, opts)
+	case !opts.Era.und() && !opts.Year.und() && !opts.Day.und():
+		seq = seqEraYearDayPersian(locale, opts)
+	case !opts.Era.und() && !opts.Year.und():
+		seq = seqEraYearPersian(locale, opts)
+	case !opts.Era.und() && !opts.Month.und() && !opts.Day.und():
+		seq = seqEraMonthDayPersian(locale, opts)
+	case !opts.Era.und() && !opts.Month.und():
+		seq = seqEraMonthPersian(locale, opts)
+	case !opts.Era.und() && !opts.Day.und():
+		seq = seqEraDayPersian(locale, opts)
+	case !opts.Era.und():
+		seq = seqEraYearMonthDayPersian(locale, opts)
 	case !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		return fmtYearMonthDayGregorian(locale, digits, opts)
-	case !opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		return fmtYearDayGregorian(locale, digits, opts)
+		seq = seqYearMonthDayPersian(locale, opts)
 	case !opts.Year.und() && !opts.Month.und():
-		return fmtYearMonthGregorian(locale, digits, opts)
-	case !opts.Month.und() && !opts.Day.und():
-		return fmtMonthDayGregorian(locale, digits, opts)
+		seq = seqYearMonthPersian(locale, opts)
+	case !opts.Year.und() && !opts.Day.und():
+		seq = seqYearDayPersian(locale, opts)
 	case !opts.Year.und():
-		return fmtYearGregorian(locale, digits, opts.Year)
+		seq = seqYearPersian(locale, opts.Year)
+	case !opts.Month.und() && !opts.Day.und():
+		seq = seqMonthDayPersian(locale, opts)
 	case !opts.Month.und():
-		return fmtMonthGregorian(locale, digits, opts.Month)
+		seq = seqMonthPersian(locale, opts.Month)
 	case !opts.Day.und():
-		return fmtDayGregorian(locale, digits, opts.Day)
+		seq = seqDayPersian(locale, opts.Day)
+	}
+
+	f := seq.Func()
+
+	return func(t cldr.TimeReader) string {
+		v, _ := t.(time.Time) // t is always [time.Time]
+		return f(persionTime(ptime.New(v)))
 	}
 }
 
 //nolint:cyclop
-func persianDateTimeFormat(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	gregorianToPersian := func(f fmtFunc) fmtFunc {
-		return func(t timeReader) string {
-			v, _ := t.(time.Time) // t is always [time.Time]
-			return f(persionTime(ptime.New(v)))
-		}
-	}
+func buddhistDateTimeFormat(locale language.Tag, opts Options) fmtFunc {
+	var seq *symbols.Seq
 
 	switch {
-	default:
-		return func(_ timeReader) string {
-			return ""
-		}
-	case !opts.Era.und() && (!opts.Year.und() && !opts.Month.und() && !opts.Day.und() ||
-		opts.Year.und() && opts.Month.und() && opts.Day.und()):
-		return gregorianToPersian(fmtEraYearMonthDayPersian(locale, digits, opts))
-	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und() && opts.Day.und():
-		return gregorianToPersian(fmtEraYearMonthPersian(locale, digits, opts))
-	case !opts.Era.und() && opts.Year.und() && !opts.Month.und() && opts.Day.und():
-		return gregorianToPersian(fmtEraMonthPersian(locale, digits, opts))
-	case !opts.Era.und() && opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		return gregorianToPersian(fmtEraMonthDayPersian(locale, digits, opts))
-	case !opts.Era.und() && !opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		return gregorianToPersian(fmtEraYearDayPersian(locale, digits, opts))
-	case !opts.Era.und() && !opts.Year.und() && opts.Month.und() && opts.Day.und():
-		return gregorianToPersian(fmtEraYearPersian(locale, digits, opts))
-	case !opts.Era.und() && opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		return gregorianToPersian(fmtEraDayPersian(locale, digits, opts))
+	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
+		seq = seqEraYearMonthDayBuddhist(locale, opts)
+	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und():
+		seq = seqEraYearMonthBuddhist(locale, opts)
+	case !opts.Era.und() && !opts.Year.und() && !opts.Day.und():
+		seq = seqEraYearDayBuddhist(locale, opts)
+	case !opts.Era.und() && !opts.Year.und():
+		seq = seqEraYearBuddhist(locale, opts)
+	case !opts.Era.und() && !opts.Month.und() && !opts.Day.und():
+		seq = seqEraMonthDayBuddhist(locale, opts)
+	case !opts.Era.und() && !opts.Month.und():
+		seq = seqEraMonthBuddhist(locale, opts)
+	case !opts.Era.und() && !opts.Day.und():
+		seq = seqEraDayBuddhist(locale, opts)
+	case !opts.Era.und():
+		seq = seqEraYearMonthDayBuddhist(locale, opts)
 	case !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		return gregorianToPersian(fmtYearMonthDayPersian(locale, digits, opts))
-	case !opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		return gregorianToPersian(fmtYearDayPersian(locale, digits, opts))
+		seq = seqYearMonthDayBuddhist(locale, opts)
 	case !opts.Year.und() && !opts.Month.und():
-		return gregorianToPersian(fmtYearMonthPersian(locale, digits, opts))
-	case !opts.Month.und() && !opts.Day.und():
-		return gregorianToPersian(fmtMonthDayPersian(locale, digits, opts))
+		seq = seqYearMonthBuddhist(locale, opts)
+	case !opts.Year.und() && !opts.Day.und():
+		seq = seqYearDayBuddhist(locale, opts)
 	case !opts.Year.und():
-		layout := fmtYearPersian(locale)
-		yearDigits := convertYearDigits(digits, opts.Year)
-
-		return func(t timeReader) string {
-			v, _ := t.(time.Time) // t is always [time.Time]
-			return layout(yearDigits(persionTime(ptime.New(v))))
-		}
-	case !opts.Month.und():
-		return gregorianToPersian(fmtMonthPersian(locale, digits, opts.Month))
-	case !opts.Day.und():
-		return gregorianToPersian(fmtDayPersian(locale, digits, opts.Day))
-	}
-}
-
-//nolint:cyclop
-func buddhistDateTimeFormat(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	// convert Gregorian calendar time to Buddhist
-	gregorianToBuddhist := func(f fmtFunc) fmtFunc {
-		return func(t timeReader) string {
-			v, _ := t.(time.Time)          // t is always [time.Time]
-			return f(v.AddDate(543, 0, 0)) //nolint:mnd
-		}
-	}
-
-	switch {
-	default:
-		return func(_ timeReader) string {
-			return ""
-		}
-	case !opts.Era.und() && (!opts.Year.und() && !opts.Month.und() && !opts.Day.und() ||
-		opts.Year.und() && opts.Month.und() && opts.Day.und()):
-		return gregorianToBuddhist(fmtEraYearMonthDayBuddhist(locale, digits, opts))
-	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und() && opts.Day.und():
-		return gregorianToBuddhist(fmtEraYearMonthBuddhist(locale, digits, opts))
-	case !opts.Era.und() && !opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		return gregorianToBuddhist(fmtEraYearDayBuddhist(locale, digits, opts))
-	case !opts.Era.und() && opts.Year.und() && !opts.Month.und() && opts.Day.und():
-		return gregorianToBuddhist(fmtEraMonthBuddhist(locale, digits, opts))
-	case !opts.Era.und() && opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		return gregorianToBuddhist(fmtEraDayBuddhist(locale, digits, opts))
-	case !opts.Era.und() && opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		return gregorianToBuddhist(fmtEraMonthDayBuddhist(locale, digits, opts))
-	case !opts.Era.und() && !opts.Year.und() && opts.Month.und() && opts.Day.und():
-		return gregorianToBuddhist(fmtEraYearBuddhist(locale, digits, opts))
-	case !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		return gregorianToBuddhist(fmtYearMonthDayBuddhist(locale, digits, opts))
-	case !opts.Year.und() && opts.Month.und() && !opts.Day.und():
-		return gregorianToBuddhist(fmtYearDayBuddhist(locale, digits, opts))
-	case !opts.Year.und() && !opts.Month.und():
-		return gregorianToBuddhist(fmtYearMonthBuddhist(locale, digits, opts))
+		seq = seqYearBuddhist(locale, opts)
 	case !opts.Month.und() && !opts.Day.und():
-		return gregorianToBuddhist(fmtMonthDayBuddhist(locale, digits, opts))
-	case !opts.Year.und():
-		return gregorianToBuddhist(fmtYearBuddhist(locale, digits, opts))
+		seq = seqMonthDayBuddhist(locale, opts)
 	case !opts.Month.und():
-		return gregorianToBuddhist(fmtMonthBuddhist(locale, digits, opts.Month))
+		seq = seqMonthBuddhist(locale, opts.Month)
 	case !opts.Day.und():
-		return gregorianToBuddhist(fmtDayBuddhist(locale, digits, opts.Day))
+		seq = seqDayBuddhist(locale, opts.Day)
 	}
-}
 
-type timeReader interface {
-	Year() int
-	Month() time.Month
-	Day() int
+	f := seq.Func()
+
+	return func(t cldr.TimeReader) string {
+		v, _ := t.(time.Time)          // t is always [time.Time]
+		return f(v.AddDate(543, 0, 0)) //nolint:mnd
+	}
 }
 
 type persionTime ptime.Time

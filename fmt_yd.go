@@ -2,96 +2,66 @@ package intl
 
 import (
 	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
 
-func fmtYearDayGregorian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
+func seqYearDay(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, _ := locale.Raw()
-	year := fmtYearGregorian(locale, digits, opts.Year)
-
-	const (
-		layoutYearDay = iota
-		layoutDayYear
-	)
-
+	seq := symbols.NewSeq(locale)
+	year := seqYear(locale, opts.Year)
+	day := seqDay(locale, opts.Day)
 	withName := !opts.Year.twoDigit() || !opts.Day.numeric()
-	dayName := cldr.UnitName(locale).Day
-	layout := layoutYearDay
-	middle := " "
-	suffix := ""
-
-	if withName {
-		middle = " (" + dayName + ": "
-		suffix = ")"
-	}
 
 	switch lang {
-	case cldr.BG, cldr.MK:
+	default:
+		seq.AddSeq(year).Add(' ')
+
 		if withName {
-			middle = " (" + dayName + ": "
+			seq.Add('(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 		} else {
-			middle = " "
+			seq.AddSeq(day)
 		}
-	case cldr.KAA, cldr.EN, cldr.MHN:
-		if !withName {
-			layout = layoutDayYear
+	case cldr.EN, cldr.KAA, cldr.MHN:
+		if withName {
+			seq.AddSeq(year).Add(' ').Add('(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+		} else {
+			seq.AddSeq(day).Add(' ').AddSeq(year)
 		}
 	case cldr.HI:
-		if !withName && script == cldr.Latn {
-			layout = layoutDayYear
+		switch {
+		default:
+			seq.AddSeq(year).Add(' ').AddSeq(day)
+		case withName:
+			seq.AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+		case script == cldr.Latn:
+			seq.AddSeq(day).Add(' ').AddSeq(year)
 		}
 	}
 
-	day := fmtDayGregorian(locale, digits, opts.Day)
-
-	if layout == layoutDayYear {
-		return func(t timeReader) string {
-			return day(t) + middle + year(t) + suffix
-		}
-	}
-
-	// layoutYearDay
-	return func(t timeReader) string {
-		return year(t) + middle + day(t) + suffix
-	}
+	return seq
 }
 
-func fmtYearDayPersian(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	year := fmtYearPersian(locale)
-	yearDigits := convertYearDigits(digits, opts.Year)
-
-	prefix := ""
-	middle := " "
-	suffix := ""
+func seqYearDayPersian(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	year := seqYearPersian(locale, opts.Year)
+	day := opts.Day.symbol()
 
 	if !opts.Year.twoDigit() || !opts.Day.numeric() {
-		dayName := cldr.UnitName(locale).Day
-		middle = " (" + dayName + ": "
-		suffix = ")"
+		return seq.AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ', day).Add(')')
 	}
 
-	day := fmtDayPersian(locale, digits, opts.Day)
-
-	return func(v timeReader) string {
-		return prefix + year(yearDigits(v)) + middle + day(v) + suffix
-	}
+	return seq.AddSeq(year).Add(' ', day)
 }
 
-func fmtYearDayBuddhist(locale language.Tag, digits cldr.Digits, opts Options) fmtFunc {
-	year := fmtYearBuddhist(locale, digits, opts)
-
-	middle := " "
-	suffix := ""
+func seqYearDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	year := seqYearBuddhist(locale, opts)
+	day := opts.Day.symbol()
 
 	if !opts.Year.twoDigit() || !opts.Day.numeric() {
-		dayName := cldr.UnitName(locale).Day
-		middle = " (" + dayName + ": "
-		suffix = ")"
+		return seq.AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ', day).Add(')')
 	}
 
-	day := fmtDayBuddhist(locale, digits, opts.Day)
-
-	return func(t timeReader) string {
-		return year(t) + middle + day(t) + suffix
-	}
+	return seq.AddSeq(year).Add(' ', day)
 }

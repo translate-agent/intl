@@ -756,10 +756,6 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 			era.Narrow = "A"
 			era.Short = "AD"
 			era.Long = "Anno Domini"
-		case "bg", "bg-BG":
-			era.Long = "след Христа"
-		case "cy", "cy-GB":
-			era.Long = "Oed Crist"
 		case "es-419":
 			era.Long = "después de Cristo"
 		case "es-DO":
@@ -769,7 +765,7 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 		case "fa", "fa-AF", "fa-IR":
 			era.Narrow = "ه\u200d.ش."
 			era.Short = "ه\u200d.ش."
-			era.Long = "هجری شمسی"
+			era.Long = "هجری شمسی"
 		case "hi-Latn", "hi-Latn-IN":
 			era.Narrow = "A"
 			era.Short = "AD"
@@ -778,10 +774,6 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 			era.Narrow = "AP"
 			era.Short = "AP"
 			era.Long = "AP"
-		case "mk", "mk-MK":
-			era.Narrow = "н. е."
-			era.Short = "н. е."
-			era.Long = "од нашата ера"
 		case "mn-Mong-MN":
 			era.Narrow = "МЭ"
 			era.Short = "МЭ"

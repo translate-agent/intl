@@ -154,11 +154,6 @@ func TestDateTime_Format(t *testing.T) {
 
 				got := NewDateTimeFormat(locale, test.Options).Format(tests.Date)
 
-				// replace space with non-breaking space. Latest CLDR uses non-breaking space.
-				if strings.ContainsRune(got, ' ') {
-					test.Output = strings.ReplaceAll(test.Output, " ", " ")
-				}
-
 				if test.Output != got {
 					t.Errorf("%s\nwant '%s'\ngot  '%s'", test.String(), test.Output, got)
 					t.Logf("\n%v\n%v\n", []rune(test.Output), []rune(got))
