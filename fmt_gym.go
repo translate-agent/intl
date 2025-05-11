@@ -76,11 +76,9 @@ func seqEraYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.TT:
 		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txt05, ',', ' ', month)
 	case cldr.ES:
-		if region != cldr.RegionCO {
-			break
+		if region == cldr.RegionCO {
+			return seq.Add(month, ' ', symbols.Txt07, ' ').AddSeq(year).Add(' ', era)
 		}
-
-		fallthrough
 	case cldr.GL, cldr.PT:
 		return seq.Add(month, ' ', symbols.Txt07, ' ').AddSeq(year).Add(' ', era)
 	case cldr.JA, cldr.YUE, cldr.ZH:

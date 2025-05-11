@@ -14,8 +14,6 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 	month := opts.Month.symbolFormat()
 
 	switch lang {
-	default:
-		return seq.Add(year, '-', symbols.Symbol_MM)
 	case cldr.AF, cldr.AS, cldr.IA, cldr.JV, cldr.MI, cldr.RM, cldr.TG, cldr.WO:
 		return seq.Add(symbols.Symbol_MM, '-', year)
 	case cldr.EN:
@@ -69,25 +67,13 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 		cldr.XOG, cldr.YAV, cldr.YO, cldr.ZGH:
 		return seq.Add(month, '/', year)
 	case cldr.PA:
-		if script == cldr.Arab {
-			// year=numeric,month=numeric,out=۲۰۲۴-۰۱
-			// year=numeric,month=2-digit,out=۲۰۲۴-۰۱
-			// year=2-digit,month=numeric,out=۲۴-۰۱
-			// year=2-digit,month=2-digit,out=۲۴-۰۱
-			return seq.Add(year, '-', symbols.Symbol_MM)
+		if script != cldr.Arab {
+			return seq.Add(month, '/', year)
 		}
-
-		return seq.Add(month, '/', year)
 	case cldr.KS:
-		if script == cldr.Deva {
-			// year=numeric,month=numeric,out=2024-01
-			// year=numeric,month=2-digit,out=2024-01
-			// year=2-digit,month=numeric,out=24-01
-			// year=2-digit,month=2-digit,out=24-01
-			return seq.Add(year, '-', symbols.Symbol_MM)
+		if script != cldr.Deva {
+			return seq.Add(month, '/', year)
 		}
-
-		return seq.Add(month, '/', year)
 	case cldr.HI:
 		if script == cldr.Latn {
 			// year=numeric,month=numeric,out=01/2024
@@ -262,8 +248,6 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 		if !opts.Month.numeric() {
 			return seq.Add(month, '/', year)
 		}
-
-		return seq.Add(year, '-', symbols.Symbol_MM)
 	case cldr.SD:
 		if script == cldr.Deva {
 			// year=numeric,month=numeric,out=1/2024
@@ -272,8 +256,6 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 			// year=2-digit,month=2-digit,out=01/24
 			return seq.Add(month, '/', year)
 		}
-
-		return seq.Add(year, '-', symbols.Symbol_MM)
 	case cldr.SE:
 		if region == cldr.RegionFI {
 			// year=numeric,month=numeric,out=01.2024
@@ -282,8 +264,6 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 			// year=2-digit,month=2-digit,out=01.24
 			return seq.Add(symbols.Symbol_MM, '.', year)
 		}
-
-		return seq.Add(year, '-', symbols.Symbol_MM)
 	case cldr.SR:
 		if opts.Month.numeric() {
 			return seq.Add(month, '.', ' ', year, '.')
@@ -337,6 +317,8 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 			return seq.Add(year, '/', month)
 		}
 	}
+
+	return seq.Add(year, '-', symbols.Symbol_MM)
 }
 
 func seqYearMonthBuddhist(locale language.Tag, opts Options) *symbols.Seq {

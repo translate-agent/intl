@@ -20,12 +20,6 @@ func seqEraMonth(locale language.Tag, opts Options) *symbols.Seq {
 		}
 
 		return seq.Add(month, ' ', era)
-	case cldr.BG, cldr.CY, cldr.MK:
-		if withName {
-			return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', month, ')')
-		}
-
-		return seq.Add(era, ' ', month)
 	case cldr.BR, cldr.FO, cldr.GA, cldr.LT, cldr.UK, cldr.UZ:
 		month = symbols.Symbol_MM
 

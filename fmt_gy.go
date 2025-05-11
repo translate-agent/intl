@@ -14,11 +14,9 @@ func seqEraYear(locale language.Tag, opts Options) *symbols.Seq {
 
 	switch lang {
 	case cldr.KOK:
-		if script == cldr.Latn {
-			break
+		if script != cldr.Latn {
+			return seq.Add(era, ' ').AddSeq(year)
 		}
-
-		fallthrough
 	case cldr.AGQ, cldr.AK, cldr.AS, cldr.ASA, cldr.AZ, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BGC, cldr.BHO, cldr.BM,
 		cldr.BO, cldr.CE, cldr.CGG, cldr.CKB, cldr.CSW, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DZ, cldr.DYO,
 		cldr.EBU, cldr.EO, cldr.EU, cldr.EWO, cldr.FUR, cldr.FY, cldr.GAA, cldr.GSW, cldr.GU, cldr.GUZ, cldr.GV, cldr.HA,

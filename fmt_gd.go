@@ -13,64 +13,60 @@ func seqEraDay(locale language.Tag, opts Options) *symbols.Seq {
 	day := opts.Day.symbol()
 	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
 
+	// f applies the most frequent formatting
+	f := func(withoutName ...symbols.Symbol) {
+		if withName {
+			seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
+		} else {
+			seq.Add(withoutName...)
+		}
+	}
+
 	switch lang {
 	default:
-		if withName {
-			return seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
-		}
-
-		return seq.Add(era, ' ', day)
+		f(era, ' ', day)
 	case cldr.HI:
 		if script != cldr.Latn {
-			if withName {
-				return seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
-			}
-
-			return seq.Add(era, ' ', day)
+			f(era, ' ', day)
+		} else {
+			f(day, ' ', era)
 		}
-
-		fallthrough
 	case cldr.KAA, cldr.EN, cldr.MHN:
-		if withName {
-			return seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
-		}
-
-		return seq.Add(day, ' ', era)
+		f(day, ' ', era)
 	case cldr.BS:
 		if script == cldr.Cyrl {
-			if withName {
-				return seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
-			}
-
-			return seq.Add(era, ' ', day)
+			f(era, ' ', day)
+			break
 		}
 
 		fallthrough
 	case cldr.CS, cldr.DA, cldr.DSB, cldr.FO, cldr.HR, cldr.HSB, cldr.IE, cldr.NB, cldr.NN, cldr.NO, cldr.SK, cldr.SL:
 		if withName {
-			return seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, '.', ')')
+			seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, '.', ')')
+		} else {
+			seq.Add(era, ' ', day, '.')
 		}
-
-		return seq.Add(era, ' ', day, '.')
 	case cldr.JA, cldr.KO, cldr.YUE, cldr.ZH:
 		if withName {
-			return seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, symbols.DayUnit, ')')
+			seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, symbols.DayUnit, ')')
+		} else {
+			seq.Add(era, ' ', day, symbols.DayUnit)
 		}
-
-		return seq.Add(era, ' ', day, symbols.DayUnit)
 	case cldr.LT:
 		if withName {
-			return seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', symbols.Symbol_dd, ')')
+			seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', symbols.Symbol_dd, ')')
+		} else {
+			seq.Add(era, ' ', symbols.Symbol_dd)
 		}
-
-		return seq.Add(era, ' ', symbols.Symbol_dd)
 	case cldr.II:
 		if withName {
-			return seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, symbols.Txtꑍ, ')')
+			seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, symbols.Txtꑍ, ')')
+		} else {
+			seq.Add(era, ' ', day, symbols.Txtꑍ)
 		}
-
-		return seq.Add(era, ' ', day, symbols.Txtꑍ)
 	}
+
+	return seq
 }
 
 func seqEraDayPersian(locale language.Tag, opts Options) *symbols.Seq {
@@ -80,10 +76,12 @@ func seqEraDayPersian(locale language.Tag, opts Options) *symbols.Seq {
 	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
 
 	if withName {
-		return seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
+		seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
+	} else {
+		seq.Add(era, ' ', day)
 	}
 
-	return seq.Add(era, ' ', day)
+	return seq
 }
 
 func seqEraDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
@@ -93,8 +91,10 @@ func seqEraDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
 	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
 
 	if withName {
-		return seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
+		seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
+	} else {
+		seq.Add(era, ' ', day)
 	}
 
-	return seq.Add(era, ' ', day)
+	return seq
 }
