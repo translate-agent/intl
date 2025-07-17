@@ -5,17 +5,17 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     strategy:
       matrix:
-        go-version: ["1.22", "1.23", "1.24"]
+        go-version: ["1.23", "1.24", "1.25rc2"]
       fail-fast: false
     env:
       FORCE_COLOR: 1
     steps:
       - uses: earthly/actions-setup@v1
         with:
-          version: 0.8.15
+          version: 0.8.16
           use-cache: true
       - uses: actions/checkout@v4
       - name: Go ${{ matrix.go-version }}
