@@ -1,517 +1,376 @@
 package intl
 
 import (
-	"time"
-
+	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
 
 //nolint:gocognit,cyclop
-func fmtMonthDayGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
-	var month func(int) string
-
+func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
-
-	const (
-		layoutMonthDay = iota
-		layoutDayMonth
-	)
-
-	layout := layoutMonthDay
-	middle := "-"
-	suffix := ""
+	seq := symbols.NewSeq(locale)
+	month := opts.Month.symbolFormat()
+	day := opts.Day.symbol()
 
 	switch lang {
 	default:
-		opts.Month = Month2Digit
-		opts.Day = Day2Digit
-	case en:
+		return seq.Add(symbols.Symbol_MM, '-', symbols.Symbol_dd)
+	case cldr.EN:
 		switch region {
 		default:
-			middle = "/"
-		case region001, region150, regionAE, regionAG, regionAI, regionAT, regionBB, regionBM, regionBS, regionBW,
-			regionBZ, regionCC, regionCK, regionCM, regionCX, regionCY, regionDE, regionDG, regionDK, regionDM, regionER,
-			regionFI, regionFJ, regionFK, regionFM, regionGB, regionGD, regionGG, regionGH, regionGI, regionGM, regionGY,
-			regionHK, regionID, regionIL, regionIM, regionIN, regionIO, regionJE, regionJM, regionKE, regionKI, regionKN,
-			regionKY, regionLC, regionLR, regionLS, regionMG, regionMO, regionMS, regionMT, regionMU, regionMV, regionMW,
-			regionMY, regionNA, regionNF, regionNG, regionNL, regionNR, regionNU, regionPG, regionPK, regionPN, regionPW,
-			regionRW, regionSB, regionSC, regionSD, regionSE, regionSG, regionSH, regionSI, regionSL, regionSS, regionSX,
-			regionSZ, regionTC, regionTK, regionTO, regionTT, regionTV, regionTZ, regionUG, regionVC, regionVG, regionVU,
-			regionWS, regionZM:
-			// month=numeric,day=numeric,out=02/01
-			// month=numeric,day=2-digit,out=02/1
-			// month=2-digit,day=numeric,out=2/01
-			// month=2-digit,day=2-digit,out=02/01
-			middle = "/"
-
-			if script == shaw {
-				break
+			return seq.Add(month, '/', day)
+		case cldr.Region001, cldr.Region150, cldr.RegionAE, cldr.RegionAG, cldr.RegionAI, cldr.RegionAT, cldr.RegionBB,
+			cldr.RegionBM, cldr.RegionBS, cldr.RegionBW, cldr.RegionBZ, cldr.RegionCC, cldr.RegionCK, cldr.RegionCM,
+			cldr.RegionCX, cldr.RegionCY, cldr.RegionDE, cldr.RegionDG, cldr.RegionDK, cldr.RegionDM, cldr.RegionER,
+			cldr.RegionFI, cldr.RegionFJ, cldr.RegionFK, cldr.RegionFM, cldr.RegionGB, cldr.RegionGD, cldr.RegionGG,
+			cldr.RegionGH, cldr.RegionGI, cldr.RegionGM, cldr.RegionGY, cldr.RegionHK, cldr.RegionID, cldr.RegionIL,
+			cldr.RegionIM, cldr.RegionIN, cldr.RegionIO, cldr.RegionJE, cldr.RegionJM, cldr.RegionKE, cldr.RegionKI,
+			cldr.RegionKN, cldr.RegionKY, cldr.RegionLC, cldr.RegionLR, cldr.RegionLS, cldr.RegionMG, cldr.RegionMO,
+			cldr.RegionMS, cldr.RegionMT, cldr.RegionMU, cldr.RegionMV, cldr.RegionMW, cldr.RegionMY, cldr.RegionNA,
+			cldr.RegionNF, cldr.RegionNG, cldr.RegionNL, cldr.RegionNR, cldr.RegionNU, cldr.RegionPG, cldr.RegionPK,
+			cldr.RegionPN, cldr.RegionPW, cldr.RegionRW, cldr.RegionSB, cldr.RegionSC, cldr.RegionSD, cldr.RegionSE,
+			cldr.RegionSG, cldr.RegionSH, cldr.RegionSI, cldr.RegionSL, cldr.RegionSS, cldr.RegionSX, cldr.RegionSZ,
+			cldr.RegionTC, cldr.RegionTK, cldr.RegionTO, cldr.RegionTT, cldr.RegionTV, cldr.RegionTZ, cldr.RegionUG,
+			cldr.RegionVC, cldr.RegionVG, cldr.RegionVU, cldr.RegionWS, cldr.RegionZM:
+			if script == cldr.Shaw {
+				return seq.Add(month, '/', day)
 			}
-
-			layout = layoutDayMonth
 
 			if opts.Month.numeric() && opts.Day.numeric() {
-				opts.Month = Month2Digit
-				opts.Day = Day2Digit
+				return seq.Add(symbols.Symbol_dd, '/', symbols.Symbol_MM)
 			}
-		case regionAU, regionBE, regionIE, regionNZ, regionZW:
-			// month=numeric,day=numeric,out=2/1
-			// month=numeric,day=2-digit,out=02/1
-			// month=2-digit,day=numeric,out=2/01
-			// month=2-digit,day=2-digit,out=02/01
-			layout = layoutDayMonth
-			middle = "/"
-		case regionCA:
-			// month=numeric,day=numeric,out=01-02
-			// month=numeric,day=2-digit,out=1-02
-			// month=2-digit,day=numeric,out=01-2
-			// month=2-digit,day=2-digit,out=01-02
-			if opts.Month.numeric() && opts.Day.numeric() {
-				opts.Month = Month2Digit
-				opts.Day = Day2Digit
-			}
-		case regionCH:
-			// month=numeric,day=numeric,out=02.01
-			// month=numeric,day=2-digit,out=02.1
-			// month=2-digit,day=numeric,out=2.01
-			// month=2-digit,day=2-digit,out=02.01
-			layout = layoutDayMonth
-			middle = "."
 
+			return seq.Add(day, '/', month)
+		case cldr.RegionAU, cldr.RegionBE, cldr.RegionIE, cldr.RegionNZ, cldr.RegionZW:
+			return seq.Add(day, '/', month)
+		case cldr.RegionCA:
 			if opts.Month.numeric() && opts.Day.numeric() {
-				opts.Month = Month2Digit
-				opts.Day = Day2Digit
+				return seq.Add(symbols.Symbol_MM, '-', symbols.Symbol_dd)
 			}
-		case regionZA:
+
+			return seq.Add(month, '-', day)
+		case cldr.RegionCH:
+			if opts.Month.numeric() && opts.Day.numeric() {
+				return seq.Add(symbols.Symbol_dd, '.', symbols.Symbol_MM)
+			}
+
+			return seq.Add(day, '.', month)
+		case cldr.RegionZA:
 			// month=numeric,day=numeric,out=01/02
 			// month=numeric,day=2-digit,out=01/02
 			// month=2-digit,day=numeric,out=01/02
 			// month=2-digit,day=2-digit,out=02/01
-			middle = "/"
-
 			if opts.Month.twoDigit() && opts.Day.twoDigit() {
-				layout = layoutDayMonth
-			} else {
-				opts.Month = Month2Digit
-				opts.Day = Day2Digit
+				return seq.Add(symbols.Symbol_dd, '/', symbols.Symbol_MM)
 			}
+
+			return seq.Add(symbols.Symbol_MM, '/', symbols.Symbol_dd)
 		}
-	case af, as, ia, ky, mi, rm, tg, wo:
-		layout = layoutDayMonth
-		opts.Month = Month2Digit
-		opts.Day = Day2Digit
-	case hi:
-		if script == latn && opts.Month.numeric() && opts.Day.numeric() {
+	case cldr.AF, cldr.AS, cldr.IA, cldr.KY, cldr.MI, cldr.RM, cldr.TG, cldr.WO:
+		return seq.Add(symbols.Symbol_dd, '-', symbols.Symbol_MM)
+	case cldr.HI:
+		if script == cldr.Latn && opts.Month.numeric() && opts.Day.numeric() {
 			// month=numeric,day=numeric,out=02/01
 			// month=numeric,day=2-digit,out=02/1
 			// month=2-digit,day=numeric,out=2/01
 			// month=2-digit,day=2-digit,out=02/01
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
+			return seq.Add(symbols.Symbol_dd, '/', symbols.Symbol_MM)
 		}
 
 		fallthrough
-	case am, agq, ast, bas, bm, ca, cy, dje, doi, dua, dyo, el, ewo, fur, gd, gl, haw, id, ig, kab, kgp, khq, km, ksf, kxv,
-		ln, lo, lu, mai, mfe, mg, mgh, ml, mni, mua, my, nmg, nus, pa, rn, sa, seh, ses, sg, shi, su, sw, to, tr, twq, ur,
-		xnr, yav, yo, yrl, zgh:
-		layout = layoutDayMonth
-		middle = "/"
-	case br, ga, it, jv, kkj, sc, syr, uz, vec:
-		opts.Month = Month2Digit
-		opts.Day = Day2Digit
-		layout = layoutDayMonth
-		middle = "/"
-	case ti:
-		opts.Month = MonthNumeric
-		opts.Day = DayNumeric
-		layout = layoutDayMonth
-		middle = "/"
-	case kea, pt:
-		layout = layoutDayMonth
-		middle = "/"
-
+	case cldr.AM, cldr.AGQ, cldr.AST, cldr.BAS, cldr.BM, cldr.CA, cldr.CY, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DYO,
+		cldr.EL, cldr.EWO, cldr.FUR, cldr.GD, cldr.GL, cldr.HAW, cldr.ID, cldr.IG, cldr.KAB, cldr.KGP, cldr.KHQ, cldr.KM,
+		cldr.KSF, cldr.KXV, cldr.LN, cldr.LO, cldr.LU, cldr.MAI, cldr.MFE, cldr.MG, cldr.MGH, cldr.ML, cldr.MNI, cldr.MUA,
+		cldr.MY, cldr.NMG, cldr.NUS, cldr.PA, cldr.RN, cldr.SA, cldr.SEH, cldr.SES, cldr.SG, cldr.SHI, cldr.SU, cldr.SW,
+		cldr.TO, cldr.TR, cldr.TWQ, cldr.UR, cldr.XNR, cldr.YAV, cldr.YO, cldr.YRL, cldr.ZGH:
+		return seq.Add(day, '/', month)
+	case cldr.BR, cldr.GA, cldr.IT, cldr.JV, cldr.KKJ, cldr.SC, cldr.SYR, cldr.UZ, cldr.VEC:
+		return seq.Add(symbols.Symbol_dd, '/', symbols.Symbol_MM)
+	case cldr.TI:
+		return seq.Add(symbols.Symbol_d, '/', symbols.Symbol_M)
+	case cldr.KEA, cldr.PT:
 		if opts.Month.numeric() && opts.Day.numeric() {
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
+			return seq.Add(symbols.Symbol_dd, '/', symbols.Symbol_MM)
 		}
-	case ak, asa, bem, bez, blo, brx, ceb, cgg, chr, dav, ebu, ee, eu, fil, guz, ha, ja, jmc, kaa, kam, kde, ki, kln, ksb,
-		lag, lg, luo, luy, mas, mer, mhn, naq, nd, nyn, rof, rwk, saq, sbp, so, teo, tzm, vai, vun, xh, xog, yue:
-		middle = "/"
-	case ks:
-		if script == deva {
+
+		return seq.Add(day, '/', month)
+	case cldr.AK, cldr.ASA, cldr.BEM, cldr.BEZ, cldr.BLO, cldr.BRX, cldr.CEB, cldr.CGG, cldr.CHR, cldr.DAV, cldr.EBU,
+		cldr.EE, cldr.EU, cldr.FIL, cldr.GUZ, cldr.HA, cldr.JA, cldr.JMC, cldr.KAA, cldr.KAM, cldr.KDE, cldr.KI, cldr.KLN,
+		cldr.KSB, cldr.LAG, cldr.LG, cldr.LUO, cldr.LUY, cldr.MAS, cldr.MER, cldr.MHN, cldr.NAQ, cldr.ND, cldr.NYN,
+		cldr.ROF, cldr.RWK, cldr.SAQ, cldr.SBP, cldr.SO, cldr.TEO, cldr.TZM, cldr.VAI, cldr.VUN, cldr.XH, cldr.XOG,
+		cldr.YUE:
+		return seq.Add(month, '/', day)
+	case cldr.KS:
+		if script == cldr.Deva {
 			// month=numeric,day=numeric,out=01-02
 			// month=numeric,day=2-digit,out=01-02
 			// month=2-digit,day=numeric,out=01-02
 			// month=2-digit,day=2-digit,out=01-02
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
-		} else {
-			middle = "/"
+			return seq.Add(symbols.Symbol_MM, '-', symbols.Symbol_dd)
 		}
-	case ar:
-		layout = layoutDayMonth
-		middle = "\u200f/"
-	case az, cv, fo, hy, kk, ku, os, tk, tt, uk:
-		opts.Month = Month2Digit
-		opts.Day = Day2Digit
-		layout = layoutDayMonth
-		middle = "."
-	case be, da, et, he, ie, jgo, ka:
-		layout = layoutDayMonth
-		middle = "."
-	case mk:
-		opts.Day = DayNumeric
-		layout = layoutDayMonth
-		middle = "."
-	case bg, pl:
-		opts.Month = Month2Digit
-		layout = layoutDayMonth
-		middle = "."
-	case lv:
-		opts.Month = Month2Digit
-		opts.Day = Day2Digit
 
-		fallthrough
-	case de, dsb, fi, gsw, hsb, is, lb, smn:
-		layout = layoutDayMonth
-		middle = "."
-		suffix = "."
-	case nb, nn, no:
-		suffix = "."
-		fallthrough
-	case sq:
-		opts.Month = MonthNumeric
-		opts.Day = DayNumeric
-		layout = layoutDayMonth
-		middle = "."
-	case ro, ru:
-		layout = layoutDayMonth
-		middle = "."
-
+		return seq.Add(month, '/', day)
+	case cldr.AR:
+		return seq.Add(day, symbols.Txt02, month)
+	case cldr.AZ, cldr.CV, cldr.FO, cldr.HY, cldr.KK, cldr.KU, cldr.OS, cldr.TK, cldr.TT, cldr.UK:
+		return seq.Add(symbols.Symbol_dd, '.', symbols.Symbol_MM)
+	case cldr.BE, cldr.DA, cldr.ET, cldr.HE, cldr.IE, cldr.JGO, cldr.KA:
+		return seq.Add(day, '.', month)
+	case cldr.MK:
+		return seq.Add(symbols.Symbol_d, '.', month)
+	case cldr.BG, cldr.PL:
+		return seq.Add(day, '.', symbols.Symbol_MM)
+	case cldr.LV:
+		return seq.Add(symbols.Symbol_dd, '.', symbols.Symbol_MM, '.')
+	case cldr.DE, cldr.DSB, cldr.FI, cldr.GSW, cldr.HSB, cldr.IS, cldr.LB, cldr.SMN:
+		return seq.Add(day, '.', month, '.')
+	case cldr.NB, cldr.NN, cldr.NO: // d.M.
+		return seq.Add(symbols.Symbol_d, '.', symbols.Symbol_M, '.')
+	case cldr.SQ:
+		return seq.Add(symbols.Symbol_d, '.', symbols.Symbol_M)
+	case cldr.RO, cldr.RU:
 		if opts.Month.numeric() && opts.Day.numeric() {
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
+			return seq.Add(symbols.Symbol_dd, '.', symbols.Symbol_MM)
 		}
-	case sr:
-		layout = layoutDayMonth
-		suffix = "."
 
+		return seq.Add(day, '.', month)
+	case cldr.SR:
 		if opts.Month.numeric() && opts.Day.numeric() {
-			middle = ". "
-		} else {
-			middle = "."
+			return seq.Add(day, '.', ' ', month, '.')
 		}
-	case bn, ccp, gu, kn, mr, ta, te, vi:
-		layout = layoutDayMonth
 
+		return seq.Add(day, '.', month, '.')
+	case cldr.BN, cldr.CCP, cldr.GU, cldr.KN, cldr.MR, cldr.TA, cldr.TE, cldr.VI:
+		var sep symbols.Symbol = '-'
 		if opts.Month.numeric() && opts.Day.numeric() {
-			middle = "/"
+			sep = '/'
 		}
-	case bs:
-		layout = layoutDayMonth
-		suffix = "."
 
-		if script == cyrl {
+		return seq.Add(day, sep, month)
+	case cldr.BS:
+		if script == cldr.Cyrl {
 			// month=numeric,day=numeric,out=02.01.
 			// month=numeric,day=2-digit,out=02.01.
 			// month=2-digit,day=numeric,out=02.01.
 			// month=2-digit,day=2-digit,out=02.01.
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
-			middle = "."
-		} else {
-			// month=numeric,day=numeric,out=2. 1.
-			// month=numeric,day=2-digit,out=2. 1.
-			// month=2-digit,day=numeric,out=2. 1.
-			// month=2-digit,day=2-digit,out=2. 1.
-			opts.Month = MonthNumeric
-			opts.Day = DayNumeric
-			middle = ". "
+			return seq.Add(symbols.Symbol_dd, '.', symbols.Symbol_MM, '.')
 		}
-	case hr:
+
+		// month=numeric,day=numeric,out=2. 1.
+		// month=numeric,day=2-digit,out=2. 1.
+		// month=2-digit,day=numeric,out=2. 1.
+		// month=2-digit,day=2-digit,out=2. 1.
+		return seq.Add(symbols.Symbol_d, '.', ' ', symbols.Symbol_M, '.')
+	case cldr.HR:
 		if opts.Month.numeric() && opts.Day.numeric() {
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
+			month = symbols.Symbol_MM
+			day = symbols.Symbol_dd
 		}
 
-		fallthrough
-	case cs, sk, sl:
-		layout = layoutDayMonth
-
-		fallthrough
-	case hu, ko:
-		middle = ". "
-		suffix = "."
-	case wae:
-		month = fmtMonthName(locale.String(), "stand-alone", "abbreviated")
-		layout = layoutDayMonth
-		middle = ". "
-	case dz, si: // noop
-	case es:
+		return seq.Add(day, '.', ' ', month, '.')
+	case cldr.CS, cldr.SK, cldr.SL:
+		return seq.Add(day, '.', ' ', month, '.')
+	case cldr.HU, cldr.KO:
+		return seq.Add(month, '.', ' ', day, '.')
+	case cldr.WAE:
+		return seq.Add(day, '.', ' ', symbols.Symbol_LLL)
+	case cldr.DZ, cldr.SI: // noop
+		return seq.Add(month, '-', day)
+	case cldr.ES:
 		switch region {
 		default:
-			opts.Month = MonthNumeric
-			opts.Day = DayNumeric
-			layout = layoutDayMonth
-			middle = "/"
-		case regionCL:
+			return seq.Add(symbols.Symbol_d, '/', symbols.Symbol_M)
+		case cldr.RegionCL:
 			// month=numeric,day=numeric,out=02-01
 			// month=numeric,day=2-digit,out=02-01
 			// month=2-digit,day=numeric,out=2/1
 			// month=2-digit,day=2-digit,out=2/1
-			layout = layoutDayMonth
-
 			if opts.Month.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
-			} else {
-				middle = "/"
-				opts.Month = MonthNumeric
-				opts.Day = DayNumeric
+
+				return seq.Add(symbols.Symbol_dd, '-', symbols.Symbol_MM)
 			}
-		case regionMX, regionUS:
+
+			return seq.Add(symbols.Symbol_d, '/', symbols.Symbol_M)
+		case cldr.RegionMX, cldr.RegionUS:
 			// month=numeric,day=numeric,out=2/1
 			// month=numeric,day=2-digit,out=02/1
 			// month=2-digit,day=numeric,out=2/01
 			// month=2-digit,day=2-digit,out=02/01
-			layout = layoutDayMonth
-			middle = "/"
-		case regionPA, regionPR:
+			return seq.Add(day, '/', month)
+		case cldr.RegionPA, cldr.RegionPR:
 			// month=numeric,day=numeric,out=01/02
 			// month=numeric,day=2-digit,out=01/02
 			// month=2-digit,day=numeric,out=2/1
 			// month=2-digit,day=2-digit,out=2/1
-			middle = "/"
-
 			if opts.Month.numeric() {
-				opts.Month = Month2Digit
-				opts.Day = Day2Digit
-			} else {
-				layout = layoutDayMonth
-				opts.Month = MonthNumeric
-				opts.Day = DayNumeric
+				return seq.Add(symbols.Symbol_MM, '/', symbols.Symbol_dd)
 			}
-		}
-	case ff:
-		layout = layoutDayMonth
 
-		if script != adlm {
-			middle = "/"
+			return seq.Add(symbols.Symbol_d, '/', symbols.Symbol_M)
 		}
-	case fr:
+	case cldr.FF:
+		if script == cldr.Adlm {
+			return seq.Add(day, '-', month)
+		}
+
+		return seq.Add(day, '/', month)
+	case cldr.FR:
 		switch region {
 		default:
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
-			layout = layoutDayMonth
-			middle = "/"
-		case regionCA:
+			return seq.Add(symbols.Symbol_dd, '/', symbols.Symbol_MM)
+		case cldr.RegionCA:
 			// month=numeric,day=numeric,out=01-02
 			// month=numeric,day=2-digit,out=1-02
 			// month=2-digit,day=numeric,out=01-02
 			// month=2-digit,day=2-digit,out=01-02
 			if opts.Month.numeric() && opts.Day.twoDigit() {
-				opts.Month = MonthNumeric
-			} else {
-				opts.Month = Month2Digit
+				return seq.Add(symbols.Symbol_M, '-', day)
 			}
 
-			opts.Day = Day2Digit
-		case regionCH:
+			return seq.Add(symbols.Symbol_MM, '-', symbols.Symbol_dd)
+		case cldr.RegionCH:
 			// month=numeric,day=numeric,out=02.01.
 			// month=numeric,day=2-digit,out=02.1
 			// month=2-digit,day=numeric,out=2.01
 			// month=2-digit,day=2-digit,out=02.01
-			layout = layoutDayMonth
-			middle = "."
-
 			if opts.Month.numeric() && opts.Day.numeric() {
-				opts.Month = Month2Digit
-				opts.Day = Day2Digit
-				suffix = "."
+				return seq.Add(symbols.Symbol_dd, '.', symbols.Symbol_MM, '.')
 			}
-		}
-	case nl:
-		layout = layoutDayMonth
 
-		if region == regionBE {
+			return seq.Add(day, '.', month)
+		}
+	case cldr.NL:
+		if region == cldr.RegionBE {
 			// month=numeric,day=numeric,out=2/1
 			// month=numeric,day=2-digit,out=02/1
 			// month=2-digit,day=numeric,out=2/01
 			// month=2-digit,day=2-digit,out=02/01
-			middle = "/"
+			return seq.Add(day, '/', month)
 		}
-	case fy, ug:
-		layout = layoutDayMonth
-	case iu:
-		opts.Month = Month2Digit
-		opts.Day = Day2Digit
-		middle = "/"
-	case lt:
-		if opts.Month.numeric() && opts.Day.numeric() {
-			opts.Month = Month2Digit
-		}
-	case mn:
-		month = fmtMonthName(locale.String(), "stand-alone", "narrow")
-		opts.Day = Day2Digit
-		middle = "/"
-	case ms:
-		layout = layoutDayMonth
 
+		return seq.Add(day, '-', month)
+	case cldr.FY, cldr.UG:
+		return seq.Add(day, '-', month)
+	case cldr.IU:
+		return seq.Add(symbols.Symbol_MM, '/', symbols.Symbol_dd)
+	case cldr.LT:
+		if opts.Month.numeric() && opts.Day.numeric() {
+			return seq.Add(symbols.Symbol_MM, '-', day)
+		}
+
+		return seq.Add(month, '-', day)
+	case cldr.MN:
+		return seq.Add(symbols.Symbol_LLLLL, '/', symbols.Symbol_dd)
+	case cldr.MS:
 		if !opts.Month.numeric() || !opts.Day.numeric() {
-			middle = "/"
+			return seq.Add(day, '/', month)
 		}
-	case om:
+
+		return seq.Add(day, '-', month)
+	case cldr.OM:
 		if opts.Month.numeric() && opts.Day.numeric() {
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
-		} else {
-			layout = layoutDayMonth
-			middle = "/"
+			return seq.Add(symbols.Symbol_MM, '-', symbols.Symbol_dd)
 		}
-	case or:
+
+		return seq.Add(day, '/', month)
+	case cldr.OR:
 		if opts.Month.numeric() && opts.Day.numeric() {
-			middle = "/"
-		} else {
-			layout = layoutDayMonth
+			return seq.Add(month, '/', day)
 		}
-	case pcm:
-		layout = layoutDayMonth
-		middle = " /"
-	case sd:
-		if script == deva {
+
+		return seq.Add(day, '-', month)
+	case cldr.PCM:
+		return seq.Add(day, ' ', '/', month)
+	case cldr.SD:
+		if script == cldr.Deva {
 			// month=numeric,day=numeric,out=1/2
 			// month=numeric,day=2-digit,out=1/02
 			// month=2-digit,day=numeric,out=01/2
 			// month=2-digit,day=2-digit,out=01/02
-			middle = "/"
-		} else {
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
+			return seq.Add(month, '/', day)
 		}
-	case se:
-		if region == regionFI {
+
+		return seq.Add(symbols.Symbol_MM, '-', symbols.Symbol_dd)
+	case cldr.SE:
+		if region == cldr.RegionFI {
 			// month=numeric,day=numeric,out=2/1
 			// month=numeric,day=2-digit,out=02/1
 			// month=2-digit,day=numeric,out=2/01
 			// month=2-digit,day=2-digit,out=02/01
-			layout = layoutDayMonth
-			middle = "/"
-		} else {
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
+			return seq.Add(day, '/', month)
 		}
-	case sv:
-		layout = layoutDayMonth
 
-		if region == regionFI {
+		return seq.Add(symbols.Symbol_MM, '-', symbols.Symbol_dd)
+	case cldr.SV:
+		if region == cldr.RegionFI {
 			// month=numeric,day=numeric,out=2.1
 			// month=numeric,day=2-digit,out=02.1
 			// month=2-digit,day=numeric,out=2.1
 			// month=2-digit,day=2-digit,out=02.01
-			middle = "."
-
 			if opts.Day.numeric() {
-				opts.Month = MonthNumeric
+				month = symbols.Symbol_M
 			}
 
-			break
+			return seq.Add(day, '.', month)
 		}
-
-		middle = "/"
 
 		if opts.Month.twoDigit() && opts.Day.numeric() {
-			opts.Month = MonthNumeric
-			opts.Day = DayNumeric
+			month = symbols.Symbol_M
+			day = symbols.Symbol_d
 		}
-	case zh:
+
+		return seq.Add(day, '/', month)
+	case cldr.ZH:
 		switch region {
 		default:
-			middle = "/"
-		case regionHK, regionMO:
+			return seq.Add(month, '/', day)
+		case cldr.RegionHK, cldr.RegionMO:
 			// month=numeric,day=numeric,out=2/1
 			// month=numeric,day=2-digit,out=02/1
 			// month=2-digit,day=numeric,out=2/01
 			// month=2-digit,day=2-digit,out=02/01
-			layout = layoutDayMonth
-			middle = "/"
-		case regionSG: // noop
+			return seq.Add(day, '/', month)
+		case cldr.RegionSG:
+			return seq.Add(month, '-', day)
 		}
-	case ii:
+	case cldr.II:
 		// month=numeric,day=numeric,out=01ꆪ-02ꑍ
 		// month=numeric,day=2-digit,out=01ꆪ-02ꑍ
 		// month=2-digit,day=numeric,out=01ꆪ-02ꑍ
 		// month=2-digit,day=2-digit,out=01ꆪ-02ꑍ
-		opts.Month = Month2Digit
-		opts.Day = Day2Digit
-		middle = "ꆪ-"
-		suffix = "ꑍ"
-	case kok:
-		layout = layoutDayMonth
-
-		if script == latn {
-			middle = "/"
+		return seq.Add(symbols.Symbol_MM, symbols.Txt03, symbols.Symbol_dd, symbols.Txtꑍ)
+	case cldr.KOK:
+		if script == cldr.Latn {
+			return seq.Add(day, '/', month)
 		}
-	}
 
-	if month == nil {
-		month = fmtMonth(digits, opts.Month)
-	}
-
-	day := fmtDay(digits, opts.Day)
-
-	if layout == layoutDayMonth {
-		return func(m time.Month, d int) string {
-			return day(d) + middle + month(int(m)) + suffix
-		}
-	}
-
-	return func(m time.Month, d int) string {
-		return month(int(m)) + middle + day(d) + suffix
+		return seq.Add(day, '-', month)
 	}
 }
 
-func fmtMonthDayBuddhist(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
-	const (
-		layoutMonthDay = iota
-		layoutDayMonth
-	)
+func seqMonthDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	lang, _ := locale.Base()
+	seq := symbols.NewSeq(locale)
+	month := opts.Month.symbolFormat()
 
-	layout := layoutMonthDay
-
-	if lang, _ := locale.Base(); lang == th {
-		layout = layoutDayMonth
-	} else {
-		opts.Day = Day2Digit
+	if lang == cldr.TH {
+		return seq.Add(opts.Day.symbol(), '/', month)
 	}
 
-	month := fmtMonth(digits, opts.Month)
-	day := fmtDay(digits, opts.Day)
-
-	if layout == layoutDayMonth {
-		return func(m time.Month, d int) string {
-			return day(d) + "/" + month(int(m))
-		}
-	}
-
-	return func(m time.Month, d int) string { return month(int(m)) + "-" + day(d) }
+	return seq.Add(month, '-', symbols.Symbol_dd)
 }
 
-func fmtMonthDayPersian(locale language.Tag, digits digits, opts Options) func(m time.Month, d int) string {
-	middle := "-"
+func seqMonthDayPersian(locale language.Tag, opts Options) *symbols.Seq {
+	lang, _ := locale.Base()
+	seq := symbols.NewSeq(locale)
 
-	switch lang, _ := locale.Base(); lang {
+	switch lang {
 	default:
-		opts.Month = Month2Digit
-		opts.Day = Day2Digit
-	case fa, ps:
-		middle = "/"
-	}
-
-	month := fmtMonth(digits, opts.Month)
-	day := fmtDay(digits, opts.Day)
-
-	return func(m time.Month, d int) string {
-		return month(int(m)) + middle + day(d)
+		return seq.Add(symbols.Symbol_MM, '-', symbols.Symbol_dd)
+	case cldr.FA, cldr.PS:
+		return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol())
 	}
 }

@@ -1,119 +1,96 @@
 package intl
 
 import (
-	"time"
-
+	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
 
-func fmtEraMonthGregorian(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
-	var month func(int) string
-
+func seqEraMonth(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, _ := locale.Raw()
-	era := fmtEra(locale, opts.Era)
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	month := opts.Month.symbolFormat()
 	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
-	monthName := unitName(locale).Month
-
-	prefix := era + " "
-	suffix := ""
-
-	if withName {
-		prefix = era + " (" + monthName + ": "
-		suffix = ")"
-	}
 
 	switch lang {
-	case en, kaa, mhn:
+	case cldr.EN, cldr.KAA, cldr.MHN:
 		if withName {
-			prefix = era + " (" + monthName + ": "
-		} else {
-			prefix = ""
-			suffix = " " + era
+			return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', month, ')')
 		}
-	case bg, cy, mk:
+
+		return seq.Add(month, ' ', era)
+	case cldr.BR, cldr.FO, cldr.GA, cldr.LT, cldr.UK, cldr.UZ:
+		month = symbols.Symbol_MM
+
 		if withName {
-			prefix = era + " (" + monthName + ": "
-		} else {
-			prefix = era + " "
+			return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', month, ')')
 		}
-	case br, fo, ga, lt, uk, uz:
-		opts.Month = Month2Digit
-	case hr, nb, nn, no, sk:
+
+		return seq.Add(era, ' ', month)
+	case cldr.HR, cldr.NB, cldr.NN, cldr.NO, cldr.SK:
 		if withName {
-			suffix = ".)"
-		} else {
-			suffix = "."
+			return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', month, '.', ')')
 		}
-	case hi:
-		if script != latn {
+
+		return seq.Add(era, ' ', month, '.')
+	case cldr.HI:
+		if script != cldr.Latn {
 			break
 		}
 
 		if opts.Era.long() && opts.Month.numeric() || opts.Era.narrow() {
-			prefix = ""
-			suffix = " " + era
+			return seq.Add(month, ' ', era)
 		}
-	case mn:
-		month = fmtMonthName(locale.String(), "stand-alone", "narrow")
-	case wae:
-		month = fmtMonthName(locale.String(), "format", "abbreviated")
-	case ja, ko, zh, yue:
+	case cldr.MN:
 		if withName {
-			prefix = era + " (" + monthName + ": "
-			suffix = monthName + ")"
-		} else {
-			suffix = monthName
+			return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', symbols.Symbol_LLLLL, ')')
 		}
+
+		return seq.Add(era, ' ', symbols.Symbol_LLLLL)
+	case cldr.WAE:
+		if withName {
+			return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', symbols.Symbol_MMM, ')')
+		}
+
+		return seq.Add(era, ' ', symbols.Symbol_MMM)
+	case cldr.JA, cldr.KO, cldr.ZH, cldr.YUE:
+		if withName {
+			return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', month, symbols.MonthUnit, ')')
+		}
+
+		return seq.Add(era, ' ', month, symbols.MonthUnit)
 	}
-
-	if month == nil {
-		month = fmtMonth(digits, opts.Month)
-	}
-
-	return func(m time.Month) string { return prefix + month(int(m)) + suffix }
-}
-
-func fmtEraMonthPersian(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
-	lang, _ := locale.Base()
-	era := fmtEra(locale, opts.Era)
-	monthName := unitName(locale).Month
-	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
-
-	prefix := era + " "
-	suffix := ""
 
 	if withName {
-		prefix = era + " (" + monthName + ": "
-		suffix = ")"
+		return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', month, ')')
 	}
 
-	if lang == fa {
-		if withName {
-			prefix = era + " (" + monthName + ": "
-		} else {
-			prefix = era + " "
-		}
-	}
-
-	month := fmtMonth(digits, opts.Month)
-
-	return func(m time.Month) string { return prefix + month(int(m)) + suffix }
+	return seq.Add(era, ' ', month)
 }
 
-func fmtEraMonthBuddhist(locale language.Tag, digits digits, opts Options) func(m time.Month) string {
-	era := fmtEra(locale, opts.Era)
-	monthName := unitName(locale).Month
+func seqEraMonthPersian(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	month := opts.Month.symbolFormat()
 	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
 
-	prefix := era + " "
-	suffix := ""
-
 	if withName {
-		prefix = era + " (" + monthName + ": "
-		suffix = ")"
+		return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', month, ')')
 	}
 
-	month := fmtMonth(digits, opts.Month)
+	return seq.Add(era, ' ', month)
+}
 
-	return func(m time.Month) string { return prefix + month(int(m)) + suffix }
+func seqEraMonthBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	month := opts.Month.symbolFormat()
+	withName := opts.Era.short() || opts.Era.long() && opts.Month.twoDigit()
+
+	if withName {
+		return seq.Add(era, ' ', '(', symbols.MonthUnit, ':', ' ', month, ')')
+	}
+
+	return seq.Add(era, ' ', month)
 }

@@ -1,112 +1,94 @@
 package intl
 
-import "golang.org/x/text/language"
+import (
+	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
+	"golang.org/x/text/language"
+)
 
-func fmtEraYearGregorian(locale language.Tag, digits digits, opts Options) func(y int) string {
+func seqEraYear(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
-	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
-	layoutYear := fmtYearGregorian(locale)
-
-	prefix := ""
-	suffix := " " + era
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	year := seqYear(locale, opts.Year)
 
 	switch lang {
-	case kok:
-		if script == latn {
-			break
+	case cldr.KOK:
+		if script != cldr.Latn {
+			return seq.Add(era, ' ').AddSeq(year)
 		}
-
-		fallthrough
-	case agq, ak, as, asa, az, bas, bem, bez, bgc, bho, bm, bo, ce, cgg, ckb, csw, dav, dje, doi, dua, dz, dyo, ebu, eo,
-		eu, ewo, fur, fy, gaa, gsw, gu, guz, gv, ha, hu, ig, ii, jmc, jgo, kab, kam, kde, khq, ki, kl, kln, kn, ko, ksb, ksf,
-		ksh, ku, kw, lag, lg, lij, lkt, lmo, ln, lo, lrc, lv, lu, luo, luy, mas, mer, mfe, mg, mgh, mgo, ml, mn, mni, mr, mt,
-		mua, my, naq, nd, nds, ne, nmg, nnh, nqo, nso, nus, nyn, oc, om, os, pa, pcm, prg, ps, qu, raj, rn, rof, rw, rwk, saq,
-		sat, sbp, seh, ses, sg, shi, si, sn, st, szl, ta, te, teo, tk, tn, tok, tr, twq, tzm, uz, vai, vmw, vun, wae, xog,
-		yav, yi, yo, za, zgh, zu:
-		prefix = era + " "
-		suffix = ""
-	case ks:
-		if script == deva {
-			prefix = era + " "
-			suffix = ""
+	case cldr.AGQ, cldr.AK, cldr.AS, cldr.ASA, cldr.AZ, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BGC, cldr.BHO, cldr.BM,
+		cldr.BO, cldr.CE, cldr.CGG, cldr.CKB, cldr.CSW, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DZ, cldr.DYO,
+		cldr.EBU, cldr.EO, cldr.EU, cldr.EWO, cldr.FUR, cldr.FY, cldr.GAA, cldr.GSW, cldr.GU, cldr.GUZ, cldr.GV, cldr.HA,
+		cldr.HU, cldr.IG, cldr.II, cldr.JMC, cldr.JGO, cldr.KAB, cldr.KAM, cldr.KDE, cldr.KHQ, cldr.KI, cldr.KL, cldr.KLN,
+		cldr.KN, cldr.KO, cldr.KSB, cldr.KSF, cldr.KSH, cldr.KU, cldr.KW, cldr.LAG, cldr.LG, cldr.LIJ, cldr.LKT, cldr.LMO,
+		cldr.LN, cldr.LO, cldr.LRC, cldr.LV, cldr.LU, cldr.LUO, cldr.LUY, cldr.MAS, cldr.MER, cldr.MFE, cldr.MG, cldr.MGH,
+		cldr.MGO, cldr.ML, cldr.MN, cldr.MNI, cldr.MR, cldr.MT, cldr.MUA, cldr.MY, cldr.NAQ, cldr.ND, cldr.NDS, cldr.NE,
+		cldr.NMG, cldr.NNH, cldr.NQO, cldr.NSO, cldr.NUS, cldr.NYN, cldr.OC, cldr.OM, cldr.OS, cldr.PA, cldr.PCM, cldr.PRG,
+		cldr.PS, cldr.QU, cldr.RAJ, cldr.RN, cldr.ROF, cldr.RW, cldr.RWK, cldr.SAQ, cldr.SAT, cldr.SBP, cldr.SEH, cldr.SES,
+		cldr.SG, cldr.SHI, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TE, cldr.TEO, cldr.TK, cldr.TN, cldr.TOK,
+		cldr.TR, cldr.TWQ, cldr.TZM, cldr.UZ, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI, cldr.YO,
+		cldr.ZA, cldr.ZGH, cldr.ZU:
+		return seq.Add(era, ' ').AddSeq(year)
+	case cldr.KS:
+		if script == cldr.Deva {
+			return seq.Add(era, ' ').AddSeq(year)
 		}
-	case hi:
-		if script == latn {
-			prefix = era + " "
-			suffix = ""
+	case cldr.HI:
+		if script == cldr.Latn {
+			return seq.Add(era, ' ').AddSeq(year)
 		}
-	case sd:
-		if script != deva {
-			prefix = era + " "
-			suffix = ""
+	case cldr.SD:
+		if script != cldr.Deva {
+			return seq.Add(era, ' ').AddSeq(year)
 		}
-	case ff:
-		if script != adlm {
-			prefix = era + " "
-			suffix = ""
+	case cldr.FF:
+		if script != cldr.Adlm {
+			return seq.Add(era, ' ').AddSeq(year)
 		}
-	case se:
-		if region != regionFI {
-			prefix = era + " "
-			suffix = ""
+	case cldr.SE:
+		if region != cldr.RegionFI {
+			return seq.Add(era, ' ').AddSeq(year)
 		}
-	case be, ru:
-		suffix = " г. " + era
-	case bg, cy, mk:
-		suffix = " " + era
-	case cv:
-		suffix = " ҫ. " + era
-	case kk:
-		prefix = era + " "
-		suffix = " ж."
-	case hy:
-		prefix = era + " "
-		suffix = " թ."
-	case ky:
-		prefix = era + " "
-		suffix = "-ж."
-	case lt:
-		suffix = " m. " + era
-	case tt:
-		prefix = era + " "
-		suffix = " ел"
-	case sah:
-		suffix = " с. " + era
-	case ja, brx, yue, zh:
-		prefix = era
-		suffix = ""
+	case cldr.BE, cldr.RU:
+		return seq.AddSeq(year).Add(' ', symbols.Txt00, ' ', era)
+	case cldr.CV:
+		return seq.AddSeq(year).Add(' ', symbols.Txtҫ, '.', ' ', era)
+	case cldr.KK:
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txtж, '.')
+	case cldr.HY:
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txtթ, '.')
+	case cldr.KY:
+		return seq.Add(era, ' ').AddSeq(year).Add('-', symbols.Txtж, '.')
+	case cldr.LT:
+		return seq.AddSeq(year).Add(' ', 'm', '.', ' ', era)
+	case cldr.TT:
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txt05)
+	case cldr.SAH:
+		return seq.AddSeq(year).Add(' ', symbols.Txtс, '.', ' ', era)
+	case cldr.JA, cldr.BRX, cldr.YUE, cldr.ZH:
+		return seq.Add(era).AddSeq(year)
 	}
 
-	return func(y int) string { return prefix + layoutYear(year(y)) + suffix }
+	return seq.AddSeq(year).Add(' ', era)
 }
 
-func fmtEraYearPersian(locale language.Tag, digits digits, opts Options) func(y int) string {
+func seqEraYearPersian(locale language.Tag, opts Options) *symbols.Seq {
 	lang, _ := locale.Base()
-	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
-
-	prefix := ""
-	suffix := " " + era
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	year := opts.Year.symbol()
 
 	switch lang {
-	case ckb, lrc, mzn, ps, uz:
-		prefix = era + " "
-		suffix = ""
-	case fa:
-		suffix = " " + era
+	default:
+		seq.Add(year, ' ', era)
+	case cldr.CKB, cldr.LRC, cldr.MZN, cldr.PS, cldr.UZ:
+		seq.Add(era, ' ', year)
 	}
 
-	return func(y int) string {
-		return prefix + year(y) + suffix
-	}
+	return seq
 }
 
-func fmtEraYearBuddhist(locale language.Tag, digits digits, opts Options) func(y int) string {
-	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
-
-	return func(y int) string {
-		return era + " " + year(y)
-	}
+func seqEraYearBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	return seqYearBuddhist(locale, opts)
 }

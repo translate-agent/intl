@@ -1,166 +1,112 @@
 package intl
 
-import "golang.org/x/text/language"
+import (
+	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
+	"golang.org/x/text/language"
+)
 
-//nolint:cyclop
-func fmtEraYearDayGregorian(locale language.Tag, digits digits, opts Options) func(y, d int) string {
+func seqEraYearDay(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
-	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
-	layoutYear := fmtYearGregorian(locale)
-	dayName := unitName(locale).Day
-
-	const (
-		eraYearDay = iota
-		eraDayYear
-	)
-
-	layout := eraYearDay
-	prefix := ""
-	middle := " " + era + " (" + dayName + ": "
-	suffix := ")"
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	year := seqYear(locale, opts.Year)
+	day := seqDay(locale, opts.Day)
 
 	switch lang {
-	case be, ru:
-		middle = " г. " + era + " (" + dayName + ": "
-	case cv:
-		middle = " ҫ. " + era + " (" + dayName + ": "
-	case kk:
-		prefix = era + " "
-		middle = " ж. (" + dayName + ": "
-	case ky:
-		prefix = era + " "
-		middle = "-ж. (" + dayName + ": "
-	case hy:
-		prefix = era + " "
-		middle = " թ. (" + dayName + ": "
-	case tt:
-		prefix = era + " "
-		middle = " ел (" + dayName + ": "
-	case sah:
-		middle = " с. " + era + " (" + dayName + ": "
-	case lt:
-		opts.Day = Day2Digit
-		middle = " m. " + era + " (" + dayName + ": "
-	case bg, cy, mk:
-		middle = " " + era + " (" + dayName + ": "
-	case bs:
-		if script != cyrl {
-			suffix = ".)"
+	case cldr.BE, cldr.RU:
+		return seq.AddSeq(year).Add(' ', symbols.Txt00, ' ', era, ' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+	case cldr.CV:
+		return seq.
+			AddSeq(year).Add(' ', symbols.Txtҫ, '.', ' ', era, ' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+	case cldr.KK:
+		return seq.
+			Add(era, ' ').AddSeq(year).Add(' ', symbols.Txtж, '.', ' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+	case cldr.KY:
+		return seq.
+			Add(era, ' ').AddSeq(year).Add('-', symbols.Txtж, '.', ' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+	case cldr.HY:
+		return seq.
+			Add(era, ' ').AddSeq(year).Add(' ', symbols.Txtթ, '.', ' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+	case cldr.TT:
+		return seq.
+			Add(era, ' ').AddSeq(year).Add(' ', symbols.Txt05, ' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+	case cldr.SAH:
+		return seq.
+			AddSeq(year).Add(' ', symbols.Txtс, '.', ' ', era, ' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+	case cldr.LT:
+		return seq.
+			AddSeq(year).Add(' ', symbols.Txtm, '.', ' ', era, ' ', '(', symbols.DayUnit, ':', ' ', symbols.Symbol_dd, ')')
+	case cldr.AGQ, cldr.AK, cldr.AS, cldr.ASA, cldr.AZ, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BGC, cldr.BHO, cldr.BM,
+		cldr.BO, cldr.CE, cldr.CGG, cldr.CKB, cldr.CSW, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DYO, cldr.DZ,
+		cldr.EBU, cldr.EO, cldr.EU, cldr.EWO, cldr.FUR, cldr.FY, cldr.GAA, cldr.GSW, cldr.GU, cldr.GUZ, cldr.GV, cldr.HA,
+		cldr.HU, cldr.IG, cldr.II, cldr.JGO, cldr.JMC, cldr.KAB, cldr.KAM, cldr.KDE, cldr.KHQ, cldr.KI, cldr.KL, cldr.KLN,
+		cldr.KN, cldr.KO, cldr.KSB, cldr.KSF, cldr.KSH, cldr.KU, cldr.KW, cldr.LAG, cldr.LG, cldr.LIJ, cldr.LKT, cldr.LMO,
+		cldr.LN, cldr.LO, cldr.LRC, cldr.LU, cldr.LUO, cldr.LUY, cldr.LV, cldr.MAS, cldr.MER, cldr.MFE, cldr.MG, cldr.MGH,
+		cldr.MGO, cldr.ML, cldr.MN, cldr.MNI, cldr.MR, cldr.MT, cldr.MUA, cldr.MY, cldr.NAQ, cldr.ND, cldr.NDS, cldr.NE,
+		cldr.NMG, cldr.NNH, cldr.NQO, cldr.NSO, cldr.NUS, cldr.NYN, cldr.OC, cldr.OM, cldr.OS, cldr.PA, cldr.PCM, cldr.PRG,
+		cldr.PS, cldr.QU, cldr.RAJ, cldr.RN, cldr.ROF, cldr.RW, cldr.RWK, cldr.SAQ, cldr.SAT, cldr.SBP, cldr.SEH, cldr.SES,
+		cldr.SG, cldr.SHI, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TE, cldr.TEO, cldr.TK, cldr.TN, cldr.TOK,
+		cldr.TR, cldr.TWQ, cldr.TZM, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI, cldr.YO, cldr.ZA,
+		cldr.ZGH, cldr.ZU:
+		return seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+	case cldr.UZ:
+		if script != cldr.Arab {
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 		}
-	case agq, ak, as, asa, az, bas, bem, bez, bgc, bho, bm, bo, ce, cgg, ckb, csw, dav, dje, doi, dua, dyo, dz, ebu, eo,
-		eu, ewo, fur, fy, gaa, gsw, gu, guz, gv, ha, hu, ig, jgo, jmc, kab, kam, kde, khq, ki, kl, kln, kn, ksb, ksf, ksh, ku,
-		kw, lag, lg, lij, lkt, lmo, ln, lo, lrc, lu, luo, luy, lv, mas, mer, mfe, mg, mgh, mgo, ml, mn, mni, mr, mt, mua, my,
-		naq, nd, nds, ne, nmg, nnh, nqo, nso, nus, nyn, oc, om, os, pa, pcm, prg, ps, qu, raj, rn, rof, rw, rwk, saq, sat,
-		sbp, seh, ses, sg, shi, si, sn, st, szl, ta, te, teo, tk, tn, tok, tr, twq, tzm, vai, vmw, vun, wae, xog, yav, yi, yo,
-		za, zgh, zu:
-		prefix = era + " "
-		middle = " (" + dayName + ": "
-	case uz:
-		if script != arab {
-			prefix = era + " "
-			middle = " (" + dayName + ": "
+	case cldr.FF:
+		if script != cldr.Adlm {
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 		}
-	case brx:
-		prefix = era
-		middle = " (" + dayName + ": "
-	case cs, da, dsb, fo, hr, hsb, ie, nb, nn, no, sk, sl:
-		suffix = ".)"
-	case ff:
-		if script != adlm {
-			prefix = era + " "
-			middle = " (" + dayName + ": "
+	case cldr.HI:
+		if script == cldr.Latn {
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 		}
-	case hi:
-		if script == latn {
-			prefix = era + " "
-			middle = " (" + dayName + ": "
+	case cldr.KOK:
+		if script != cldr.Latn {
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 		}
-	case ks:
-		if script == deva {
-			prefix = era + " "
-			middle = " (" + dayName + ": "
+	case cldr.KS:
+		if script == cldr.Deva {
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 		}
-	case sd:
-		if script != deva {
-			prefix = era + " "
-			middle = " (" + dayName + ": "
+	case cldr.SD:
+		if script != cldr.Deva {
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 		}
-	case ja, yue, zh:
-		prefix = era
-		middle = " (" + dayName + ": "
-		suffix = dayName + ")"
-	case ko:
-		prefix = era + " "
-		middle = " (" + dayName + ": "
-		suffix = dayName + ")"
-	case ii:
-		prefix = era + " "
-		middle = " (" + dayName + ": "
-		suffix = "ꑍ)"
-	case kxv:
-		if script == deva || script == orya || script == telu {
-			prefix = ""
-			middle = " " + era + " (" + dayName + ": "
-		}
-	case se:
-		if region != regionFI {
-			prefix = era + " "
-			middle = " (" + dayName + ": "
-		}
-	case kok:
-		if script != latn {
-			prefix = era + " "
-			middle = " (" + dayName + ": "
+	case cldr.BRX, cldr.JA, cldr.YUE, cldr.ZH:
+		return seq.Add(era).AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+	case cldr.SE:
+		if region != cldr.RegionFI {
+			return seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 		}
 	}
 
-	day := fmtDay(digits, opts.Day)
-
-	switch layout {
-	default: // eraYearDay
-		return func(y, d int) string {
-			return prefix + layoutYear(year(y)) + middle + day(d) + suffix
-		}
-	case eraDayYear:
-		return func(y, d int) string {
-			return prefix + day(d) + middle + layoutYear(year(y)) + suffix
-		}
-	}
+	return seq.AddSeq(year).Add(' ', era, ' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 }
 
-func fmtEraYearDayPersian(locale language.Tag, digits digits, opts Options) func(y, d int) string {
-	lang, _ := locale.Base()
-	era := fmtEra(locale, opts.Era)
-	layoutYear := fmtYearGregorian(locale)
-	year := fmtYear(digits, opts.Year)
-	dayName := unitName(locale).Day
+func seqEraYearDayPersian(locale language.Tag, opts Options) *symbols.Seq {
+	lang, _, region := locale.Raw()
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	year := seqYearPersian(locale, opts.Year)
+	day := opts.Day.symbol()
 
-	prefix := era + " "
-	middle := " (" + dayName + ": "
-	suffix := ")"
-
-	if lang == fa {
-		prefix = ""
-		middle = " " + era + " (" + dayName + ": "
+	switch lang {
+	case cldr.UZ:
+		if region == cldr.RegionAF {
+			seq.Add(era, ' ')
+		}
+	case cldr.FA:
+		return seq.AddSeq(year).Add(' ', era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
 	}
 
-	day := fmtDay(digits, opts.Day)
-
-	return func(y, d int) string {
-		return prefix + layoutYear(year(y)) + middle + day(d) + suffix
-	}
+	return seq.AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ', day, ')')
 }
 
-func fmtEraYearDayBuddhist(locale language.Tag, digits digits, opts Options) func(y, d int) string {
-	era := fmtEra(locale, opts.Era)
-	layoutYear := fmtYearGregorian(locale)
-	year := fmtYear(digits, opts.Year)
-	day := fmtDay(digits, opts.Day)
-	dayName := unitName(locale).Day
-	prefix, middle, suffix := era+" ", " ("+dayName+": ", ")"
+func seqEraYearDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	year := seqYearBuddhist(locale, opts)
+	day := opts.Day.symbol()
 
-	return func(y, d int) string {
-		return prefix + layoutYear(year(y)) + middle + day(d) + suffix
-	}
+	return symbols.NewSeq(locale).AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ', day, ')')
 }

@@ -1,108 +1,100 @@
 package intl
 
-import "golang.org/x/text/language"
+import (
+	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
+	"golang.org/x/text/language"
+)
 
-func fmtEraDayGregorian(locale language.Tag, digits digits, opts Options) func(d int) string {
+func seqEraDay(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, _ := locale.Raw()
-	era := fmtEra(locale, opts.Era)
-	dayName := unitName(locale).Day
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	day := opts.Day.symbol()
 	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
 
-	prefix := era + " "
-	suffix := ""
-
-	if withName {
-		prefix = era + " (" + dayName + ": "
-		suffix = ")"
+	// f applies the most frequent formatting
+	f := func(withoutName ...symbols.Symbol) {
+		if withName {
+			seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
+		} else {
+			seq.Add(withoutName...)
+		}
 	}
 
 	switch lang {
-	case hi:
-		if script != latn {
+	default:
+		f(era, ' ', day)
+	case cldr.HI:
+		if script != cldr.Latn {
+			f(era, ' ', day)
+		} else {
+			f(day, ' ', era)
+		}
+	case cldr.KAA, cldr.EN, cldr.MHN:
+		f(day, ' ', era)
+	case cldr.BS:
+		if script == cldr.Cyrl {
+			f(era, ' ', day)
 			break
 		}
 
 		fallthrough
-	case kaa, en, mhn:
-		if !withName {
-			prefix = ""
-			suffix = " " + era
-		}
-	case bg, cy, mk:
+	case cldr.CS, cldr.DA, cldr.DSB, cldr.FO, cldr.HR, cldr.HSB, cldr.IE, cldr.NB, cldr.NN, cldr.NO, cldr.SK, cldr.SL:
 		if withName {
-			prefix = era + " (" + dayName + ": "
+			seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, '.', ')')
 		} else {
-			prefix = era + " "
+			seq.Add(era, ' ', day, '.')
 		}
-	case bs:
-		if script == cyrl {
-			break
-		}
-
-		fallthrough
-	case cs, da, dsb, fo, hr, hsb, ie, nb, nn, no, sk, sl:
+	case cldr.JA, cldr.KO, cldr.YUE, cldr.ZH:
 		if withName {
-			suffix = ".)"
+			seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, symbols.DayUnit, ')')
 		} else {
-			suffix = "."
+			seq.Add(era, ' ', day, symbols.DayUnit)
 		}
-	case ja, ko, yue, zh:
+	case cldr.LT:
 		if withName {
-			suffix = dayName + ")"
+			seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', symbols.Symbol_dd, ')')
 		} else {
-			suffix = dayName
+			seq.Add(era, ' ', symbols.Symbol_dd)
 		}
-	case lt:
-		opts.Day = Day2Digit
-	case ii:
+	case cldr.II:
 		if withName {
-			suffix = "ꑍ)"
+			seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, symbols.Txtꑍ, ')')
 		} else {
-			suffix = "ꑍ"
+			seq.Add(era, ' ', day, symbols.Txtꑍ)
 		}
 	}
 
-	day := fmtDay(digits, opts.Day)
-
-	return func(d int) string { return prefix + day(d) + suffix }
+	return seq
 }
 
-func fmtEraDayPersian(locale language.Tag, digits digits, opts Options) func(d int) string {
-	lang, _ := locale.Base()
-	era := fmtEra(locale, opts.Era)
-	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
-
-	prefix := era + " "
-	suffix := ""
-
-	if withName {
-		prefix = era + " (" + unitName(locale).Day + ": "
-		suffix = ")"
-	}
-
-	if lang == fa {
-		if withName {
-			prefix = era + " (" + unitName(locale).Day + ": "
-		} else {
-			prefix = era + " "
-		}
-	}
-
-	day := fmtDay(digits, opts.Day)
-
-	return func(d int) string { return prefix + day(d) + suffix }
-}
-
-func fmtEraDayBuddhist(locale language.Tag, digits digits, opts Options) func(d int) string {
-	era := fmtEra(locale, opts.Era)
-	prefix, suffix := era+" ", ""
+func seqEraDayPersian(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	day := opts.Day.symbol()
 	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
 
 	if withName {
-		prefix, suffix = era+" ("+unitName(locale).Day+": ", ")"
+		seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
+	} else {
+		seq.Add(era, ' ', day)
 	}
 
-	day := fmtDay(digits, opts.Day)
+	return seq
+}
 
-	return func(d int) string { return prefix + day(d) + suffix }
+func seqEraDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	day := opts.Day.symbol()
+	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
+
+	if withName {
+		seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
+	} else {
+		seq.Add(era, ' ', day)
+	}
+
+	return seq
 }

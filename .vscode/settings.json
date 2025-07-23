@@ -9,10 +9,6 @@
   "gopls": {
     "ui.codelenses": {
       "gc_details": true
-    },
-    "ui.diagnostic.annotations": {
-      "bounds": true,
-      "escape": true
     }
   }
 }

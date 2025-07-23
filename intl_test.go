@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"go.expect.digital/intl/internal/cldr"
 	"golang.org/x/text/language"
 )
 
@@ -143,7 +144,7 @@ func TestDateTime_Format(t *testing.T) {
 		t.Run(locale.String(), func(t *testing.T) {
 			t.Parallel()
 
-			t.Logf("calendar type: %s", defaultCalendar(locale))
+			t.Logf("calendar type: %s", cldr.DefaultCalendar(locale))
 			t.Logf("cases:\n%s", cases)
 
 			for _, test := range cases {
@@ -152,11 +153,6 @@ func TestDateTime_Format(t *testing.T) {
 				}
 
 				got := NewDateTimeFormat(locale, test.Options).Format(tests.Date)
-
-				// replace space with non-breaking space. Latest CLDR uses non-breaking space.
-				if strings.ContainsRune(got, ' ') {
-					test.Output = strings.ReplaceAll(test.Output, " ", " ")
-				}
 
 				if test.Output != got {
 					t.Errorf("%s\nwant '%s'\ngot  '%s'", test.String(), test.Output, got)
@@ -169,7 +165,7 @@ func TestDateTime_Format(t *testing.T) {
 
 var locales = []string{
 	"fa-IR", // persian calendar, arabext numerals
-	"lv-LV", // gregorian calendar, latn numerals
+	"lv-LV", // gregorian calendar, cldr.Latn numerals
 	"dz-BT", // gregorian calendar, tibt numerals
 }
 

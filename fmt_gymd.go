@@ -1,360 +1,172 @@
 package intl
 
 import (
-	"time"
-
+	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
 
 //nolint:cyclop,gocognit
-func fmtEraYearMonthDayGregorian(
-	locale language.Tag,
-	digits digits,
-	opts Options,
-) func(y int, m time.Month, d int) string {
-	var month func(int) string
-
+func seqEraYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, region := locale.Raw()
-	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
-
-	const (
-		eraYearMonthDay = iota
-		eraMonthDayYear
-		eraDayMonthYear
-		dayMonthEraYear
-	)
-
-	monthOpt, monthDay := Month2Digit, Day2Digit
-	layout := eraYearMonthDay
-	prefix := era + " "
-	suffix := ""
-	separator := "-"
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	year := opts.Year.symbol()
+	month := symbols.Symbol_MM
+	day := symbols.Symbol_dd
 
 	switch lang {
-	case en:
+	case cldr.EN:
 		switch region {
 		default:
-			monthOpt, monthDay = opts.Month, opts.Day
-			separator = "/"
-			prefix = ""
-			suffix = " " + era
-
-			if script == dsrt || script == shaw || region == regionZZ {
-				layout = eraMonthDayYear
-			} else {
-				layout = eraDayMonthYear
+			if script == cldr.Dsrt || script == cldr.Shaw || region == cldr.RegionZZ {
+				return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), '/', year, ' ', era)
 			}
-		case regionAE, regionAS, regionBI, regionCA, regionGU, regionMH, regionMP, regionPH, regionPR, regionUM, regionUS,
-			regionVI:
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraMonthDayYear
-			separator = "/"
-			prefix = ""
-			suffix = " " + era
-		case regionCH:
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraDayMonthYear
-			separator = "."
-			prefix = ""
-			suffix = " " + era
-		case regionGB:
-			separator = "/"
-			prefix = ""
-			suffix = " " + era
 
-			if script == shaw {
-				monthOpt, monthDay = opts.Month, opts.Day
-				layout = eraMonthDayYear
-			} else {
-				layout = eraDayMonthYear
+			return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', year, ' ', era)
+		case cldr.RegionAE, cldr.RegionAS, cldr.RegionBI, cldr.RegionCA, cldr.RegionGU, cldr.RegionMH, cldr.RegionMP,
+			cldr.RegionPH, cldr.RegionPR, cldr.RegionUM, cldr.RegionUS,
+			cldr.RegionVI:
+			return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), '/', year, ' ', era)
+		case cldr.RegionCH:
+			return seq.Add(opts.Day.symbol(), '.', opts.Month.symbolFormat(), '.', year, ' ', era)
+		case cldr.RegionGB:
+			if script == cldr.Shaw {
+				return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), '/', year, ' ', era)
 			}
-		}
-	case brx, lv, mni:
-		layout = eraDayMonthYear
-	case da, dsb, hsb, ie, ka, sq:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraDayMonthYear
-		separator = "."
-		prefix = ""
-		suffix = " " + era
-	case mk:
-		monthOpt = opts.Month
-		monthDay = opts.Day
-		layout = eraDayMonthYear
-		prefix = ""
-		suffix = " г. " + era
-		separator = "."
-	case et, pl:
-		monthDay = opts.Day
-		layout = eraDayMonthYear
-		separator = "."
-		prefix = ""
-		suffix = " " + era
-	case be, cv, de, fo, hy, nb, nn, no, ro, ru:
-		layout = eraDayMonthYear
-		separator = "."
-		prefix = ""
-		suffix = " " + era
-	case sr:
-		monthDay = opts.Day
-		layout = eraDayMonthYear
-		separator = "."
-		prefix = ""
-		suffix = ". " + era
-	case bg:
-		layout = eraDayMonthYear
-		separator = "."
-		prefix = ""
-		suffix = " г. " + era
-	case fi:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraMonthDayYear
-		separator = "."
-		prefix = ""
-		suffix = " " + era
-	case fr:
-		prefix = ""
-		suffix = " " + era
 
-		if region != regionCA {
-			layout = eraDayMonthYear
-			separator = "/"
+			return seq.Add(day, '/', month, '/', year, ' ', era)
 		}
-	case am, as, es, gd, gl, he, el, id, is, jv, nl, su, sw, ta, xnr, ur, vi, yo:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraDayMonthYear
-		separator = "/"
-		prefix = ""
-		suffix = " " + era
-	case ga, it, kea, pt, sc, syr, vec:
-		layout = eraDayMonthYear
-		separator = "/"
-		prefix = ""
-		suffix = " " + era
-	case ceb, chr, blo, fil, kaa, mhn, ml, ne, or, ps, sd, so, ti, xh, zu:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraMonthDayYear
-		separator = "/"
-		prefix = ""
-		suffix = " " + era
-	case cy:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraMonthDayYear
-		prefix = ""
-		suffix = " " + era
-		separator = "/"
-	case ar, ia, bn, ca, mai, rm, uk, wo:
-		layout = eraDayMonthYear
-		prefix = ""
-		suffix = " " + era
-	case lt, sv:
-		prefix = ""
-		suffix = " " + era
-	case bs:
-		if script != cyrl {
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraDayMonthYear
-			separator = ". "
-			prefix = ""
-			suffix = ". " + era
+	case cldr.BRX, cldr.LV, cldr.MNI:
+		return seq.Add(era, ' ', day, '-', month, '-', year)
+	case cldr.DA, cldr.DSB, cldr.HSB, cldr.IE, cldr.KA, cldr.SQ:
+		return seq.Add(opts.Day.symbol(), '.', opts.Month.symbolFormat(), '.', year, ' ', era)
+	case cldr.MK:
+		return seq.Add(opts.Day.symbol(), '.', opts.Month.symbolFormat(), '.', year, ' ', symbols.Txt00, ' ', era)
+	case cldr.ET, cldr.PL:
+		return seq.Add(opts.Day.symbol(), '.', month, '.', year, ' ', era)
+	case cldr.BE, cldr.CV, cldr.DE, cldr.FO, cldr.HY, cldr.NB, cldr.NN, cldr.NO, cldr.RO, cldr.RU:
+		return seq.Add(day, '.', month, '.', year, ' ', era)
+	case cldr.SR:
+		return seq.Add(opts.Day.symbol(), '.', month, '.', year, '.', ' ', era)
+	case cldr.BG:
+		return seq.Add(day, '.', month, '.', year, ' ', symbols.Txt00, ' ', era)
+	case cldr.FI:
+		return seq.Add(opts.Month.symbolFormat(), '.', opts.Day.symbol(), '.', year, ' ', era)
+	case cldr.FR:
+		if region == cldr.RegionCA {
+			return seq.Add(year, '-', month, '-', day, ' ', era)
 		}
-	case ff:
-		if script == adlm {
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraDayMonthYear
-			prefix = ""
-			suffix = " " + era
-		}
-	case ks:
-		if script != deva {
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraMonthDayYear
-			separator = "/"
-			prefix = ""
-			suffix = " " + era
-		}
-	case uz:
-		if script != cyrl {
-			layout = eraDayMonthYear
-			separator = "."
-			prefix = ""
-			suffix = " " + era
-		}
-	case az:
-		if script != cyrl {
-			month = fmtMonthName(locale.String(), "format", "abbreviated")
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraDayMonthYear
-			separator = " "
-		}
-	case ku, tk, tr:
-		layout = eraDayMonthYear
-		separator = "."
-	case hu:
-		separator = ". "
-		suffix = "."
-	case cs, sk, sl:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraDayMonthYear
-		separator = ". "
-		prefix = ""
-		suffix = " " + era
-	case hr:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraDayMonthYear
-		separator = ". "
-		prefix = ""
-		suffix = ". " + era
-	case hi:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraDayMonthYear
-		separator = "/"
 
-		if script == latn {
-			prefix = ""
-			suffix = " " + era
+		return seq.Add(day, '/', month, '/', year, ' ', era)
+	case cldr.AM, cldr.AS, cldr.ES, cldr.GD, cldr.GL, cldr.HE, cldr.EL, cldr.ID, cldr.IS, cldr.JV, cldr.NL, cldr.SU,
+		cldr.SW, cldr.TA, cldr.XNR, cldr.UR, cldr.VI, cldr.YO:
+		return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', year, ' ', era)
+	case cldr.GA, cldr.IT, cldr.KEA, cldr.PT, cldr.SC, cldr.SYR, cldr.VEC:
+		return seq.Add(day, '/', month, '/', year, ' ', era)
+	case cldr.CEB, cldr.CHR, cldr.CY, cldr.BLO, cldr.FIL, cldr.KAA, cldr.MHN, cldr.ML, cldr.NE, cldr.OR, cldr.PS, cldr.SD,
+		cldr.SO, cldr.TI, cldr.XH, cldr.ZU:
+		return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), '/', year, ' ', era)
+	case cldr.AR, cldr.IA, cldr.BN, cldr.CA, cldr.MAI, cldr.RM, cldr.UK, cldr.WO:
+		return seq.Add(day, '-', month, '-', year, ' ', era)
+	case cldr.LT, cldr.SV:
+		return seq.Add(year, '-', month, '-', day, ' ', era)
+	case cldr.BS:
+		if script != cldr.Cyrl {
+			return seq.Add(opts.Day.symbol(), '.', ' ', opts.Month.symbolFormat(), '.', ' ', year, '.', ' ', era)
 		}
-	case zh:
-		if script == hant {
-			monthOpt, monthDay = opts.Month, opts.Day
-			separator = "/"
+	case cldr.FF:
+		if script == cldr.Adlm {
+			return seq.Add(opts.Day.symbol(), '-', opts.Month.symbolFormat(), '-', year, ' ', era)
 		}
-	case kxv:
-		if script != deva && script != orya && script != telu {
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = eraDayMonthYear
-			separator = "/"
+	case cldr.KS:
+		if script != cldr.Deva {
+			return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), '/', year, ' ', era)
 		}
-	case ja:
-		monthOpt, monthDay = opts.Month, opts.Day
-		separator = "/"
-		prefix = era
-	case ko, my:
-		monthOpt, monthDay = opts.Month, opts.Day
-		separator = "/"
-	case mr, qu:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = eraDayMonthYear
-		separator = "/"
-	case to:
-		layout = eraDayMonthYear
-		separator = " "
-		prefix = ""
-		suffix = " " + era
-	case kk:
-		layout = dayMonthEraYear
-	case lo:
-		monthOpt, monthDay = opts.Month, opts.Day
-		layout = dayMonthEraYear
-		separator = "/"
-	case pa:
-		if script != arab {
-			monthOpt, monthDay = opts.Month, opts.Day
-			layout = dayMonthEraYear
-			separator = "/"
+	case cldr.UZ:
+		if script != cldr.Cyrl {
+			return seq.Add(day, '.', month, '.', year, ' ', era)
 		}
-	case kok:
-		if script == latn {
-			monthOpt = opts.Month
-			monthDay = opts.Day
-			layout = eraDayMonthYear
-			prefix = ""
-			suffix = " " + era
+	case cldr.AZ:
+		if script != cldr.Cyrl {
+			return seq.Add(era, ' ', opts.Day.symbol(), ' ', symbols.Symbol_MMM, ' ', year)
+		}
+	case cldr.KU, cldr.TK, cldr.TR:
+		return seq.Add(era, ' ', day, '.', month, '.', year)
+	case cldr.HU:
+		return seq.Add(era, ' ', year, '.', ' ', month, '.', ' ', day, '.')
+	case cldr.CS, cldr.SK, cldr.SL:
+		return seq.Add(opts.Day.symbol(), '.', ' ', opts.Month.symbolFormat(), '.', ' ', year, ' ', era)
+	case cldr.HR:
+		return seq.Add(opts.Day.symbol(), '.', ' ', opts.Month.symbolFormat(), '.', ' ', year, '.', ' ', era)
+	case cldr.HI:
+		if script == cldr.Latn {
+			return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', year, ' ', era)
+		}
+
+		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', year)
+	case cldr.ZH:
+		if script == cldr.Hant {
+			return seq.Add(era, ' ', year, '/', opts.Month.symbolFormat(), '/', opts.Day.symbol())
+		}
+	case cldr.KXV:
+		if script != cldr.Deva && script != cldr.Orya && script != cldr.Telu {
+			return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', year)
+		}
+	case cldr.JA:
+		return seq.Add(era, year, '/', opts.Month.symbolFormat(), '/', opts.Day.symbol())
+	case cldr.KO, cldr.MY:
+		return seq.Add(era, ' ', year, '/', opts.Month.symbolFormat(), '/', opts.Day.symbol())
+	case cldr.MR, cldr.QU:
+		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', year)
+	case cldr.TO:
+		return seq.Add(day, ' ', month, ' ', year, ' ', era)
+	case cldr.KK:
+		return seq.Add(day, '-', month, '-', era, ' ', year)
+	case cldr.LO:
+		return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', era, ' ', year)
+	case cldr.PA:
+		if script != cldr.Arab {
+			return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/', era, ' ', year)
+		}
+
+	case cldr.KOK:
+		if script == cldr.Latn {
+			return seq.Add(opts.Day.symbol(), '-', opts.Month.symbolFormat(), '-', year, ' ', era)
 		}
 	}
 
-	if month == nil {
-		month = fmtMonth(digits, monthOpt)
-	}
-
-	day := fmtDay(digits, monthDay)
-
-	switch layout {
-	default: // eraYearMonthDay
-		return func(y int, m time.Month, d int) string {
-			return prefix + year(y) + separator + month(int(m)) + separator + day(d) + suffix
-		}
-	case eraMonthDayYear:
-		return func(y int, m time.Month, d int) string {
-			return prefix + month(int(m)) + separator + day(d) + separator + year(y) + suffix
-		}
-	case eraDayMonthYear:
-		return func(y int, m time.Month, d int) string {
-			return prefix + day(d) + separator + month(int(m)) + separator + year(y) + suffix
-		}
-	case dayMonthEraYear:
-		return func(y int, m time.Month, d int) string {
-			return day(d) + separator + month(int(m)) + separator + era + " " + year(y)
-		}
-	}
+	return seq.Add(era, ' ', year, '-', month, '-', day)
 }
 
-func fmtEraYearMonthDayPersian(
-	locale language.Tag,
-	digits digits,
-	opts Options,
-) func(y int, m time.Month, d int) string {
+func seqEraYearMonthDayPersian(locale language.Tag, opts Options) *symbols.Seq {
 	lang, _, region := locale.Raw()
-
-	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
-
-	const (
-		eraYearMonthDay = iota
-		eraMonthDayYear
-	)
-
-	layout := eraMonthDayYear
-	separator := "/"
-	suffix := " " + era
+	seq := symbols.NewSeq(locale)
+	era := opts.Era.symbol()
+	year := opts.Year.symbol()
+	month := opts.Month.symbolFormat()
+	day := opts.Day.symbol()
 
 	switch lang {
-	case ckb:
-		if region == regionIR {
-			layout = eraYearMonthDay
-			separator = "-"
+	case cldr.CKB:
+		if region == cldr.RegionIR {
+			return seq.Add(era, ' ', year, '-', month, '-', day)
 		}
-	case lrc, mzn, uz:
-		layout = eraYearMonthDay
-		separator = "-"
-	case ps:
-		layout = eraYearMonthDay
-
+	case cldr.LRC, cldr.MZN, cldr.UZ:
+		return seq.Add(era, ' ', year, '-', month, '-', day)
+	case cldr.PS:
 		if !opts.Era.narrow() {
-			separator = "-"
+			return seq.Add(era, ' ', year, '-', month, '-', day)
 		}
-	case fa:
-		suffix = " " + era
+
+		return seq.Add(era, ' ', year, '/', month, '/', day)
 	}
 
-	month := fmtMonth(digits, opts.Month)
-	day := fmtDay(digits, opts.Day)
-
-	switch layout {
-	default: // eraMonthDayYear
-		return func(y int, m time.Month, d int) string {
-			return month(int(m)) + separator + day(d) + separator + year(y) + suffix
-		}
-	case eraYearMonthDay:
-		return func(y int, m time.Month, d int) string {
-			// TODO(jhorsts): replace with the "prefix" variable (era + " ")
-			return era + " " + year(y) + separator + month(int(m)) + separator + day(d)
-		}
-	}
+	return seq.Add(month, '/', day, '/', year, ' ', era)
 }
 
-func fmtEraYearMonthDayBuddhist(
-	locale language.Tag,
-	digits digits,
-	opts Options,
-) func(y int, m time.Month, d int) string {
-	era := fmtEra(locale, opts.Era)
-	year := fmtYear(digits, opts.Year)
-	month := fmtMonth(digits, opts.Month)
-	day := fmtDay(digits, opts.Day)
+func seqEraYearMonthDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
+	year := seqYearBuddhist(locale, opts)
 
-	return func(y int, m time.Month, d int) string {
-		return day(d) + "/" + month(int(m)) + "/" + era + " " + year(y)
-	}
+	return symbols.NewSeq(locale).Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), '/').AddSeq(year)
 }
