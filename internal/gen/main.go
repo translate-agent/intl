@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log/slog"
 	"os"
 )
 
 func main() {
+	ctx := context.Background()
+
 	var conf Conf
 
 	flag.StringVar(&conf.cldrDir, "cldr-dir", "", "path to CLDR directory")
@@ -25,9 +28,10 @@ func main() {
 
 	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 
-	if err := Gen(conf, log); err != nil {
+	err := Gen(ctx, conf, log)
+	if err != nil {
 		panic(err)
 	}
 
-	log.Info("done")
+	log.InfoContext(ctx, "done")
 }

@@ -82,7 +82,8 @@ type AllTests struct {
 func (t *Test) UnmarshalJSON(b []byte) error {
 	var args [2]any // first value is options, second - formatted output
 
-	if err := json.Unmarshal(b, &args); err != nil {
+	err := json.Unmarshal(b, &args)
+	if err != nil {
 		return fmt.Errorf("unmarshal test data: %w", err)
 	}
 
@@ -132,7 +133,8 @@ func TestDateTime_Format(t *testing.T) {
 
 	var tests AllTests
 
-	if err := json.Unmarshal(nodeTests, &tests); err != nil {
+	err := json.Unmarshal(nodeTests, &tests)
+	if err != nil {
 		panic(err)
 	}
 

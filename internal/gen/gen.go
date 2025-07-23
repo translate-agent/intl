@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"encoding/xml"
@@ -35,32 +36,34 @@ type Conf struct {
 	saveMerged bool
 }
 
-func Gen(conf Conf, log *slog.Logger) error {
+func Gen(ctx context.Context, conf Conf, log *slog.Logger) error {
 	var g Generator
 
-	if err := g.load(conf.cldrDir, log); err != nil {
-		return err
-	}
-
-	data, err := g.process(conf, log)
+	err := g.load(ctx, conf.cldrDir, log)
 	if err != nil {
 		return err
 	}
 
-	if err := g.write(conf.out, data); err != nil {
+	data, err := g.process(ctx, conf, log)
+	if err != nil {
+		return err
+	}
+
+	err = g.write(conf.out, data)
+	if err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (g *Generator) load(dir string, log *slog.Logger) error {
+func (g *Generator) load(ctx context.Context, dir string, log *slog.Logger) error {
 	var err error
 
 	now := time.Now()
 
 	defer func() {
-		log.Debug("loading", "duration", time.Since(now))
+		log.DebugContext(ctx, "loading", "duration", time.Since(now))
 	}()
 
 	g.cldr, err = cldr.DecodePath(dir)
@@ -71,11 +74,12 @@ func (g *Generator) load(dir string, log *slog.Logger) error {
 	return nil
 }
 
-func (g *Generator) process(conf Conf, log *slog.Logger) (*TemplateData, error) {
-	g.merge(log)
+func (g *Generator) process(ctx context.Context, conf Conf, log *slog.Logger) (*TemplateData, error) {
+	g.merge(ctx, log)
 
 	if conf.saveMerged {
-		if err := g.saveMerged(conf.out); err != nil {
+		err := g.saveMerged(conf.out)
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -119,7 +123,8 @@ func (g *Generator) write(out string, data *TemplateData) error {
 
 	defer f.Close()
 
-	if err := dataTpl.Execute(f, data); err != nil {
+	err = dataTpl.Execute(f, data)
+	if err != nil {
 		return fmt.Errorf("execute template: %w", err)
 	}
 
@@ -141,7 +146,8 @@ func (g *Generator) saveMerged(out string) error {
 		enc := xml.NewEncoder(f)
 		enc.Indent("", "\t")
 
-		if err = enc.Encode(ldml); err != nil {
+		err = enc.Encode(ldml)
+		if err != nil {
 			return fmt.Errorf("save to %s: %w", name, err)
 		}
 	}
@@ -149,10 +155,10 @@ func (g *Generator) saveMerged(out string) error {
 	return nil
 }
 
-func (g *Generator) merge(log *slog.Logger) {
+func (g *Generator) merge(ctx context.Context, log *slog.Logger) {
 	g.mergeAliases()
-	g.mergeParent(log)
-	g.mergeLocal(log)
+	g.mergeParent(ctx, log)
+	g.mergeLocal(ctx, log)
 
 	root := g.cldr.RawLDML("root")
 
@@ -170,7 +176,7 @@ func (g *Generator) merge(log *slog.Logger) {
 			parent := g.cldr.RawLDML(parentLocale.Parent)
 
 			// merge root to parent
-			merge(parent, root, log)
+			merge(ctx, parent, root, log)
 
 			for _, locale := range strings.Split(parentLocale.Locales, " ") {
 				child := g.cldr.RawLDML(locale)
@@ -179,7 +185,7 @@ func (g *Generator) merge(log *slog.Logger) {
 					continue
 				}
 
-				merge(child, parent, log)
+				merge(ctx, child, parent, log)
 			}
 		}
 	}
@@ -193,7 +199,7 @@ func (g *Generator) merge(log *slog.Logger) {
 
 		ldml := g.cldr.RawLDML(locale)
 
-		merge(ldml, root, log)
+		merge(ctx, ldml, root, log)
 	}
 
 	// merge language to territory
@@ -209,7 +215,7 @@ func (g *Generator) merge(log *slog.Logger) {
 
 		fallback := g.cldr.RawLDML(strings.Join(parts, "_"))
 
-		merge(ldml, fallback, log)
+		merge(ctx, ldml, fallback, log)
 	}
 }
 
@@ -242,7 +248,7 @@ func (g *Generator) mergeAliases() {
 	}
 }
 
-func (g *Generator) mergeParent(log *slog.Logger) {
+func (g *Generator) mergeParent(ctx context.Context, log *slog.Logger) {
 	log = log.With("func", "mergeParent")
 
 	for _, locale := range g.cldr.Locales()[1:] {
@@ -285,19 +291,19 @@ func (g *Generator) mergeParent(log *slog.Logger) {
 
 			calendar := ldml.GetCalendar("gregorian")
 			if calendar == nil {
-				logger.Debug("copy gregorian calendar")
+				logger.DebugContext(ctx, "copy gregorian calendar")
 
 				ldml.Dates.Calendars.Calendar = append(ldml.Dates.Calendars.Calendar, deepCopy(parentGregorian))
 
 				continue
 			}
 
-			mergeCalendar(calendar, parentGregorian, logger)
+			mergeCalendar(ctx, calendar, parentGregorian, logger)
 		}
 	}
 }
 
-func (g *Generator) mergeLocal(log *slog.Logger) {
+func (g *Generator) mergeLocal(ctx context.Context, log *slog.Logger) {
 	for _, locale := range g.cldr.Locales()[1:] {
 		ldml := g.cldr.RawLDML(locale)
 
@@ -321,7 +327,7 @@ func (g *Generator) mergeLocal(log *slog.Logger) {
 				calendar.DateTimeFormats = deepCopy(generic.DateTimeFormats)
 			}
 
-			mergeCalendar(calendar, generic, log.With("locale", locale))
+			mergeCalendar(ctx, calendar, generic, log.With("locale", locale))
 		}
 	}
 }
@@ -341,7 +347,7 @@ func supportedCalendars(calendars []*cldr.Calendar) []*cldr.Calendar {
 }
 
 // merge copies particular src values to dst.
-func merge(dst, src *cldr.LDML, log *slog.Logger) {
+func merge(ctx context.Context, dst, src *cldr.LDML, log *slog.Logger) {
 	if src.Dates == nil || src.Dates.Calendars == nil {
 		return
 	}
@@ -369,12 +375,12 @@ func merge(dst, src *cldr.LDML, log *slog.Logger) {
 			continue
 		}
 
-		mergeCalendar(calendar, parentCalendar, log)
+		mergeCalendar(ctx, calendar, parentCalendar, log)
 	}
 }
 
-func mergeCalendar(dst, src *cldr.Calendar, log *slog.Logger) {
-	log.Debug("merge calendars", "dst", dst.Type, "src", src.Type)
+func mergeCalendar(ctx context.Context, dst, src *cldr.Calendar, log *slog.Logger) {
+	log.DebugContext(ctx, "merge calendars", "dst", dst.Type, "src", src.Type)
 
 	switch dst.DateTimeFormats {
 	default:
@@ -1071,7 +1077,8 @@ func deepCopy[T any](v T) T { //nolint:ireturn
 		panic(err)
 	}
 
-	if err := json.Unmarshal(b, &r); err != nil {
+	err = json.Unmarshal(b, &r)
+	if err != nil {
 		panic(err)
 	}
 
