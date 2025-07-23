@@ -36,7 +36,9 @@ type LDML struct {
 	Identity *Identity `xml:"identity"`
 	Numbers  *Numbers  `xml:"numbers"`
 	Dates    *Dates    `xml:"dates"`
-	Common
+
+	// govet(fieldalignment) preceds embeddedstructfieldcheck
+	Common //nolint:embeddedstructfieldcheck
 }
 
 // GetCalendar returns *cldr.Calendar by its type if found. Otherwise, returns nil.
@@ -54,42 +56,52 @@ type Identity struct {
 	Language  *Language `xml:"language"`
 	Script    *Common   `xml:"script"`
 	Territory *Common   `xml:"territory"`
-	Common
+
+	// govet(fieldalignment) preceds embeddedstructfieldcheck
+	Common //nolint:embeddedstructfieldcheck
 }
 
 type Language struct {
-	Type string `xml:"type,attr"`
 	Common
+
+	Type string `xml:"type,attr"`
 }
 
 type Script struct {
-	Type string `xml:"type,attr"`
 	Common
+
+	Type string `xml:"type,attr"`
 }
 
 type Territory struct {
-	Type string `xml:"type,attr"`
 	Common
+
+	Type string `xml:"type,attr"`
 }
 
 type Variant struct {
-	Type string `xml:"type,attr"`
 	Common
+
+	Type string `xml:"type,attr"`
 }
 
 type Numbers struct {
 	Common
+
 	DefaultNumberingSystem []*Common `xml:"defaultNumberingSystem"`
 }
 
 type Dates struct {
 	Calendars *Calendars `xml:"calendars"`
 	Fields    *Fields    `xml:"fields"`
-	Common
+
+	// govet(fieldalignment) preceds embeddedstructfieldcheck
+	Common //nolint:embeddedstructfieldcheck
 }
 
 type Calendars struct {
 	Common
+
 	Calendar []*Calendar `xml:"calendar"`
 }
 
@@ -98,7 +110,9 @@ type Calendar struct {
 	Months          *Months          `xml:"months"`
 	DateTimeFormats *DateTimeFormats `xml:"dateTimeFormats"`
 	Eras            *Eras            `xml:"eras"`
-	Common
+
+	// govet(fieldalignment) preceds embeddedstructfieldcheck
+	Common //nolint:embeddedstructfieldcheck
 }
 
 func (c *Calendar) GetDateFormatItem(id string) *DateFormatItem {
@@ -117,16 +131,19 @@ func (c *Calendar) GetDateFormatItem(id string) *DateFormatItem {
 
 type Months struct {
 	Common
+
 	MonthContext []*MonthContext `xml:"monthContext"`
 }
 
 type MonthContext struct {
 	Common
+
 	MonthWidth []*MonthWidth `xml:"monthWidth"`
 }
 
 type MonthWidth struct {
 	Common
+
 	Month []*Month `xml:"month"`
 }
 
@@ -137,16 +154,20 @@ type Month struct {
 type DateTimeFormats struct {
 	Alias            *Alias            `xml:"alias"`
 	AvailableFormats *AvailableFormats `xml:"availableFormats"`
-	Common
+
+	// govet(fieldalignment) preceds embeddedstructfieldcheck
+	Common //nolint:embeddedstructfieldcheck
 }
 
 type AvailableFormats struct {
 	Common
+
 	DateFormatItem []*DateFormatItem `xml:"dateFormatItem"`
 }
 
 type DateFormatItem struct {
 	Common
+
 	ID string `xml:"id,attr"`
 }
 
@@ -154,31 +175,38 @@ type Eras struct {
 	EraNames  *Era `xml:"eraNames"`
 	EraAbbr   *Era `xml:"eraAbbr"`
 	EraNarrow *Era `xml:"eraNarrow"`
-	Common
+
+	// govet(fieldalignment) preceds embeddedstructfieldcheck
+	Common //nolint:embeddedstructfieldcheck
 }
 
 type Era struct {
 	Common
+
 	Era []*Common `xml:"era"`
 }
 
 type Fields struct {
 	Common
+
 	Field []*Field `xml:"field"`
 }
 
 type Field struct {
 	Common
+
 	DisplayName []*DisplayName `xml:"displayName"`
 }
 
 type DisplayName struct {
 	Common
+
 	Count string `xml:"count,attr"`
 }
 
 type Supplemental struct {
 	Common
+
 	CalendarPreferenceData *CalendarPreferenceData `xml:"calendarPreferenceData"`
 	NumberingSystems       *NumberingSystems       `xml:"numberingSystems"`
 	ParentLocales          []*ParentLocales        `xml:"parentLocales"`
@@ -186,40 +214,47 @@ type Supplemental struct {
 
 type ParentLocales struct {
 	Common
+
 	Component    string          `xml:"component,attr"`
 	ParentLocale []*ParentLocale `xml:"parentLocale"`
 }
 
 type ParentLocale struct {
 	Common
+
 	Parent  string `xml:"parent,attr"`
 	Locales string `xml:"locales,attr"`
 }
 
 type Alias struct {
 	Common
+
 	Source string `xml:"source,attr"`
 	Path   string `xml:"path,attr"`
 }
 
 type CalendarPreferenceData struct {
 	Common
+
 	CalendarPreference []*CalendarPreference `xml:"calendarPreference"`
 }
 
 type CalendarPreference struct {
 	Common
+
 	Territories string `xml:"territories,attr"`
 	Ordering    string `xml:"ordering,attr"`
 }
 
 type NumberingSystems struct {
 	Common
+
 	NumberingSystem []*NumberingSystem `xml:"numberingSystem"`
 }
 
 type NumberingSystem struct {
 	Common
+
 	ID     string `xml:"id,attr"`
 	Type   string `xml:"type,attr"`
 	Digits string `xml:"digits,attr"`

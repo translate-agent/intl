@@ -16,6 +16,7 @@ func DecodePath(dir string) (*CLDR, error) {
 	commonMain := os.DirFS(path.Join(dir, "common/main"))
 
 	const numberOfLocales = 1067
+
 	cldr := CLDR{
 		ldml: make(map[string]*LDML, numberOfLocales),
 	}
@@ -49,7 +50,8 @@ func DecodePath(dir string) (*CLDR, error) {
 
 			var ldml LDML
 
-			if fErr = xml.Unmarshal(b, &ldml); fErr != nil {
+			fErr = xml.Unmarshal(b, &ldml)
+			if fErr != nil {
 				ch <- result{err: fmt.Errorf("unmarshal %s: %w", file, fErr)}
 				return
 			}
@@ -98,7 +100,8 @@ func DecodePath(dir string) (*CLDR, error) {
 		return nil, fmt.Errorf("read common/supplemental/supplementalData.xml: %w", err)
 	}
 
-	if err = xml.Unmarshal(b, &cldr.supplemental); err != nil {
+	err = xml.Unmarshal(b, &cldr.supplemental)
+	if err != nil {
 		return nil, fmt.Errorf("decode common/supplemental/supplementalData.xml: %w", err)
 	}
 
@@ -107,7 +110,8 @@ func DecodePath(dir string) (*CLDR, error) {
 		return nil, fmt.Errorf("read common/supplemental/numberingSystems.xml: %w", err)
 	}
 
-	if err = xml.Unmarshal(b, &cldr.supplemental); err != nil {
+	err = xml.Unmarshal(b, &cldr.supplemental)
+	if err != nil {
 		return nil, fmt.Errorf("decode common/supplemental/numberingSystems.xml: %w", err)
 	}
 
