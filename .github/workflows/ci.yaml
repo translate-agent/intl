@@ -17,7 +17,7 @@ jobs:
         with:
           version: 0.8.16
           use-cache: true
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
       - name: Go ${{ matrix.go-version }}
         run: echo "golang_version=${{ matrix.go-version }}" > .arg
       - name: Generate cldr.go
