@@ -1,6 +1,7 @@
 VERSION 0.8
-ARG go_version=1.24.5
-FROM golang:$go_version-alpine3.22
+# renovate: datasource=docker packageName=golang
+ARG go_version=1.24.5-alpine3.22
+FROM golang:$go_version
 WORKDIR /intl
 
 # init prepares the project for local development
@@ -21,8 +22,12 @@ cldr:
 
 # testdata generates test cases and saves to tests.json
 testdata:
+  # renovate: datasource=docker packageName=node
   ARG node_version=23.11.0
   FROM node:$node_version-alpine
+  # renovate: datasource=npm packageName=npm
+  ARG npm_version=9.6.1
+  RUN npm i -g npm@$npm_version
   WORKDIR /intl
   COPY testdata.js .
   COPY --dir +cldr/cldr/common/main .cldr/common/main
@@ -64,6 +69,7 @@ test:
 
 # lint runs all linters for golang
 lint:
+  # renovate: datasource=docker packageName=golangci-lint
   ARG golangci_lint_version=2.3.0
   FROM golangci/golangci-lint:v$golangci_lint_version-alpine
   WORKDIR /intl

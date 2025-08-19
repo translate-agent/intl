@@ -1,4 +1,4 @@
-name: CI
+name: Check
 
 on:
   push:
@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     strategy:
       matrix:
-        go-version: ["1.23", "1.24", "1.25rc2"]
+        go-version: ["1.23", "1.24", "1.25"]
       fail-fast: false
     env:
       FORCE_COLOR: 1
@@ -21,7 +21,7 @@ jobs:
       - name: Go ${{ matrix.go-version }}
         run: echo "golang_version=${{ matrix.go-version }}" > .arg
       - name: Generate cldr.go
-        if: ${{ matrix.go-version == '1.24' }}
+        if: ${{ matrix.go-version == '1.25' }}
         run: |
           earthly --strict +generate
           if ! git diff --quiet internal/cldr/data.go; then
@@ -30,7 +30,7 @@ jobs:
             exit 1
           fi
       - name: Lint
-        if: ${{ matrix.go-version == '1.24' }}
+        if: ${{ matrix.go-version == '1.25' }}
         run: earthly --ci +lint
       - name: Test Unit
         run: earthly --ci +test
