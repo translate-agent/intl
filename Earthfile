@@ -23,7 +23,7 @@ cldr:
 # testdata generates test cases and saves to tests.json
 testdata:
   # renovate: datasource=docker packageName=node
-  ARG node_version=23.11.0
+  ARG node_version=23.11.1
   FROM node:$node_version-alpine
   # renovate: datasource=npm packageName=npm
   ARG npm_version=9.6.1
