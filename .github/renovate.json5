@@ -6,4 +6,14 @@
     ":semanticCommits",
   ],
   rebaseWhen: "behind-base-branch",
+  customManagers: [
+    {
+      customType: "regex",
+      description: "Update _version ARGs and ENVs in Earthfile",
+      managerFilePatterns: ["/^Earthfile$/"],
+      matchStrings: [
+        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+(?:ENV|ARG) .+?\\_version=(?<currentValue>.+?)\\s",
+      ],
+    },
+  ],
 }
