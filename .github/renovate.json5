@@ -5,4 +5,5 @@
     "security:openssf-scorecard",
     ":semanticCommits",
   ],
+  rebaseWhen: "behind-base-branch",
 }
