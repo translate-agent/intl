@@ -1,8 +1,7 @@
 VERSION 0.8
 # renovate: datasource=docker packageName=golang
-ARG go_version=1.24.5
-# renovate: datasource=docker packageName=alpine
-FROM golang:$go_version-alpine3.22
+ARG go_version=1.24.5-alpine3.22
+FROM golang:$go_version
 WORKDIR /intl
 
 # init prepares the project for local development
