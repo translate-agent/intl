@@ -1,4 +1,4 @@
-![check workflow](https://github.com/translate-agent/intl/actions/workflows/ci.yaml/badge.svg?event=push) [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11144/badge)](https://www.bestpractices.dev/projects/11144)
+![check workflow](https://github.com/translate-agent/intl/actions/workflows/check.yaml/badge.svg?event=push)
 
 # intl
 
