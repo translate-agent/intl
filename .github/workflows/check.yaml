@@ -6,6 +6,8 @@ on:
 jobs:
   check:
     runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
     strategy:
       matrix:
         go-version: ["1.23", "1.24", "1.25"]
