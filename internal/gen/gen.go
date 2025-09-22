@@ -957,7 +957,7 @@ func (d *TemplateData) UniqString() string {
 	return d.uniqString
 }
 
-// value - locales.
+// Months contains all month name data, optimized for storage size.
 type Months struct {
 	// key is locale, value is 6 indexes from [List].
 	Lookup map[string]MonthIndexes
