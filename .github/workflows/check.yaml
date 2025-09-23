@@ -19,7 +19,7 @@ jobs:
     env:
       FORCE_COLOR: 1
     steps:
-      - uses: earthly/actions-setup@v1
+      - uses: earthbuild/actions-setup@main
         with:
           version: 0.8.16
           use-cache: true
@@ -54,7 +54,7 @@ jobs:
       - name: Test Unit
         run: earthly --ci +test
       - name: Save Earthly Cache
-        if: always()
+        if: steps.earthly-cache.outputs.cache-hit != 'true'
         run: |
           docker stop intl-buildkitd
           sudo tar -czf earthly-cache.tar.gz -C /var/lib/docker/volumes/intl-cache/_data .
