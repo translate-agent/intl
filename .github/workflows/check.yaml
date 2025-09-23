@@ -61,4 +61,4 @@ jobs:
         run: docker stop intl-buildkitd
       - name: Compress Earthly Cache
         if: steps.earthly-cache.outputs.cache-hit != 'true'
-        run: sudo tar -czf earthly-cache.tar.gz -C /var/lib/docker/volumes/intl-cache/_data .
+        run: sudo tar -c --use-compress-program="zstd -T0" -f earthly-cache.tar.gz -C /var/lib/docker/volumes/intl-cache/_data .
