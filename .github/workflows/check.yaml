@@ -32,10 +32,14 @@ jobs:
           restore-keys: |
             earthly-cache-${{ matrix.go-version }}-
       - name: Restore Earthly Cache
-        if: steps.earthly-cache.outputs.cache-hit == 'true'
         run: |
-          sudo mkdir -p /var/lib/docker/volumes/intl-cache/_data
-          sudo tar -xzf earthly-cache.tar.gz -C /var/lib/docker/volumes/intl-cache/_data
+          if [ -f "earthly-cache.tar.gz" ]; then
+            echo "Cache file found. Restoring..."
+            sudo mkdir -p /var/lib/docker/volumes/intl-cache/_data
+            sudo tar -xzf earthly-cache.tar.gz -C /var/lib/docker/volumes/intl-cache/_data
+          else
+            echo "Cache file not found. Skipping restore."
+          fi
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
       - name: Go ${{ matrix.go-version }}
         run: echo "golang_version=${{ matrix.go-version }}" > .arg
