@@ -36,7 +36,7 @@ jobs:
           if [ -f "earthly-cache.tar.zst" ]; then
             echo "Cache file found. Restoring..."
             sudo mkdir -p /var/lib/docker/volumes/intl-cache/_data
-            sudo tar -xzf earthly-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data
+            sudo tar -xf earthly-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data
           else
             echo "Cache file not found. Skipping restore."
           fi
