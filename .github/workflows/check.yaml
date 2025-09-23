@@ -31,7 +31,7 @@ jobs:
           key: earthly-cache-${{ matrix.go-version }}-${{ github.sha }}
           restore-keys: |
             earthly-cache-${{ matrix.go-version }}-
-      - name: Restore Earthly Cache
+      - name: Uncompress Earthly Cache
         run: |
           if [ -f "earthly-cache.tar.gz" ]; then
             echo "Cache file found. Restoring..."
@@ -57,8 +57,8 @@ jobs:
         run: earthly --ci +lint
       - name: Test Unit
         run: earthly --ci +test
-      - name: Save Earthly Cache
+      - name: Stop Buildkit
+        run: docker stop intl-buildkitd
+      - name: Compress Earthly Cache
         if: steps.earthly-cache.outputs.cache-hit != 'true'
-        run: |
-          docker stop intl-buildkitd
-          sudo tar -czf earthly-cache.tar.gz -C /var/lib/docker/volumes/intl-cache/_data .
+        run: sudo tar -czf earthly-cache.tar.gz -C /var/lib/docker/volumes/intl-cache/_data .
