@@ -3,6 +3,10 @@ name: Check
 on:
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-24.04-arm
@@ -15,10 +19,27 @@ jobs:
     env:
       FORCE_COLOR: 1
     steps:
-      - uses: earthly/actions-setup@v1
+      - uses: earthbuild/actions-setup@main
         with:
           version: 0.8.16
           use-cache: true
+      - name: Earthly Cache
+        uses: actions/cache@v4
+        id: earthly-cache
+        with:
+          path: earthly-cache.tar.zst
+          key: earthly-cache-${{ matrix.go-version }}-${{ github.sha }}
+          restore-keys: |
+            earthly-cache-${{ matrix.go-version }}-
+      - name: Uncompress Earthly Cache
+        run: |
+          if [ -f "earthly-cache.tar.zst" ]; then
+            echo "Cache file found. Restoring..."
+            sudo mkdir -p /var/lib/docker/volumes/intl-cache/_data
+            sudo tar -xf earthly-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data
+          else
+            echo "Cache file not found. Skipping restore."
+          fi
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
       - name: Go ${{ matrix.go-version }}
         run: echo "golang_version=${{ matrix.go-version }}" > .arg
@@ -36,3 +57,8 @@ jobs:
         run: earthly --ci +lint
       - name: Test Unit
         run: earthly --ci +test
+      - name: Stop Buildkit
+        run: docker stop intl-buildkitd
+      - name: Compress Earthly Cache
+        if: steps.earthly-cache.outputs.cache-hit != 'true'
+        run: sudo tar -c --use-compress-program="zstd -T0" -f earthly-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data .
