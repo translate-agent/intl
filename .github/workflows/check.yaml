@@ -27,16 +27,16 @@ jobs:
         uses: actions/cache@v4
         id: earthly-cache
         with:
-          path: earthly-cache.tar.gz
+          path: earthly-cache.tar.zst
           key: earthly-cache-${{ matrix.go-version }}-${{ github.sha }}
           restore-keys: |
             earthly-cache-${{ matrix.go-version }}-
       - name: Uncompress Earthly Cache
         run: |
-          if [ -f "earthly-cache.tar.gz" ]; then
+          if [ -f "earthly-cache.tar.zst" ]; then
             echo "Cache file found. Restoring..."
             sudo mkdir -p /var/lib/docker/volumes/intl-cache/_data
-            sudo tar -xzf earthly-cache.tar.gz -C /var/lib/docker/volumes/intl-cache/_data
+            sudo tar -xzf earthly-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data
           else
             echo "Cache file not found. Skipping restore."
           fi
@@ -61,4 +61,4 @@ jobs:
         run: docker stop intl-buildkitd
       - name: Compress Earthly Cache
         if: steps.earthly-cache.outputs.cache-hit != 'true'
-        run: sudo tar -c --use-compress-program="zstd -T0" -f earthly-cache.tar.gz -C /var/lib/docker/volumes/intl-cache/_data .
+        run: sudo tar -c --use-compress-program="zstd -T0" -f earthly-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data .
