@@ -40,8 +40,8 @@ data:
   COPY --dir internal .
   COPY go.mod go.sum .
   RUN \
-    --mount=type=cache,id=go-mod,target=/go/pkg/mod \
-    --mount=type=cache,id=go-build,target=/root/.cache/go-build \
+    --mount type=cache,sharing=shared,id=go-mod,target=/go/pkg/mod \
+    --mount type=cache,sharing=shared,id=go-build,target=/root/.cache/go-build \
     go run -C internal/gen . -cldr-dir /intl/cldr -out=/intl
   SAVE ARTIFACT internal/cldr/data.go data.go
 
@@ -51,8 +51,8 @@ generate:
   COPY go.mod go.sum .
   COPY +data/data.go internal/cldr/
   RUN \
-    --mount=type=cache,id=go-mod,target=/go/pkg/mod \
-    --mount=type=cache,id=go-build,target=/root/.cache/go-build \
+    --mount type=cache,sharing=shared,id=go-mod,target=/go/pkg/mod \
+    --mount type=cache,sharing=shared,id=go-build,target=/root/.cache/go-build \
     gofumpt -w internal/cldr/data.go
   SAVE ARTIFACT internal/cldr/data.go data.go AS LOCAL internal/cldr/data.go
 
@@ -63,8 +63,8 @@ test:
   COPY +testdata/tests.json .
   COPY +data/data.go internal/cldr/
   RUN \
-    --mount=type=cache,id=go-mod,target=/go/pkg/mod \
-    --mount=type=cache,id=go-build,target=/root/.cache/go-build \
+    --mount type=cache,sharing=shared,id=go-mod,target=/go/pkg/mod \
+    --mount type=cache,sharing=shared,id=go-build,target=/root/.cache/go-build \
     go test ./...
 
 # lint runs all linters for golang
@@ -78,9 +78,9 @@ lint:
   COPY +data/data.go internal/cldr/
   COPY +testdata/tests.json .
   RUN \
-    --mount=type=cache,id=go-mod,target=/go/pkg/mod \
-    --mount=type=cache,id=go-build,target=/root/.cache/go-build \
-    --mount=type=cache,target=/root/.cache/golangci_lint \
+    --mount type=cache,sharing=shared,id=go-mod,target=/go/pkg/mod \
+    --mount type=cache,sharing=shared,id=go-build,target=/root/.cache/go-build \
+    --mount type=cache,sharing=shared,target=/root/.cache/golangci_lint \
     golangci-lint run
 
 # check verifies code quality by running linters and tests
