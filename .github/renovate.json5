@@ -21,6 +21,7 @@
     {
       matchPackageNames: ["npm"],
       automerge: true,
+      autoApprove: true,
     },
   ],
 }
