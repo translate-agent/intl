@@ -26,7 +26,7 @@ testdata:
   ARG node_version=23.11.1
   FROM node:$node_version-alpine
   # renovate: datasource=npm packageName=npm
-  ARG npm_version=11.6.0
+  ARG npm_version=11.6.1
   RUN npm i -g npm@$npm_version
   WORKDIR /intl
   COPY testdata.js .
