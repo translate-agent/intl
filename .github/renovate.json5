@@ -20,8 +20,8 @@
   packageRules: [
     {
       matchPackageNames: ["npm"],
-      automerge: true,
       autoApprove: true,
+      automerge: true,
     },
   ],
 }
