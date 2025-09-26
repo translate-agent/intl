@@ -4,6 +4,7 @@
     "config:best-practices",
     "security:openssf-scorecard",
     ":semanticCommits",
+    ":pinVersions",
   ],
   rebaseWhen: "behind-base-branch",
   customManagers: [
@@ -14,6 +15,12 @@
       matchStrings: [
         "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+(?:ENV|ARG) .+?\\_version=(?<currentValue>.+?)\\s",
       ],
+    },
+  ],
+  packageRules: [
+    {
+      matchPackageNames: ["npm"],
+      automerge: true,
     },
   ],
 }
