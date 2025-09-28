@@ -5,6 +5,6 @@ go 1.23.0
 toolchain go1.25.1
 
 require (
-	github.com/yaa110/go-persian-calendar v1.2.2
+	github.com/yaa110/go-persian-calendar v1.3.0
 	golang.org/x/text v0.28.0
 )
