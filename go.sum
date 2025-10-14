@@ -4,3 +4,5 @@ github.com/yaa110/go-persian-calendar v1.3.0 h1:aGWyS4MO8KQq0y/cqmOwXdDUeEeb88hB
 github.com/yaa110/go-persian-calendar v1.3.0/go.mod h1:AM75c681oraAsCdpCMVie7Pvi+FUAOm0k/6cCTCg+oc=
 golang.org/x/text v0.28.0 h1:rhazDwis8INMIwQ4tpjLDzUhx6RlXqZNPEM0huQojng=
 golang.org/x/text v0.28.0/go.mod h1:U8nCwOR8jO/marOQ0QbDiOngZVEBB7MAiitBuMjXiNU=
+golang.org/x/text v0.30.0 h1:yznKA/E9zq54KzlzBEAWn1NXSQ8DIp/NYMy88xJjl4k=
+golang.org/x/text v0.30.0/go.mod h1:yDdHFIX9t+tORqspjENWgzaCVXgk0yYnYuSZ8UzzBVM=
