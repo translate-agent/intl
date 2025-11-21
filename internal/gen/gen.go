@@ -1086,11 +1086,11 @@ func deepCopy[T any](v T) T { //nolint:ireturn
 }
 
 func title(s string) string {
-	var r string
+	var sb strings.Builder
 
 	for _, v := range strings.Split(s, " ") {
-		r += cases.Title(language.English).String(v)
+		sb.WriteString(cases.Title(language.English).String(v))
 	}
 
-	return strings.ReplaceAll(r, "-", "") // e.g. "islamic - umalqura"
+	return strings.ReplaceAll(sb.String(), "-", "") // e.g. "islamic - umalqura"
 }
