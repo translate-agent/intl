@@ -24,7 +24,7 @@ jobs:
           version: 0.8.16
           use-cache: true
       - name: Earthly Cache
-        uses: actions/cache@v4
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
         id: earthly-cache
         with:
           path: earthly-cache.tar.zst
