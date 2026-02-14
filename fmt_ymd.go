@@ -109,14 +109,14 @@ func seqYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		// year=2-digit,month=2-digit,day=2-digit,out=24/01/02
 		return seq.Add(year, '/', month, '/', day)
 	case cldr.AR:
-		// year=numeric,month=numeric,day=numeric,out=٢‏/١‏/٢٠٢٤
-		// year=numeric,month=numeric,day=2-digit,out=٠٢‏/١‏/٢٠٢٤
-		// year=numeric,month=2-digit,day=numeric,out=٢‏/٠١‏/٢٠٢٤
-		// year=numeric,month=2-digit,day=2-digit,out=٠٢‏/٠١‏/٢٠٢٤
-		// year=2-digit,month=numeric,day=numeric,out=٢‏/١‏/٢٤
-		// year=2-digit,month=numeric,day=2-digit,out=٠٢‏/١‏/٢٤
-		// year=2-digit,month=2-digit,day=numeric,out=٢‏/٠١‏/٢٤
-		// year=2-digit,month=2-digit,day=2-digit,out=٠٢‏/٠١‏/٢٤
+		// year=numeric,month=numeric,day=numeric,out=٢/١/٢٠٢٤
+		// year=numeric,month=numeric,day=2-digit,out=٠٢/١/٢٠٢٤
+		// year=numeric,month=2-digit,day=numeric,out=٢/٠١/٢٠٢٤
+		// year=numeric,month=2-digit,day=2-digit,out=٠٢/٠١/٢٠٢٤
+		// year=2-digit,month=numeric,day=numeric,out=٢/١/٢٤
+		// year=2-digit,month=numeric,day=2-digit,out=٠٢/١/٢٤
+		// year=2-digit,month=2-digit,day=numeric,out=٢/٠١/٢٤
+		// year=2-digit,month=2-digit,day=2-digit,out=٠٢/٠١/٢٤
 		return seq.Add(day, symbols.Txt02, month, symbols.Txt02, year)
 	case cldr.AZ, cldr.HY, cldr.KK, cldr.UK:
 		// year=numeric,month=numeric,day=numeric,out=02.01.2024
