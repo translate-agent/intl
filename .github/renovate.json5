@@ -1,42 +1,51 @@
 {
-  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   extends: [
-    "config:best-practices",
-    "security:openssf-scorecard",
-    ":semanticCommits",
-    ":pinVersions",
+    'config:best-practices',
+    'security:openssf-scorecard',
+    ':semanticCommits',
+    ':pinVersions',
   ],
-  rebaseWhen: "behind-base-branch",
+  rebaseWhen: 'behind-base-branch',
   customManagers: [
     {
-      customType: "regex",
-      description: "Update _version ARGs and ENVs in Earthfile",
-      managerFilePatterns: ["/^Earthfile$/"],
+      customType: 'regex',
+      description: 'Update _version ARGs and ENVs in Earthfile',
+      managerFilePatterns: [
+        '/^Earthfile$/',
+      ],
       matchStrings: [
-        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+(?:ENV|ARG) .+?\\_version=(?<currentValue>.+?)\\s",
+        '# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+(?:ENV|ARG) .+?\\_version=(?<currentValue>.+?)\\s',
       ],
     },
     {
-      customType: "regex",
-      description: "Update Node.js version in README.md",
-      fileMatch: ["^README\\.md$"],
-      matchStrings: [
-        "Node\\.js v(?<currentValue>[\\d\\.]+)",
-        "nodejs\\.org/docs/v(?<currentValue>[\\d\\.]+)/",
+      customType: 'regex',
+      description: 'Update Node.js version in README.md',
+      managerFilePatterns: [
+        '/^README\\.md$/',
       ],
-      datasourceTemplate: "node",
-      depNameTemplate: "node",
+      matchStrings: [
+        'Node\\.js v(?<currentValue>[\\d\\.]+)',
+        'nodejs\\.org/docs/v(?<currentValue>[\\d\\.]+)/',
+      ],
+      datasourceTemplate: 'node',
+      depNameTemplate: 'node',
     },
   ],
   packageRules: [
     {
-      matchPackageNames: ["npm"],
+      matchPackageNames: [
+        'npm',
+      ],
       autoApprove: true,
       automerge: true,
     },
     {
-      matchPackageNames: ["golang", "go"],
-      groupName: "golang",
+      matchPackageNames: [
+        'golang',
+        'go',
+      ],
+      groupName: 'golang',
       autoApprove: true,
       automerge: true,
     },
