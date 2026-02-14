@@ -19,35 +19,38 @@ jobs:
     env:
       FORCE_COLOR: 1
     steps:
-      - uses: EarthBuild/actions-setup@43717e616f59946ba2856de0874952ac02c50b11
-        with:
-          version: 0.8.17-rc-3
-          prerelease: true
-          use-cache: true
-      # - name: Earth Cache
-      #   uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
-      #   id: earth-cache
+      # - uses: EarthBuild/actions-setup@43717e616f59946ba2856de0874952ac02c50b11
       #   with:
-      #     path: earth-cache.tar.zst
-      #     key: earth-cache-${{ matrix.go-version }}-${{ github.sha }}
-      #     restore-keys: |
-      #       earth-cache-${{ matrix.go-version }}-
-      # - name: Uncompress Earth Cache
-      #   run: |
-      #     if [ -f "earth-cache.tar.zst" ]; then
-      #       echo "Cache file found. Restoring..."
-      #       sudo mkdir -p /var/lib/docker/volumes/intl-cache/_data
-      #       sudo tar -xf earth-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data
-      #     else
-      #       echo "Cache file not found. Skipping restore."
-      #     fi
+      #     version: 0.8.17-rc-3
+      #     prerelease: true
+      #     use-cache: true
+      - uses: earthly/actions-setup@v1
+        with:
+          version: "latest"
+      - name: Earth Cache
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
+        id: earth-cache
+        with:
+          path: earth-cache.tar.zst
+          key: earth-cache-${{ matrix.go-version }}-${{ github.sha }}
+          restore-keys: |
+            earth-cache-${{ matrix.go-version }}-
+      - name: Uncompress Earth Cache
+        run: |
+          if [ -f "earth-cache.tar.zst" ]; then
+            echo "Cache file found. Restoring..."
+            sudo mkdir -p /var/lib/docker/volumes/intl-cache/_data
+            sudo tar -xf earth-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data
+          else
+            echo "Cache file not found. Skipping restore."
+          fi
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       - name: Go ${{ matrix.go-version }}
         run: echo "golang_version=${{ matrix.go-version }}" > .arg
       - name: Generate cldr.go
         if: ${{ matrix.go-version == '1.25' }}
         run: |
-          earth --strict +generate
+          earthly --strict +generate
           if ! git diff --quiet internal/cldr/data.go; then
             echo "Generated cldr.go file is not up to date"
             git diff
@@ -55,11 +58,12 @@ jobs:
           fi
       - name: Lint
         if: ${{ matrix.go-version == '1.25' }}
-        run: earth --ci +lint
+        run: earthly --ci +lint
       - name: Test Unit
-        run: earth --ci +test
+        if: ${{ matrix.go-version == '1.25' }}
+        run: earthly --ci +test
       - name: Stop Buildkit
         run: docker stop intl-buildkitd
-      # - name: Compress Earth Cache
-      #   if: steps.earth-cache.outputs.cache-hit != 'true'
-      #   run: sudo tar -c --use-compress-program="zstd -T0" -f earth-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data .
+      - name: Compress Earth Cache
+        if: steps.earth-cache.outputs.cache-hit != 'true'
+        run: sudo tar -c --use-compress-program="zstd -T0" -f earth-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data .
