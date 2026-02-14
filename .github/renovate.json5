@@ -24,7 +24,7 @@
       automerge: true,
     },
     {
-      matchPackageNames: ["golang", "go", "golangci/golangci-lint"],
+      matchPackageNames: ["golang", "go"],
       groupName: "golang",
       autoApprove: true,
       automerge: true,
