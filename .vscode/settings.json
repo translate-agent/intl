@@ -5,7 +5,11 @@
   },
   "go.formatTool": "gofumpt",
   "go.lintOnSave": "workspace",
-  "go.lintTool": "golangci-lint",
+  "go.lintTool": "golangci-lint-v2",
+  "go.toolsManagement.autoUpdate": true,
+  "go.alternateTools": {
+    "golangci-lint-v2": "golangci-lint"
+  },
   "gopls": {
     "ui.codelenses": {
       "gc_details": true

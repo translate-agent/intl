@@ -14,7 +14,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        go-version: ["1.23", "1.24", "1.25"]
+        go-version: ["1.24", "1.25", "1.26"]
       fail-fast: false
     env:
       FORCE_COLOR: 1
@@ -48,7 +48,7 @@ jobs:
       - name: Go ${{ matrix.go-version }}
         run: echo "golang_version=${{ matrix.go-version }}" > .arg
       - name: Generate cldr.go
-        if: ${{ matrix.go-version == '1.25' }}
+        if: ${{ matrix.go-version == '1.26' }}
         run: |
           earthly --strict +generate
           if ! git diff --quiet internal/cldr/data.go; then
@@ -57,10 +57,10 @@ jobs:
             exit 1
           fi
       - name: Lint
-        if: ${{ matrix.go-version == '1.25' }}
+        if: ${{ matrix.go-version == '1.26' }}
         run: earthly --ci +lint
       - name: Test Unit
-        if: ${{ matrix.go-version == '1.25' }}
+        if: ${{ matrix.go-version == '1.26' }}
         run: earthly --ci +test
       # - name: Stop Buildkit
       #   run: docker stop intl-buildkitd

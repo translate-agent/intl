@@ -178,7 +178,7 @@ func (g *Generator) merge(ctx context.Context, log *slog.Logger) {
 			// merge root to parent
 			merge(ctx, parent, root, log)
 
-			for _, locale := range strings.Split(parentLocale.Locales, " ") {
+			for locale := range strings.SplitSeq(parentLocale.Locales, " ") {
 				child := g.cldr.RawLDML(locale)
 
 				if child == nil {
@@ -1088,7 +1088,7 @@ func deepCopy[T any](v T) T { //nolint:ireturn
 func title(s string) string {
 	var sb strings.Builder
 
-	for _, v := range strings.Split(s, " ") {
+	for v := range strings.SplitSeq(s, " ") {
 		sb.WriteString(cases.Title(language.English).String(v))
 	}
 
