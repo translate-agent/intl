@@ -22,6 +22,7 @@ jobs:
       - uses: EarthBuild/actions-setup@43717e616f59946ba2856de0874952ac02c50b11
         with:
           version: 0.8.17-rc-3
+          prerelease: true
           use-cache: true
       # - name: Earth Cache
       #   uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
