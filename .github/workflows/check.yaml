@@ -23,23 +23,23 @@ jobs:
         with:
           version: 0.8.17-rc-3
           use-cache: true
-      - name: Earth Cache
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
-        id: earth-cache
-        with:
-          path: earth-cache.tar.zst
-          key: earth-cache-${{ matrix.go-version }}-${{ github.sha }}
-          restore-keys: |
-            earth-cache-${{ matrix.go-version }}-
-      - name: Uncompress Earth Cache
-        run: |
-          if [ -f "earth-cache.tar.zst" ]; then
-            echo "Cache file found. Restoring..."
-            sudo mkdir -p /var/lib/docker/volumes/intl-cache/_data
-            sudo tar -xf earth-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data
-          else
-            echo "Cache file not found. Skipping restore."
-          fi
+      # - name: Earth Cache
+      #   uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
+      #   id: earth-cache
+      #   with:
+      #     path: earth-cache.tar.zst
+      #     key: earth-cache-${{ matrix.go-version }}-${{ github.sha }}
+      #     restore-keys: |
+      #       earth-cache-${{ matrix.go-version }}-
+      # - name: Uncompress Earth Cache
+      #   run: |
+      #     if [ -f "earth-cache.tar.zst" ]; then
+      #       echo "Cache file found. Restoring..."
+      #       sudo mkdir -p /var/lib/docker/volumes/intl-cache/_data
+      #       sudo tar -xf earth-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data
+      #     else
+      #       echo "Cache file not found. Skipping restore."
+      #     fi
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       - name: Go ${{ matrix.go-version }}
         run: echo "golang_version=${{ matrix.go-version }}" > .arg
@@ -59,6 +59,6 @@ jobs:
         run: earth --ci +test
       - name: Stop Buildkit
         run: docker stop intl-buildkitd
-      - name: Compress Earth Cache
-        if: steps.earth-cache.outputs.cache-hit != 'true'
-        run: sudo tar -c --use-compress-program="zstd -T0" -f earth-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data .
+      # - name: Compress Earth Cache
+      #   if: steps.earth-cache.outputs.cache-hit != 'true'
+      #   run: sudo tar -c --use-compress-program="zstd -T0" -f earth-cache.tar.zst -C /var/lib/docker/volumes/intl-cache/_data .
