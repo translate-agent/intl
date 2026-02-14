@@ -16,6 +16,17 @@
         "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+(?:ENV|ARG) .+?\\_version=(?<currentValue>.+?)\\s",
       ],
     },
+    {
+      customType: "regex",
+      description: "Update Node.js version in README.md",
+      fileMatch: ["^README\\.md$"],
+      matchStrings: [
+        "Node\\.js v(?<currentValue>[\\d\\.]+)",
+        "nodejs\\.org/docs/v(?<currentValue>[\\d\\.]+)/",
+      ],
+      datasourceTemplate: "node",
+      depNameTemplate: "node",
+    },
   ],
   packageRules: [
     {
