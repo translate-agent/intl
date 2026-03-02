@@ -116,7 +116,7 @@ func (g *Generator) write(out string, data *TemplateData) error {
 
 	name := path.Join(out, "internal/cldr/data.go")
 
-	f, err := os.Create(name)
+	f, err := os.Create(name) // #nosec G703
 	if err != nil {
 		return fmt.Errorf("create file %s: %w", name, err)
 	}
@@ -135,7 +135,7 @@ func (g *Generator) saveMerged(out string) error {
 	for _, locale := range g.cldr.Locales() {
 		name := path.Join(out, ".cldr_merged", locale+".xml")
 
-		f, err := os.Create(name)
+		f, err := os.Create(name) // #nosec G703
 		if err != nil {
 			return fmt.Errorf("create %s: %w", name, err)
 		}
