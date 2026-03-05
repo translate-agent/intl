@@ -10,24 +10,29 @@ init:
   BUILD +generate
   BUILD +testdata
 
-# cldr saves CLDR files to .cldr
-cldr:
-  WORKDIR /cldr
-  ARG cldr_version=46.0
-  ARG out=.cldr
-  RUN wget https://unicode.org/Public/cldr/$( printf "%.0f" $cldr_version )/cldr-common-$cldr_version.zip
-  RUN unzip cldr-common-$cldr_version.zip
-  RUN rm cldr-common-$cldr_version.zip
-  SAVE ARTIFACT /cldr AS LOCAL $out
-
-# testdata generates test cases and saves to tests.json
-testdata:
+node-base:
   # renovate: datasource=docker packageName=node
   ARG node_version=24.14.0
   FROM node:$node_version-alpine
   # renovate: datasource=npm packageName=npm
   ARG npm_version=11.11.0
   RUN npm i -g npm@$npm_version
+
+# cldr saves CLDR files to .cldr
+cldr:
+  FROM +node-base
+  WORKDIR /cldr
+  ARG cldr_version=$(node -p "parseInt(process.versions.cldr)")
+  ARG out=.cldr
+  RUN printf "%.0f" $cldr_version
+  RUN wget https://unicode.org/Public/cldr/$cldr_version/cldr-common-$cldr_version.zip
+  RUN unzip cldr-common-$cldr_version.zip
+  RUN rm cldr-common-$cldr_version.zip
+  SAVE ARTIFACT /cldr AS LOCAL $out
+
+# testdata generates test cases and saves to tests.json
+testdata:
+  FROM +node-base
   WORKDIR /intl
   COPY testdata.js .
   COPY --dir +cldr/cldr/common/main .cldr/common/main

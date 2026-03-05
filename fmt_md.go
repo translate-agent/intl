@@ -67,7 +67,7 @@ func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 
 			return seq.Add(symbols.Symbol_MM, '/', symbols.Symbol_dd)
 		}
-	case cldr.AF, cldr.AS, cldr.IA, cldr.KY, cldr.MI, cldr.RM, cldr.TG, cldr.WO:
+	case cldr.AF, cldr.AS, cldr.IA, cldr.KY, cldr.MI, cldr.RM, cldr.TG, cldr.WO, cldr.RW:
 		return seq.Add(symbols.Symbol_dd, '-', symbols.Symbol_MM)
 	case cldr.HI:
 		if script == cldr.Latn && opts.Month.numeric() && opts.Day.numeric() {
@@ -79,11 +79,11 @@ func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		}
 
 		fallthrough
-	case cldr.AM, cldr.AGQ, cldr.AST, cldr.BAS, cldr.BM, cldr.CA, cldr.CY, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DYO,
-		cldr.EL, cldr.EWO, cldr.FUR, cldr.GD, cldr.GL, cldr.HAW, cldr.ID, cldr.IG, cldr.KAB, cldr.KGP, cldr.KHQ, cldr.KM,
+	case cldr.AM, cldr.AGQ, cldr.AST, cldr.BAS, cldr.BM, cldr.CA, cldr.CY, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DYO, cldr.EL,
+		cldr.EWO, cldr.FUR, cldr.GD, cldr.GL, cldr.HAW, cldr.ID, cldr.IG, cldr.KAB, cldr.KGP, cldr.KHQ, cldr.KM, cldr.KOK,
 		cldr.KSF, cldr.KXV, cldr.LN, cldr.LO, cldr.LU, cldr.MAI, cldr.MFE, cldr.MG, cldr.MGH, cldr.ML, cldr.MNI, cldr.MUA,
-		cldr.MY, cldr.NMG, cldr.NUS, cldr.PA, cldr.RN, cldr.SA, cldr.SEH, cldr.SES, cldr.SG, cldr.SHI, cldr.SU, cldr.SW,
-		cldr.TO, cldr.TR, cldr.TWQ, cldr.UR, cldr.XNR, cldr.YAV, cldr.YO, cldr.YRL, cldr.ZGH:
+		cldr.MY, cldr.NMG, cldr.NUS, cldr.PA, cldr.RN, cldr.SA, cldr.SCN, cldr.SEH, cldr.SES, cldr.SG, cldr.SHI, cldr.SU,
+		cldr.SW, cldr.TO, cldr.TR, cldr.TWQ, cldr.UR, cldr.XNR, cldr.YAV, cldr.YO, cldr.YRL, cldr.ZGH:
 		return seq.Add(day, '/', month)
 	case cldr.BR, cldr.GA, cldr.IT, cldr.JV, cldr.KKJ, cldr.SC, cldr.SYR, cldr.UZ, cldr.VEC:
 		return seq.Add(symbols.Symbol_dd, '/', symbols.Symbol_MM)
@@ -98,7 +98,7 @@ func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.AK, cldr.ASA, cldr.BEM, cldr.BEZ, cldr.BLO, cldr.BRX, cldr.CEB, cldr.CGG, cldr.CHR, cldr.DAV, cldr.EBU,
 		cldr.EE, cldr.EU, cldr.FIL, cldr.GUZ, cldr.HA, cldr.JA, cldr.JMC, cldr.KAA, cldr.KAM, cldr.KDE, cldr.KI, cldr.KLN,
 		cldr.KSB, cldr.LAG, cldr.LG, cldr.LUO, cldr.LUY, cldr.MAS, cldr.MER, cldr.MHN, cldr.NAQ, cldr.ND, cldr.NYN,
-		cldr.ROF, cldr.RWK, cldr.SAQ, cldr.SBP, cldr.SO, cldr.TEO, cldr.TZM, cldr.VAI, cldr.VUN, cldr.XH, cldr.XOG,
+		cldr.ROF, cldr.RWK, cldr.SAQ, cldr.SBP, cldr.SO, cldr.TEO, cldr.TZM, cldr.VAI, cldr.VUN, cldr.XOG,
 		cldr.YUE:
 		return seq.Add(month, '/', day)
 	case cldr.KS:
@@ -113,7 +113,13 @@ func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		return seq.Add(month, '/', day)
 	case cldr.AR:
 		return seq.Add(day, symbols.Txt02, month)
-	case cldr.AZ, cldr.CV, cldr.FO, cldr.HY, cldr.KK, cldr.KU, cldr.OS, cldr.TK, cldr.TT, cldr.UK:
+	case cldr.BA, cldr.AZ, cldr.FO, cldr.HY, cldr.KU, cldr.OS, cldr.TK, cldr.TT, cldr.UK:
+		return seq.Add(symbols.Symbol_dd, '.', symbols.Symbol_MM)
+	case cldr.KK:
+		if script == cldr.Arab {
+			return seq.Add(day, '-', month)
+		}
+
 		return seq.Add(symbols.Symbol_dd, '.', symbols.Symbol_MM)
 	case cldr.BE, cldr.DA, cldr.ET, cldr.HE, cldr.IE, cldr.JGO, cldr.KA:
 		return seq.Add(day, '.', month)
@@ -123,7 +129,13 @@ func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		return seq.Add(day, '.', symbols.Symbol_MM)
 	case cldr.LV:
 		return seq.Add(symbols.Symbol_dd, '.', symbols.Symbol_MM, '.')
-	case cldr.DE, cldr.DSB, cldr.FI, cldr.GSW, cldr.HSB, cldr.IS, cldr.LB, cldr.SMN:
+	case cldr.DSB, cldr.FI, cldr.GSW, cldr.HSB, cldr.IS, cldr.LB, cldr.SMN:
+		return seq.Add(day, '.', month, '.')
+	case cldr.DE:
+		if opts.Month.twoDigit() && opts.Day.numeric() {
+			return seq.Add(symbols.Symbol_dd, '.', month, '.')
+		}
+
 		return seq.Add(day, '.', month, '.')
 	case cldr.NB, cldr.NN, cldr.NO: // d.M.
 		return seq.Add(symbols.Symbol_d, '.', symbols.Symbol_M, '.')
@@ -135,6 +147,8 @@ func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		}
 
 		return seq.Add(day, '.', month)
+	case cldr.CV:
+		return seq.Add(symbols.Symbol_MM, '.', symbols.Symbol_dd)
 	case cldr.SR:
 		if opts.Month.numeric() && opts.Day.numeric() {
 			return seq.Add(day, '.', ' ', month, '.')
@@ -342,12 +356,6 @@ func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		// month=2-digit,day=numeric,out=01ꆪ-02ꑍ
 		// month=2-digit,day=2-digit,out=01ꆪ-02ꑍ
 		return seq.Add(symbols.Symbol_MM, symbols.Txt03, symbols.Symbol_dd, symbols.Txtꑍ)
-	case cldr.KOK:
-		if script == cldr.Latn {
-			return seq.Add(day, '/', month)
-		}
-
-		return seq.Add(day, '-', month)
 	}
 }
 
@@ -356,11 +364,14 @@ func seqMonthDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
 	seq := symbols.NewSeq(locale)
 	month := opts.Month.symbolFormat()
 
-	if lang == cldr.TH {
+	switch lang {
+	default:
+		return seq.Add(month, '-', symbols.Symbol_dd)
+	case cldr.SHN:
+		return seq.Add(symbols.Symbol_MM, '-', symbols.Symbol_dd)
+	case cldr.TH:
 		return seq.Add(opts.Day.symbol(), '/', month)
 	}
-
-	return seq.Add(month, '-', symbols.Symbol_dd)
 }
 
 func seqMonthDayPersian(locale language.Tag, opts Options) *symbols.Seq {

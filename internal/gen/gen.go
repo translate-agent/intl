@@ -678,7 +678,13 @@ func (g *Generator) fields() Fields {
 		fields[locale] = f
 	}
 
-	f := fields["nn"]
+	f := fields["ba"]
+	f.Day = "көн"
+	f.Month = "ай"
+	fields["ba"] = f
+	fields["ba-RU"] = f
+
+	f = fields["nn"]
 	f.Day = "dag"
 	fields["nn"] = f
 
@@ -796,6 +802,13 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 			era.Narrow = "公元"
 			era.Short = "公元"
 			era.Long = "公元"
+		case "ba", "ba-RU":
+			era.Narrow = "б.э."
+			era.Short = "б.э."
+			era.Long = "беҙҙең эра"
+		case "cv", "cv-RU":
+			era.Narrow = "х. с."
+			era.Short = "х. с."
 		}
 
 		if era.Long == "" && era.Narrow == "" && era.Short == "" {
