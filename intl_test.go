@@ -147,7 +147,6 @@ func TestDateTime_Format(t *testing.T) {
 			t.Parallel()
 
 			t.Logf("calendar type: %s", cldr.DefaultCalendar(locale))
-			t.Logf("cases:\n%s", cases)
 
 			for _, test := range cases {
 				if reason := skipTest(locale); reason != "" {
@@ -161,6 +160,8 @@ func TestDateTime_Format(t *testing.T) {
 					t.Logf("\n%v\n%v\n", []rune(test.Output), []rune(got))
 				}
 			}
+
+			t.Logf("cases:\n%s", cases)
 		})
 	}
 }

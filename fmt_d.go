@@ -31,6 +31,8 @@ func seqDay(locale language.Tag, opt Day) *symbols.Seq {
 		seq.Add(symbols.Symbol_dd)
 	case cldr.II:
 		seq.Add(day, symbols.Txtꑍ)
+	case cldr.TOK:
+		seq.Add('#', day)
 	}
 
 	return seq
