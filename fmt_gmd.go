@@ -23,10 +23,10 @@ func seqEraMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		}
 
 		fallthrough
-	case cldr.BGC, cldr.BHO, cldr.BO, cldr.CE, cldr.CKB, cldr.CSW, cldr.EO, cldr.GAA, cldr.GV, cldr.KL, cldr.KSH, cldr.KW,
-		cldr.LIJ, cldr.LKT, cldr.LMO, cldr.MGO, cldr.MT, cldr.NDS, cldr.NNH, cldr.NE, cldr.NQO, cldr.NSO, cldr.OC, cldr.PRG,
-		cldr.PS, cldr.QU, cldr.RAJ, cldr.SAH, cldr.SAT, cldr.SHN, cldr.SN, cldr.ST, cldr.SZL, cldr.TN, cldr.TOK,
-		cldr.TYV, cldr.VMW, cldr.XH, cldr.YI, cldr.ZA, cldr.ZU:
+	case cldr.BGC, cldr.BHO, cldr.BO, cldr.BUA, cldr.CE, cldr.CKB, cldr.CSW, cldr.EO, cldr.GAA, cldr.GV, cldr.KL, cldr.KSH,
+		cldr.KW, cldr.LIJ, cldr.LKT, cldr.LMO, cldr.MGO, cldr.MT, cldr.NDS, cldr.NNH, cldr.NE, cldr.NQO, cldr.NSO, cldr.OC,
+		cldr.PMS, cldr.PRG, cldr.PS, cldr.QU, cldr.RAJ, cldr.SAH, cldr.SAT, cldr.SHN, cldr.SN, cldr.ST, cldr.SZL, cldr.TN,
+		cldr.TOK, cldr.TYV, cldr.VMW, cldr.XH, cldr.YI, cldr.ZA, cldr.ZU:
 		return seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
 	case cldr.LT:
 		if opts.Month.numeric() && opts.Day.numeric() {
@@ -236,12 +236,11 @@ func seqEraMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 	case cldr.EN:
 		switch region {
-		case cldr.RegionUS, cldr.RegionAS, cldr.RegionBI, cldr.RegionPH, cldr.RegionPR, cldr.RegionUM, cldr.RegionVI:
+		case cldr.RegionUS, cldr.RegionAS, cldr.RegionBI, cldr.RegionGU, cldr.RegionJP, cldr.RegionMH, cldr.RegionMP,
+			cldr.RegionPH, cldr.RegionPR, cldr.RegionUM, cldr.RegionVI, cldr.RegionZZ:
 			return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), ' ', era)
 		case cldr.RegionAU, cldr.RegionBE, cldr.RegionIE, cldr.RegionNZ, cldr.RegionZW:
 			return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), ' ', era)
-		case cldr.RegionGU, cldr.RegionMH, cldr.RegionMP, cldr.RegionZZ:
-			return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), ' ', era)
 		case cldr.RegionCA:
 			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit

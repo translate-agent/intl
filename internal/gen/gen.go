@@ -809,6 +809,10 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 		case "cv", "cv-RU":
 			era.Narrow = "х. с."
 			era.Short = "х. с."
+		case "ku-Arab-IR":
+			era.Narrow = "PM"
+			era.Short = "PM"
+			era.Long = "Piştî Mîladê"
 		}
 
 		if era.Long == "" && era.Narrow == "" && era.Short == "" {

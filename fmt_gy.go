@@ -14,17 +14,17 @@ func seqEraYear(locale language.Tag, opts Options) *symbols.Seq {
 
 	switch lang {
 	case cldr.AGQ, cldr.AK, cldr.AS, cldr.ASA, cldr.AZ, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BGC, cldr.BHO, cldr.BM, cldr.BO,
-		cldr.CE, cldr.CGG, cldr.CKB, cldr.CSW, cldr.CV, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DZ, cldr.DYO, cldr.EBU,
-		cldr.EU, cldr.EWO, cldr.FUR, cldr.FY, cldr.GAA, cldr.GSW, cldr.GU, cldr.GUZ, cldr.GV, cldr.HA, cldr.HU, cldr.IG,
-		cldr.II, cldr.JMC, cldr.JGO, cldr.JV, cldr.KAB, cldr.KAM, cldr.KDE, cldr.KHQ, cldr.KI, cldr.KL, cldr.KLN, cldr.KN,
-		cldr.KO, cldr.KOK, cldr.KSB, cldr.KSF, cldr.KSH, cldr.KU, cldr.KW, cldr.LAG, cldr.LG, cldr.LIJ, cldr.LKT, cldr.LMO,
-		cldr.LN, cldr.LO, cldr.LRC, cldr.LV, cldr.LU, cldr.LUO, cldr.LUY, cldr.MAS, cldr.MER, cldr.MFE, cldr.MG, cldr.MGH,
-		cldr.MGO, cldr.ML, cldr.MN, cldr.MNI, cldr.MR, cldr.MT, cldr.MUA, cldr.MY, cldr.NAQ, cldr.ND, cldr.NDS, cldr.NE,
-		cldr.NMG, cldr.NNH, cldr.NQO, cldr.NSO, cldr.NUS, cldr.NYN, cldr.OC, cldr.OM, cldr.OS, cldr.PA, cldr.PCM, cldr.PRG,
-		cldr.PS, cldr.QU, cldr.RAJ, cldr.RN, cldr.ROF, cldr.RWK, cldr.SAQ, cldr.SAT, cldr.SBP, cldr.SEH, cldr.SES, cldr.SG,
-		cldr.SHI, cldr.SHN, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TE, cldr.TEO, cldr.TK, cldr.TN, cldr.TR,
-		cldr.TWQ, cldr.TZM, cldr.UZ, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI, cldr.YO, cldr.ZA,
-		cldr.ZGH, cldr.ZU:
+		cldr.BUA, cldr.CE, cldr.CGG, cldr.CKB, cldr.CSW, cldr.CV, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DZ, cldr.DYO,
+		cldr.EBU, cldr.EU, cldr.EWO, cldr.FUR, cldr.FY, cldr.GAA, cldr.GSW, cldr.GU, cldr.GUZ, cldr.GV, cldr.HA, cldr.HU,
+		cldr.IG, cldr.II, cldr.JMC, cldr.JGO, cldr.JV, cldr.KAB, cldr.KAM, cldr.KDE, cldr.KHQ, cldr.KI, cldr.KL, cldr.KLN,
+		cldr.KN, cldr.KO, cldr.KOK, cldr.KSB, cldr.KSF, cldr.KSH, cldr.KU, cldr.KW, cldr.LAG, cldr.LG, cldr.LIJ, cldr.LKT,
+		cldr.LMO, cldr.LN, cldr.LO, cldr.LRC, cldr.LV, cldr.LU, cldr.LUO, cldr.LUY, cldr.MAS, cldr.MER, cldr.MFE, cldr.MG,
+		cldr.MGH, cldr.MGO, cldr.ML, cldr.MN, cldr.MNI, cldr.MR, cldr.MT, cldr.MUA, cldr.MY, cldr.NAQ, cldr.ND, cldr.NDS,
+		cldr.NE, cldr.NMG, cldr.NNH, cldr.NQO, cldr.NSO, cldr.NUS, cldr.NYN, cldr.OC, cldr.OM, cldr.OS, cldr.PA, cldr.PCM,
+		cldr.PMS, cldr.PRG, cldr.PS, cldr.QU, cldr.RAJ, cldr.RN, cldr.ROF, cldr.RWK, cldr.SAQ, cldr.SAT, cldr.SBP, cldr.SEH,
+		cldr.SES, cldr.SG, cldr.SHI, cldr.SHN, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TE, cldr.TEO, cldr.TK,
+		cldr.TN, cldr.TR, cldr.TWQ, cldr.TZM, cldr.UZ, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI,
+		cldr.YO, cldr.ZA, cldr.ZGH, cldr.ZU:
 		return seq.Add(era, ' ').AddSeq(year)
 	case cldr.KS:
 		if script == cldr.Deva {

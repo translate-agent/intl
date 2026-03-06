@@ -28,16 +28,16 @@ func seqEraYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 
 		fallthrough
 	case cldr.AF, cldr.AGQ, cldr.AK, cldr.AS, cldr.ASA, cldr.AST, cldr.BAS, cldr.BE, cldr.BEM, cldr.BEZ, cldr.BGC,
-		cldr.BHO, cldr.BM, cldr.BO, cldr.BRX, cldr.BS, cldr.CCP, cldr.CE, cldr.CEB, cldr.CGG, cldr.CKB, cldr.CSW, cldr.DAV,
-		cldr.DJE, cldr.DOI, cldr.DUA, cldr.DYO, cldr.EBU, cldr.EO, cldr.EWO, cldr.FUR, cldr.GAA, cldr.GSW, cldr.GUZ, cldr.GV,
-		cldr.II, cldr.JGO, cldr.JMC, cldr.KAB, cldr.KAM, cldr.KDE, cldr.KHQ, cldr.KI, cldr.KL, cldr.KLN, cldr.KN, cldr.KSB,
-		cldr.KSF, cldr.KSH, cldr.KW, cldr.LAG, cldr.LG, cldr.LIJ, cldr.LKT, cldr.LMO, cldr.LN, cldr.LRC, cldr.LU, cldr.LUO,
-		cldr.LUY, cldr.LV, cldr.MAS, cldr.MG, cldr.MER, cldr.MFE, cldr.MGH, cldr.MGO, cldr.MNI, cldr.MR, cldr.MUA, cldr.MY,
-		cldr.NAQ, cldr.ND, cldr.NDS, cldr.NMG, cldr.NNH, cldr.NQO, cldr.NSO, cldr.NUS, cldr.NYN, cldr.OC, cldr.OS, cldr.PCM,
-		cldr.PRG, cldr.PS, cldr.RAJ, cldr.RN, cldr.ROF, cldr.RWK, cldr.SA, cldr.SAH, cldr.SAQ, cldr.SAT, cldr.SBP, cldr.SEH,
-		cldr.SES, cldr.SG, cldr.SHI, cldr.SI, cldr.SK, cldr.SMN, cldr.SN, cldr.SR, cldr.ST, cldr.SU, cldr.SYR, cldr.SZL,
-		cldr.TA, cldr.TEO, cldr.TI, cldr.TN, cldr.TO, cldr.TOK, cldr.TWQ, cldr.TYV, cldr.TZM, cldr.VAI, cldr.VMW, cldr.VUN,
-		cldr.WAE, cldr.WO, cldr.XH, cldr.XNR, cldr.XOG, cldr.YAV, cldr.YI, cldr.YRL, cldr.ZA, cldr.ZGH, cldr.ZU:
+		cldr.BHO, cldr.BM, cldr.BO, cldr.BRX, cldr.BS, cldr.BUA, cldr.CCP, cldr.CE, cldr.CEB, cldr.CGG, cldr.CKB, cldr.CSW,
+		cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DYO, cldr.EBU, cldr.EO, cldr.EWO, cldr.FUR, cldr.GAA, cldr.GSW, cldr.GUZ,
+		cldr.GV, cldr.II, cldr.JGO, cldr.JMC, cldr.KAB, cldr.KAM, cldr.KDE, cldr.KHQ, cldr.KI, cldr.KL, cldr.KLN, cldr.KN,
+		cldr.KSB, cldr.KSF, cldr.KSH, cldr.KW, cldr.LAG, cldr.LG, cldr.LIJ, cldr.LKT, cldr.LMO, cldr.LN, cldr.LRC, cldr.LU,
+		cldr.LUO, cldr.LUY, cldr.LV, cldr.MAS, cldr.MG, cldr.MER, cldr.MFE, cldr.MGH, cldr.MGO, cldr.MNI, cldr.MR, cldr.MUA,
+		cldr.MY, cldr.NAQ, cldr.ND, cldr.NDS, cldr.NMG, cldr.NNH, cldr.NQO, cldr.NSO, cldr.NUS, cldr.NYN, cldr.OC, cldr.OS,
+		cldr.PCM, cldr.PRG, cldr.PS, cldr.RAJ, cldr.RN, cldr.ROF, cldr.RWK, cldr.SA, cldr.SAH, cldr.SAQ, cldr.SAT, cldr.SBP,
+		cldr.SEH, cldr.SES, cldr.SG, cldr.SHI, cldr.SI, cldr.SK, cldr.SMN, cldr.SN, cldr.SR, cldr.ST, cldr.SU, cldr.SYR,
+		cldr.SZL, cldr.TA, cldr.TEO, cldr.TI, cldr.TN, cldr.TO, cldr.TOK, cldr.TWQ, cldr.TYV, cldr.TZM, cldr.VAI, cldr.VMW,
+		cldr.VUN, cldr.WAE, cldr.WO, cldr.XH, cldr.XNR, cldr.XOG, cldr.YAV, cldr.YI, cldr.YRL, cldr.ZA, cldr.ZGH, cldr.ZU:
 		return seq.Add(era, ' ').Add(opts.Year.symbol(), '-', symbols.Symbol_MM)
 	case cldr.AZ:
 		if script == cldr.Cyrl {
@@ -120,7 +120,7 @@ func seqEraYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 		return seq.Add(symbols.Symbol_MM, symbols.TxtArabicComma, ' ', opts.Year.symbol(), ' ', era)
 	case cldr.BA:
 		return seq.Add(era, ' ', symbols.Symbol_MM, '.', opts.Year.symbol())
-	case cldr.FF, cldr.FY, cldr.HAW, cldr.HE, cldr.IE, cldr.IG, cldr.KXV, cldr.QU:
+	case cldr.FF, cldr.FY, cldr.HAW, cldr.HE, cldr.IE, cldr.IG, cldr.KXV, cldr.PMS, cldr.QU:
 		return seq.Add(era, ' ', opts.Year.symbol(), '-', symbols.Symbol_MM)
 	case cldr.ET, cldr.FO, cldr.PL, cldr.RO:
 		return seq.Add(symbols.Symbol_MM, '.', opts.Year.symbol(), ' ', era)

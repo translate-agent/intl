@@ -922,7 +922,7 @@ var EraLookup = map[string]Era{
 	"ku":             {data[43646:43648] /* PM */, data[43646:43648] /* PM */, data[17779:17795] /* Piştî Mîladê */},
 	"ku-Arab":        {data[43646:43648] /* PM */, data[43646:43648] /* PM */, data[17779:17795] /* Piştî Mîladê */},
 	"ku-Arab-IQ":     {data[43646:43648] /* PM */, data[43646:43648] /* PM */, data[17779:17795] /* Piştî Mîladê */},
-	"ku-Arab-IR":     {data[42780:42782] /* AP */, data[42780:42782] /* AP */, data[42780:42782] /* AP */},
+	"ku-Arab-IR":     {data[43646:43648] /* PM */, data[43646:43648] /* PM */, data[17779:17795] /* Piştî Mîladê */},
 	"ku-Latn":        {data[43646:43648] /* PM */, data[43646:43648] /* PM */, data[17779:17795] /* Piştî Mîladê */},
 	"ku-Latn-IQ":     {data[43646:43648] /* PM */, data[43646:43648] /* PM */, data[17779:17795] /* Piştî Mîladê */},
 	"ku-Latn-SY":     {data[43646:43648] /* PM */, data[43646:43648] /* PM */, data[17779:17795] /* Piştî Mîladê */},

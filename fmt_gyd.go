@@ -45,11 +45,11 @@ func seqEraYearDay(locale language.Tag, opts Options) *symbols.Seq {
 		cldr.KO, cldr.KOK, cldr.KSB, cldr.KSF, cldr.KSH, cldr.KU, cldr.KW, cldr.LAG, cldr.LG, cldr.LIJ, cldr.LKT, cldr.LMO,
 		cldr.LN, cldr.LO, cldr.LRC, cldr.LU, cldr.LUO, cldr.LUY, cldr.LV, cldr.MAS, cldr.MER, cldr.MFE, cldr.MG, cldr.MGH,
 		cldr.MGO, cldr.ML, cldr.MN, cldr.MNI, cldr.MR, cldr.MT, cldr.MUA, cldr.MY, cldr.NAQ, cldr.ND, cldr.NDS, cldr.NE,
-		cldr.NMG, cldr.NNH, cldr.NQO, cldr.NSO, cldr.NUS, cldr.NYN, cldr.OC, cldr.OM, cldr.OS, cldr.PA, cldr.PCM, cldr.PRG,
-		cldr.PS, cldr.QU, cldr.RAJ, cldr.RN, cldr.ROF, cldr.RWK, cldr.SAQ, cldr.SAT, cldr.SBP, cldr.SEH, cldr.SES, cldr.SG,
-		cldr.SHI, cldr.SHN, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TE, cldr.TEO, cldr.TK, cldr.TN, cldr.TR,
-		cldr.TWQ, cldr.TZM, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI, cldr.YO, cldr.ZA, cldr.ZGH,
-		cldr.ZU:
+		cldr.NMG, cldr.NNH, cldr.NQO, cldr.NSO, cldr.NUS, cldr.NYN, cldr.OC, cldr.OM, cldr.OS, cldr.PA, cldr.PCM, cldr.PMS,
+		cldr.PRG, cldr.PS, cldr.QU, cldr.RAJ, cldr.RN, cldr.ROF, cldr.RWK, cldr.SAQ, cldr.SAT, cldr.SBP, cldr.SEH, cldr.SES,
+		cldr.SG, cldr.SHI, cldr.SHN, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TE, cldr.TEO, cldr.TK, cldr.TN,
+		cldr.TR, cldr.TWQ, cldr.TZM, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI, cldr.YO, cldr.ZA,
+		cldr.ZGH, cldr.ZU:
 		return seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 	case cldr.UZ:
 		if script != cldr.Arab {
@@ -80,7 +80,7 @@ func seqEraYearDay(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.BA:
 		return seq.Add(era, ' ').AddSeq(year).
 			Add(' ', symbols.TxtCyrillicShortI, '.', ' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
-	case cldr.TOK, cldr.TYV, cldr.XH:
+	case cldr.BUA, cldr.TOK, cldr.TYV, cldr.XH:
 		return seq.Add(era, ' ', opts.Year.symbol(), ' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 	}
 

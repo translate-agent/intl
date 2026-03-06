@@ -32,6 +32,8 @@ func seqEraYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 			return seq.Add(opts.Day.symbol(), '.', opts.Month.symbolFormat(), '.', year, ' ', era)
 		case cldr.RegionZZ:
 			return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), '/', year, ' ', era)
+		case cldr.RegionJP:
+			return seq.Add(year, '/', month, '/', day, ' ', era)
 		}
 	case cldr.BRX, cldr.LV, cldr.MNI:
 		return seq.Add(era, ' ', day, '-', month, '-', year)

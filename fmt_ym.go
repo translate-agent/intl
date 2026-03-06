@@ -22,27 +22,31 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 			return seq.Add(month, '/', year)
 		case cldr.Region001, cldr.Region150, cldr.RegionAE, cldr.RegionAG, cldr.RegionAI, cldr.RegionAT, cldr.RegionAU,
 			cldr.RegionBB, cldr.RegionBE, cldr.RegionBM, cldr.RegionBS, cldr.RegionBW, cldr.RegionBZ, cldr.RegionCC,
-			cldr.RegionCK, cldr.RegionCM, cldr.RegionCX, cldr.RegionCY, cldr.RegionDE, cldr.RegionDG, cldr.RegionDK,
-			cldr.RegionDM, cldr.RegionER, cldr.RegionFI, cldr.RegionFJ, cldr.RegionFK, cldr.RegionFM, cldr.RegionGB,
-			cldr.RegionGD, cldr.RegionGG, cldr.RegionGH, cldr.RegionGI, cldr.RegionGM, cldr.RegionGY, cldr.RegionHK,
-			cldr.RegionID, cldr.RegionIE, cldr.RegionIL, cldr.RegionIM, cldr.RegionIN, cldr.RegionIO, cldr.RegionJE,
-			cldr.RegionJM, cldr.RegionKE, cldr.RegionKI, cldr.RegionKN, cldr.RegionKY, cldr.RegionLC, cldr.RegionLR,
-			cldr.RegionLS, cldr.RegionMG, cldr.RegionMO, cldr.RegionMS, cldr.RegionMT, cldr.RegionMU, cldr.RegionMV,
-			cldr.RegionMW, cldr.RegionMY, cldr.RegionNA, cldr.RegionNF, cldr.RegionNG, cldr.RegionNL, cldr.RegionNR,
-			cldr.RegionNU, cldr.RegionNZ, cldr.RegionPG, cldr.RegionPK, cldr.RegionPN, cldr.RegionPW, cldr.RegionRW,
-			cldr.RegionSB, cldr.RegionSC, cldr.RegionSD, cldr.RegionSG, cldr.RegionSH, cldr.RegionSI, cldr.RegionSL,
-			cldr.RegionSS, cldr.RegionSX, cldr.RegionSZ, cldr.RegionTC, cldr.RegionTK, cldr.RegionTO, cldr.RegionTT,
-			cldr.RegionTV, cldr.RegionTZ, cldr.RegionUG, cldr.RegionVC, cldr.RegionVG, cldr.RegionVU, cldr.RegionWS,
-			cldr.RegionZA, cldr.RegionZM, cldr.RegionZW:
+			cldr.RegionCK, cldr.RegionCM, cldr.RegionCX, cldr.RegionCY, cldr.RegionCZ, cldr.RegionDE, cldr.RegionDG,
+			cldr.RegionDK, cldr.RegionDM, cldr.RegionER, cldr.RegionFI, cldr.RegionFJ, cldr.RegionFK, cldr.RegionFM,
+			cldr.RegionGB, cldr.RegionGD, cldr.RegionGG, cldr.RegionGH, cldr.RegionGI, cldr.RegionGM, cldr.RegionGY,
+			cldr.RegionHK, cldr.RegionID, cldr.RegionIE, cldr.RegionIL, cldr.RegionIM, cldr.RegionIN, cldr.RegionIO,
+			cldr.RegionJE, cldr.RegionJM, cldr.RegionKE, cldr.RegionKI, cldr.RegionKN, cldr.RegionKY, cldr.RegionLC,
+			cldr.RegionLR, cldr.RegionLS, cldr.RegionMG, cldr.RegionMO, cldr.RegionMS, cldr.RegionMT, cldr.RegionMU,
+			cldr.RegionMV, cldr.RegionMW, cldr.RegionMY, cldr.RegionNA, cldr.RegionNF, cldr.RegionNG, cldr.RegionNL,
+			cldr.RegionNR, cldr.RegionNU, cldr.RegionNZ, cldr.RegionPG, cldr.RegionPK, cldr.RegionPN, cldr.RegionPW,
+			cldr.RegionRW, cldr.RegionSB, cldr.RegionSC, cldr.RegionSD, cldr.RegionSG, cldr.RegionSH, cldr.RegionSI,
+			cldr.RegionSL, cldr.RegionSS, cldr.RegionSX, cldr.RegionSZ, cldr.RegionTC, cldr.RegionTK, cldr.RegionTO,
+			cldr.RegionTT, cldr.RegionTV, cldr.RegionTZ, cldr.RegionUG, cldr.RegionVC, cldr.RegionVG, cldr.RegionVU,
+			cldr.RegionWS, cldr.RegionZA, cldr.RegionZM, cldr.RegionZW:
 			// year=numeric,month=numeric,out=01/2024
 			// year=numeric,month=2-digit,out=01/2024
 			// year=2-digit,month=numeric,out=01/24
 			// year=2-digit,month=2-digit,out=01/24
-			if script != cldr.Shaw {
-				return seq.Add(symbols.Symbol_MM, '/', year)
+			if script == cldr.Shaw {
+				return seq.Add(month, '/', year)
 			}
 
-			return seq.Add(month, '/', year)
+			fallthrough
+		case cldr.RegionEE, cldr.RegionES, cldr.RegionFR, cldr.RegionGE, cldr.RegionGS, cldr.RegionHU, cldr.RegionIT,
+			cldr.RegionJP, cldr.RegionLT, cldr.RegionLV, cldr.RegionNO, cldr.RegionPL, cldr.RegionPT, cldr.RegionRO,
+			cldr.RegionSK, cldr.RegionUA:
+			return seq.Add(symbols.Symbol_MM, '/', year)
 		case cldr.RegionCA, cldr.RegionSE:
 			// year=numeric,month=numeric,out=2024-01
 			// year=numeric,month=2-digit,out=2024-01

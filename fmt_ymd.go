@@ -169,6 +169,7 @@ func seqYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		switch region {
 		default:
 			return seq.Add(month, '/', day, '/', year)
+			// TODO(jhorsts): split regions? Do all these regions have shaw script?
 		case cldr.Region001, cldr.Region150, cldr.RegionAE, cldr.RegionAG, cldr.RegionAI, cldr.RegionAT, cldr.RegionBB,
 			cldr.RegionBM, cldr.RegionBS, cldr.RegionCC, cldr.RegionCK, cldr.RegionCM, cldr.RegionCX, cldr.RegionCY,
 			cldr.RegionDE, cldr.RegionDG, cldr.RegionDK, cldr.RegionDM, cldr.RegionER, cldr.RegionFI, cldr.RegionFJ,
@@ -193,6 +194,14 @@ func seqYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 				return seq.Add(month, '/', day, '/', year)
 			}
 
+			if opts.Month.numeric() && opts.Day.numeric() {
+				return seq.Add(symbols.Symbol_dd, '/', symbols.Symbol_MM, '/', year)
+			}
+
+			return seq.Add(day, '/', month, '/', year)
+		case cldr.RegionCZ, cldr.RegionEE, cldr.RegionES, cldr.RegionFR, cldr.RegionGE, cldr.RegionGS, cldr.RegionHU,
+			cldr.RegionIT, cldr.RegionLT, cldr.RegionLV, cldr.RegionNO, cldr.RegionPL, cldr.RegionPT, cldr.RegionRO,
+			cldr.RegionSK, cldr.RegionUA:
 			if opts.Month.numeric() && opts.Day.numeric() {
 				return seq.Add(symbols.Symbol_dd, '/', symbols.Symbol_MM, '/', year)
 			}
@@ -292,7 +301,7 @@ func seqYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 			}
 
 			return seq.Add(day, '/', month, '/', year)
-		case cldr.RegionZA:
+		case cldr.RegionJP, cldr.RegionZA:
 			// year=numeric,month=numeric,day=numeric,out=2024/01/02
 			// year=numeric,month=numeric,day=2-digit,out=2024/1/02
 			// year=numeric,month=2-digit,day=numeric,out=2024/01/2
@@ -415,6 +424,15 @@ func seqYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		}
 
 		return seq.Add(day, '.', month, '.', year)
+	case cldr.BUA:
+		switch {
+		default:
+			return seq.Add(day, '.', month, '.', year)
+		case opts.Month.twoDigit() || opts.Day.twoDigit():
+			return seq.Add(year, '-', month, '-', day)
+		case opts.Month.numeric() && opts.Day.numeric():
+			return seq.Add(symbols.Symbol_dd, '.', symbols.Symbol_MM, '.', year)
+		}
 	case cldr.DZ, cldr.SI: // noop
 		// year=numeric,month=numeric,day=numeric,out=2024-1-2
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
@@ -895,7 +913,7 @@ func seqYearMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		}
 
 		return seq.Add(year, '-', month, '-', day)
-	case cldr.OC:
+	case cldr.OC, cldr.PMS:
 		// year=numeric,month=numeric,day=numeric,out=02/01/2024
 		// year=numeric,month=numeric,day=2-digit,out=2024-1-02
 		// year=numeric,month=2-digit,day=numeric,out=2024-01-2
