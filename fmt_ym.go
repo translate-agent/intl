@@ -14,7 +14,7 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 	month := opts.Month.symbolFormat()
 
 	switch lang {
-	case cldr.AF, cldr.AS, cldr.IA, cldr.JV, cldr.MI, cldr.RM, cldr.TG, cldr.WO:
+	case cldr.AF, cldr.AS, cldr.IA, cldr.JV, cldr.MI, cldr.RM, cldr.RW, cldr.TG, cldr.WO:
 		return seq.Add(symbols.Symbol_MM, '-', year)
 	case cldr.EN:
 		switch region {
@@ -22,27 +22,31 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 			return seq.Add(month, '/', year)
 		case cldr.Region001, cldr.Region150, cldr.RegionAE, cldr.RegionAG, cldr.RegionAI, cldr.RegionAT, cldr.RegionAU,
 			cldr.RegionBB, cldr.RegionBE, cldr.RegionBM, cldr.RegionBS, cldr.RegionBW, cldr.RegionBZ, cldr.RegionCC,
-			cldr.RegionCK, cldr.RegionCM, cldr.RegionCX, cldr.RegionCY, cldr.RegionDE, cldr.RegionDG, cldr.RegionDK,
-			cldr.RegionDM, cldr.RegionER, cldr.RegionFI, cldr.RegionFJ, cldr.RegionFK, cldr.RegionFM, cldr.RegionGB,
-			cldr.RegionGD, cldr.RegionGG, cldr.RegionGH, cldr.RegionGI, cldr.RegionGM, cldr.RegionGY, cldr.RegionHK,
-			cldr.RegionID, cldr.RegionIE, cldr.RegionIL, cldr.RegionIM, cldr.RegionIN, cldr.RegionIO, cldr.RegionJE,
-			cldr.RegionJM, cldr.RegionKE, cldr.RegionKI, cldr.RegionKN, cldr.RegionKY, cldr.RegionLC, cldr.RegionLR,
-			cldr.RegionLS, cldr.RegionMG, cldr.RegionMO, cldr.RegionMS, cldr.RegionMT, cldr.RegionMU, cldr.RegionMV,
-			cldr.RegionMW, cldr.RegionMY, cldr.RegionNA, cldr.RegionNF, cldr.RegionNG, cldr.RegionNL, cldr.RegionNR,
-			cldr.RegionNU, cldr.RegionNZ, cldr.RegionPG, cldr.RegionPK, cldr.RegionPN, cldr.RegionPW, cldr.RegionRW,
-			cldr.RegionSB, cldr.RegionSC, cldr.RegionSD, cldr.RegionSG, cldr.RegionSH, cldr.RegionSI, cldr.RegionSL,
-			cldr.RegionSS, cldr.RegionSX, cldr.RegionSZ, cldr.RegionTC, cldr.RegionTK, cldr.RegionTO, cldr.RegionTT,
-			cldr.RegionTV, cldr.RegionTZ, cldr.RegionUG, cldr.RegionVC, cldr.RegionVG, cldr.RegionVU, cldr.RegionWS,
-			cldr.RegionZA, cldr.RegionZM, cldr.RegionZW:
+			cldr.RegionCK, cldr.RegionCM, cldr.RegionCX, cldr.RegionCY, cldr.RegionCZ, cldr.RegionDE, cldr.RegionDG,
+			cldr.RegionDK, cldr.RegionDM, cldr.RegionER, cldr.RegionFI, cldr.RegionFJ, cldr.RegionFK, cldr.RegionFM,
+			cldr.RegionGB, cldr.RegionGD, cldr.RegionGG, cldr.RegionGH, cldr.RegionGI, cldr.RegionGM, cldr.RegionGY,
+			cldr.RegionHK, cldr.RegionID, cldr.RegionIE, cldr.RegionIL, cldr.RegionIM, cldr.RegionIN, cldr.RegionIO,
+			cldr.RegionJE, cldr.RegionJM, cldr.RegionKE, cldr.RegionKI, cldr.RegionKN, cldr.RegionKY, cldr.RegionLC,
+			cldr.RegionLR, cldr.RegionLS, cldr.RegionMG, cldr.RegionMO, cldr.RegionMS, cldr.RegionMT, cldr.RegionMU,
+			cldr.RegionMV, cldr.RegionMW, cldr.RegionMY, cldr.RegionNA, cldr.RegionNF, cldr.RegionNG, cldr.RegionNL,
+			cldr.RegionNR, cldr.RegionNU, cldr.RegionNZ, cldr.RegionPG, cldr.RegionPK, cldr.RegionPN, cldr.RegionPW,
+			cldr.RegionRW, cldr.RegionSB, cldr.RegionSC, cldr.RegionSD, cldr.RegionSG, cldr.RegionSH, cldr.RegionSI,
+			cldr.RegionSL, cldr.RegionSS, cldr.RegionSX, cldr.RegionSZ, cldr.RegionTC, cldr.RegionTK, cldr.RegionTO,
+			cldr.RegionTT, cldr.RegionTV, cldr.RegionTZ, cldr.RegionUG, cldr.RegionVC, cldr.RegionVG, cldr.RegionVU,
+			cldr.RegionWS, cldr.RegionZA, cldr.RegionZM, cldr.RegionZW:
 			// year=numeric,month=numeric,out=01/2024
 			// year=numeric,month=2-digit,out=01/2024
 			// year=2-digit,month=numeric,out=01/24
 			// year=2-digit,month=2-digit,out=01/24
-			if script != cldr.Shaw {
-				return seq.Add(symbols.Symbol_MM, '/', year)
+			if script == cldr.Shaw {
+				return seq.Add(month, '/', year)
 			}
 
-			return seq.Add(month, '/', year)
+			fallthrough
+		case cldr.RegionEE, cldr.RegionES, cldr.RegionFR, cldr.RegionGE, cldr.RegionGS, cldr.RegionHU, cldr.RegionIT,
+			cldr.RegionJP, cldr.RegionLT, cldr.RegionLV, cldr.RegionNO, cldr.RegionPL, cldr.RegionPT, cldr.RegionRO,
+			cldr.RegionSK, cldr.RegionUA:
+			return seq.Add(symbols.Symbol_MM, '/', year)
 		case cldr.RegionCA, cldr.RegionSE:
 			// year=numeric,month=numeric,out=2024-01
 			// year=numeric,month=2-digit,out=2024-01
@@ -57,14 +61,14 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 			return seq.Add(symbols.Symbol_MM, '.', year)
 		}
 	case cldr.AGQ, cldr.AK, cldr.AM, cldr.ASA, cldr.AST, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BLO, cldr.BM, cldr.BRX,
-		cldr.CA, cldr.CEB, cldr.CGG, cldr.CHR, cldr.CKB, cldr.CS, cldr.CY, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA,
+		cldr.CA, cldr.CEB, cldr.CGG, cldr.CHR, cldr.CKB, cldr.CS, cldr.CY, cldr.DAV, cldr.DE, cldr.DJE, cldr.DOI, cldr.DUA,
 		cldr.DYO, cldr.EBU, cldr.EE, cldr.EL, cldr.EWO, cldr.FIL, cldr.FUR, cldr.GD, cldr.GL, cldr.GUZ, cldr.HA, cldr.HAW,
 		cldr.ID, cldr.IG, cldr.JMC, cldr.KAA, cldr.KAB, cldr.KAM, cldr.KDE, cldr.KHQ, cldr.KI, cldr.KLN, cldr.KM, cldr.KSB,
 		cldr.KSF, cldr.KXV, cldr.LAG, cldr.LG, cldr.LN, cldr.LO, cldr.LU, cldr.LUO, cldr.LUY, cldr.MAI, cldr.MAS, cldr.MER,
-		cldr.MFE, cldr.MG, cldr.MGH, cldr.MHN, cldr.MNI, cldr.MUA, cldr.NAQ, cldr.ND, cldr.NMG, cldr.NUS, cldr.NYN,
-		cldr.OM, cldr.PCM, cldr.RN, cldr.ROF, cldr.RWK, cldr.SA, cldr.SAQ, cldr.SBP, cldr.SES, cldr.SG, cldr.SHI, cldr.SK,
-		cldr.SL, cldr.SO, cldr.SU, cldr.SW, cldr.TEO, cldr.TWQ, cldr.TZM, cldr.UR, cldr.VAI, cldr.VUN, cldr.XH, cldr.XNR,
-		cldr.XOG, cldr.YAV, cldr.YO, cldr.ZGH:
+		cldr.MFE, cldr.MG, cldr.MGH, cldr.MHN, cldr.ML, cldr.MNI, cldr.MUA, cldr.NAQ, cldr.ND, cldr.NMG, cldr.NUS, cldr.NYN,
+		cldr.OM, cldr.PCM, cldr.RN, cldr.ROF, cldr.RWK, cldr.SA, cldr.SAQ, cldr.SBP, cldr.SCN, cldr.SES, cldr.SG, cldr.SHI,
+		cldr.SK, cldr.SL, cldr.SO, cldr.SU, cldr.SW, cldr.TEO, cldr.TWQ, cldr.TZM, cldr.UR, cldr.VAI, cldr.VUN, cldr.XH,
+		cldr.XNR, cldr.XOG, cldr.YAV, cldr.YO, cldr.ZGH:
 		return seq.Add(month, '/', year)
 	case cldr.PA:
 		if script != cldr.Arab {
@@ -86,7 +90,13 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 		return seq.Add(month, '/', year)
 	case cldr.AR:
 		return seq.Add(month, symbols.Txt02, year)
-	case cldr.AZ, cldr.CV, cldr.FO, cldr.HY, cldr.KK, cldr.KU, cldr.OS, cldr.PL, cldr.RO, cldr.RU, cldr.TK, cldr.TT,
+	case cldr.KK:
+		if script == cldr.Arab {
+			return seq.Add(month, '-', year)
+		}
+
+		fallthrough
+	case cldr.AZ, cldr.FO, cldr.HY, cldr.KU, cldr.OS, cldr.PL, cldr.RO, cldr.RU, cldr.TK, cldr.TT,
 		cldr.UK:
 		return seq.Add(symbols.Symbol_MM, '.', year)
 	case cldr.UZ:
@@ -124,12 +134,6 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 		}
 
 		return seq.Add(symbols.Symbol_MM, '/', year)
-	case cldr.DE:
-		if opts.Month.numeric() {
-			return seq.Add(month, '/', year)
-		}
-
-		return seq.Add(month, '.', year)
 	case cldr.DZ, cldr.SI:
 		return seq.Add(year, '-', month)
 	case cldr.ES:
@@ -176,14 +180,6 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.TI:
 		return seq.Add(symbols.Symbol_M, '/', year)
 	case cldr.YUE:
-		if script == cldr.Hans {
-			// year=numeric,month=numeric,out=2024年1月
-			// year=numeric,month=2-digit,out=2024年1月
-			// year=2-digit,month=numeric,out=24年1月
-			// year=2-digit,month=2-digit,out=24年1月
-			return seq.Add(year, symbols.Txt年, symbols.Symbol_M, symbols.Txt月)
-		}
-
 		return seq.Add(year, '/', month)
 	case cldr.EU, cldr.JA:
 		return seq.Add(year, '/', month)
@@ -222,7 +218,13 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 		}
 
 		return seq.Add(month, '-', year)
-	case cldr.FY, cldr.KOK, cldr.MS, cldr.UG:
+	case cldr.KOK:
+		if script == cldr.Latn {
+			return seq.Add(month, '/', year)
+		}
+
+		fallthrough
+	case cldr.FY, cldr.MS, cldr.UG:
 		return seq.Add(month, '-', year)
 	case cldr.GSW:
 		if !opts.Month.numeric() {
@@ -316,6 +318,12 @@ func seqYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 
 			return seq.Add(year, '/', month)
 		}
+	case cldr.CV:
+		return seq.Add(year, '.', symbols.Symbol_MM)
+	case cldr.SV:
+		if region == cldr.RegionFI {
+			return seq.Add(symbols.Symbol_M, '.', year)
+		}
 	}
 
 	return seq.Add(year, '-', symbols.Symbol_MM)
@@ -326,11 +334,14 @@ func seqYearMonthBuddhist(locale language.Tag, opts Options) *symbols.Seq {
 	seq := symbols.NewSeq(locale)
 	year := opts.Year.symbol()
 
-	if lang == cldr.TH {
+	switch lang {
+	default:
+		return seq.Add(year, '-', symbols.Symbol_MM)
+	case cldr.SHN:
+		return seq.Add(symbols.Symbol_G, ' ', year, '-', symbols.Symbol_MM)
+	case cldr.TH:
 		return seq.Add(opts.Month.symbolFormat(), '/', year)
 	}
-
-	return seq.Add(year, '-', symbols.Symbol_MM)
 }
 
 func seqYearMonthPersian(locale language.Tag, opts Options) *symbols.Seq {

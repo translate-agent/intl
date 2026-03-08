@@ -64,6 +64,18 @@ func seqEraDay(locale language.Tag, opts Options) *symbols.Seq {
 		} else {
 			seq.Add(era, ' ', day, symbols.Txtꑍ)
 		}
+	case cldr.JV:
+		if withName {
+			seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
+		} else {
+			seq.Add(era, ' ', day)
+		}
+	case cldr.TOK:
+		if withName {
+			seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', '#', day, ')')
+		} else {
+			seq.Add(era, ' ', '#', day)
+		}
 	}
 
 	return seq

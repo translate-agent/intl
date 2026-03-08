@@ -9,59 +9,46 @@ type Symbol byte
 
 //nolint:asciicheck,revive
 const (
-	TxtSpace            Symbol = ' '  // " "
-	TxtNumberSign       Symbol = '#'  // "#"
-	TxtApostrophe       Symbol = '\'' // "'"
-	TxtLeftParenthesis  Symbol = '('  // "("
-	TxtRightParenthesis Symbol = ')'  // ")"
-	TxtComma            Symbol = ','  // ","
-	TxtHyphenMinus      Symbol = '-'  // "-"
-	TxtFullStop         Symbol = '.'  // "."
-	TxtSolidus          Symbol = '/'  // "/"
-	TxtColon            Symbol = ':'  // ":"
-	Txta                Symbol = 'a'  // "a"
-	Txtm                Symbol = 'm'  // "m"
-
-	Txt日     Symbol = iota + 128 // "日"
-	Txt일                         // "일"
-	Txtꑍ                         // "ꑍ"
-	Txt年                         // "年"
-	Txt月                         // "月"
-	Txt년                         // "년"
-	Txtс                         // "с"
-	Txtҫ                         // "ҫ"
-	Txtж                         // "ж"
-	Txtթ                         // "թ"
-	TxtNNBSP                     // " "
-	Txtр                         // "р"
-	Txt00                        // "г."
-	Txt01                        // ". g."
-	Txt02                        // "\u200f/"
-	Txt03                        // "ꆪ-"
-	Txt04                        // "tháng "
-	Txt05                        // "ел"
-	Txt06                        // "སྤྱི་ཟླ་"
-	Txt07                        // "de"
-	Txt08                        // "urteko"
-	Txt09                        // "an"
-	Txt10                        // "оны"
-
-	symbolStart  // the start of CLDR symbols
-	MonthUnit    // "month" in the local language
-	DayUnit      // "day" in the local language
-	Symbol_G     // G, era, abbreviated
-	Symbol_GGGG  // GGGG, era, long
-	Symbol_GGGGG // GGGGG, era, narrow
-	Symbol_y     // y, year
-	Symbol_yy    // yy, two-digit year
-	Symbol_M     // M, month
-	Symbol_MM    // MM, two-digit month
-	Symbol_d     // d, day
-	Symbol_dd    // dd, two-digit day
-	Symbol_LLL   // LLL, stand-alone abbreviated
-	Symbol_LLLLL // LLLLL, stand-alone narrow
-	Symbol_MMM   // MMM, format abbreviated
-	Symbol_MMMMM // MMMMM, format narrow
+	Txt日              Symbol = iota + 128 // "日"
+	Txt일                                  // "일"
+	Txtꑍ                                  // "ꑍ"
+	Txt年                                  // "年"
+	Txt月                                  // "月"
+	Txt년                                  // "년"
+	Txtс                                  // "с"
+	Txtҫ                                  // "ҫ"
+	Txtж                                  // "ж"
+	Txtթ                                  // "թ"
+	TxtNNBSP                              // " "
+	Txtр                                  // "р"
+	Txt00                                 // "г."
+	Txt01                                 // ". g."
+	Txt02                                 // "\u200f/"
+	Txt03                                 // "ꆪ-"
+	Txt04                                 // "tháng "
+	Txt05                                 // "ел"
+	Txt06                                 // "སྤྱི་ཟླ་"
+	Txt08                                 // "urteko"
+	Txt09                                 // "an"
+	Txt10                                 // "оны"
+	TxtArabicComma                        // "،"
+	TxtCyrillicShortI                     // "й"
+	symbolStart                           // the start of CLDR symbols
+	MonthUnit                             // "month" in the local language
+	DayUnit                               // "day" in the local language
+	Symbol_G                              // G, era, abbreviated
+	Symbol_GGGG                           // GGGG, era, long
+	Symbol_GGGGG                          // GGGGG, era, narrow
+	Symbol_y                              // y, year
+	Symbol_yy                             // yy, two-digit year
+	Symbol_M                              // M, month
+	Symbol_MM                             // MM, two-digit month
+	Symbol_d                              // d, day
+	Symbol_dd                             // dd, two-digit day
+	Symbol_LLL                            // LLL, stand-alone abbreviated
+	Symbol_LLLLL                          // LLLLL, stand-alone narrow
+	Symbol_MMM                            // MMM, format abbreviated
+	Symbol_MMMMM                          // MMMMM, format narrow
 )
 
 func (s Symbol) String() string {
@@ -106,14 +93,16 @@ func (s Symbol) String() string {
 		return "ел"
 	case Txt06:
 		return "སྤྱི་ཟླ་"
-	case Txt07:
-		return "de"
 	case Txt08:
 		return "urteko"
 	case Txt09:
 		return "an"
 	case Txt10:
 		return "оны"
+	case TxtArabicComma:
+		return "،"
+	case TxtCyrillicShortI:
+		return "й"
 	}
 }
 
