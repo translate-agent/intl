@@ -75,7 +75,7 @@ test:
 # lint runs all linters for golang
 lint:
   # renovate: datasource=docker packageName=golangci/golangci-lint
-  ARG golangci_lint_version=2.11.3
+  ARG golangci_lint_version=2.11.4
   FROM golangci/golangci-lint:v$golangci_lint_version-alpine
   WORKDIR /intl
   COPY go.mod go.sum *.go .golangci.yml .
