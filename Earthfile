@@ -15,7 +15,7 @@ node-base:
   ARG node_version=24.14.0
   FROM node:$node_version-alpine
   # renovate: datasource=npm packageName=npm
-  ARG npm_version=11.11.1
+  ARG npm_version=11.12.0
   RUN npm i -g npm@$npm_version
 
 # cldr saves CLDR files to .cldr
