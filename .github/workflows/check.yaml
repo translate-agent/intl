@@ -26,7 +26,7 @@ jobs:
       - name: Generate cldr.go
         if: ${{ matrix.go-version == '1.26' }}
         run: |
-          earthly --strict +generate
+          earth --strict +generate
           if ! git diff --quiet internal/cldr/data.go; then
             echo "Generated cldr.go file is not up to date"
             git diff
@@ -34,7 +34,7 @@ jobs:
           fi
       - name: Lint
         if: ${{ matrix.go-version == '1.26' }}
-        run: earthly --ci +lint
+        run: earth --ci +lint
       - name: Test Unit
         if: ${{ matrix.go-version == '1.26' }}
-        run: earthly --ci +test
+        run: earth --ci +test
