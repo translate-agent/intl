@@ -155,68 +155,76 @@ func (g *Generator) saveMerged(out string) error {
 	return nil
 }
 
+func (g *Generator) parentLocale(locale string, parentMap map[string]string) string {
+	if locale == "root" {
+		return ""
+	}
+
+	if parent, ok := parentMap[locale]; ok {
+		return parent
+	}
+
+	if idx := strings.LastIndexByte(locale, '_'); idx != -1 {
+		return locale[:idx]
+	}
+
+	return "root"
+}
+
 func (g *Generator) merge(ctx context.Context, log *slog.Logger) {
 	g.mergeAliases()
-	g.mergeParent(ctx, log)
-	g.mergeLocal(ctx, log)
 
-	root := g.cldr.RawLDML("root")
+	localesCount := len(g.cldr.Locales())
+	parentMap := make(map[string]string, localesCount)
 
-	// merge parent to child
 	for _, parentLocales := range g.cldr.Supplemental().ParentLocales {
 		if parentLocales.Component == "collations" {
 			continue
 		}
 
 		for _, parentLocale := range parentLocales.ParentLocale {
-			if slices.Contains([]string{"sr_ME", "zh_Hant", "zh_Hans"}, parentLocale.Parent) {
-				continue
-			}
-
-			parent := g.cldr.RawLDML(parentLocale.Parent)
-
-			// merge root to parent
-			merge(ctx, parent, root, log)
-
-			for locale := range strings.SplitSeq(parentLocale.Locales, " ") {
-				child := g.cldr.RawLDML(locale)
-
-				if child == nil {
-					continue
+			for loc := range strings.FieldsSeq(parentLocale.Locales) {
+				if parentLocale.Parent == "root" {
+					if !slices.Contains([]string{"sd_Deva", "sr_Latn", "bs_Cyrl", "zh_Hant", "uz_Arab", "pa_Arab"}, loc) {
+						continue
+					}
 				}
 
-				merge(ctx, child, parent, log)
+				parentMap[loc] = parentLocale.Parent
 			}
 		}
 	}
 
-	// merge root to language
+	resolved := make(map[string]bool, localesCount)
+	resolved["root"] = true
 
-	for _, locale := range g.cldr.Locales()[1:] {
-		if strings.ContainsRune(locale, '_') {
-			continue
+	var resolve func(string)
+
+	resolve = func(locale string) {
+		if resolved[locale] {
+			return
 		}
 
-		ldml := g.cldr.RawLDML(locale)
+		parent := g.parentLocale(locale, parentMap)
+		if parent != "" {
+			resolve(parent)
 
-		merge(ctx, ldml, root, log)
-	}
+			ldml := g.cldr.RawLDML(locale)
+			parentLDML := g.cldr.RawLDML(parent)
 
-	// merge language to territory
-	for _, locale := range g.cldr.Locales()[1:] {
-		if !strings.ContainsRune(locale, '_') {
-			continue
+			if ldml != nil && parentLDML != nil {
+				merge(ctx, ldml, parentLDML, log)
+			}
 		}
 
-		ldml := g.cldr.RawLDML(locale)
-
-		parts := strings.Split(locale, "_")
-		parts = parts[:len(parts)-1]
-
-		fallback := g.cldr.RawLDML(strings.Join(parts, "_"))
-
-		merge(ctx, ldml, fallback, log)
+		resolved[locale] = true
 	}
+
+	for _, locale := range g.cldr.Locales() {
+		resolve(locale)
+	}
+
+	g.mergeLocal(ctx, log)
 }
 
 func (g *Generator) mergeAliases() {
@@ -244,61 +252,6 @@ func (g *Generator) mergeAliases() {
 			calendarType := strings.Split(calendar.DateTimeFormats.Alias.Path, "'")[1]
 
 			calendar.DateTimeFormats = ldml.GetCalendar(calendarType).DateTimeFormats
-		}
-	}
-}
-
-func (g *Generator) mergeParent(ctx context.Context, log *slog.Logger) {
-	log = log.With("func", "mergeParent")
-
-	for _, locale := range g.cldr.Locales()[1:] {
-		// main language cldr.SK,ip it
-		parts := strings.Split(locale, "_")
-		if len(parts) == 1 {
-			continue
-		}
-
-		// <lang>_<script>_<region>
-		// * use <lang>, if <lang>_<script> or <lang>_<region>
-		// * use <lang>-<script>, if <lang>_<script>_<region>
-		parentLocale := parts[0]
-		if len(parts) == 3 { //nolint:mnd
-			parentLocale += "_" + parts[1]
-		}
-
-		parent := g.cldr.RawLDML(parentLocale)
-		if parent.Dates == nil {
-			continue
-		}
-
-		ldml := g.cldr.RawLDML(locale)
-
-		if ldml.Dates == nil {
-			ldml.Dates = deepCopy(parent.Dates)
-			continue
-		}
-
-		mergeFields(ldml, parent)
-
-		if parent.Dates.Calendars != nil {
-			parentGregorian := parent.GetCalendar("gregorian")
-
-			if ldml.Dates.Calendars == nil {
-				continue
-			}
-
-			logger := log.With("locale", locale)
-
-			calendar := ldml.GetCalendar("gregorian")
-			if calendar == nil {
-				logger.DebugContext(ctx, "copy gregorian calendar")
-
-				ldml.Dates.Calendars.Calendar = append(ldml.Dates.Calendars.Calendar, deepCopy(parentGregorian))
-
-				continue
-			}
-
-			mergeCalendar(ctx, calendar, parentGregorian, logger)
 		}
 	}
 }
@@ -383,12 +336,14 @@ func mergeCalendar(ctx context.Context, dst, src *cldr.Calendar, log *slog.Logge
 	log.DebugContext(ctx, "merge calendars", "dst", dst.Type, "src", src.Type)
 
 	switch dst.DateTimeFormats {
+	case nil:
+		dst.DateTimeFormats = deepCopy(src.DateTimeFormats)
 	default:
-		if dst.DateTimeFormats.AvailableFormats == nil && src.DateTimeFormats != nil {
-			dst.DateTimeFormats.AvailableFormats = deepCopy(src.DateTimeFormats.AvailableFormats)
-		}
-
-		if src.DateTimeFormats != nil {
+		if dst.DateTimeFormats.AvailableFormats == nil {
+			if src.DateTimeFormats != nil {
+				dst.DateTimeFormats.AvailableFormats = deepCopy(src.DateTimeFormats.AvailableFormats)
+			}
+		} else if src.DateTimeFormats != nil && src.DateTimeFormats.AvailableFormats != nil {
 			for _, dateFormatItem := range src.DateTimeFormats.AvailableFormats.DateFormatItem {
 				if dst.GetDateFormatItem(dateFormatItem.ID) != nil {
 					continue
@@ -396,21 +351,18 @@ func mergeCalendar(ctx context.Context, dst, src *cldr.Calendar, log *slog.Logge
 
 				dst.DateTimeFormats.AvailableFormats.DateFormatItem = append(
 					dst.DateTimeFormats.AvailableFormats.DateFormatItem,
-					deepCopy(dateFormatItem))
+					deepCopy(dateFormatItem),
+				)
 			}
 		}
-	case nil:
-		dst.DateTimeFormats = deepCopy(src.DateTimeFormats)
 	}
 
 	// months
 	if src.Months != nil {
 		if dst.Months == nil {
 			dst.Months = deepCopy(src.Months)
-		}
-
-		if dst.Months != nil && len(dst.Months.MonthContext) == 0 && len(src.Months.MonthContext) > 0 {
-			dst.Months.MonthContext = deepCopy(src.Months.MonthContext)
+		} else {
+			mergeMonths(dst.Months, src.Months)
 		}
 	}
 
@@ -418,6 +370,129 @@ func mergeCalendar(ctx context.Context, dst, src *cldr.Calendar, log *slog.Logge
 	if src.Eras != nil {
 		if dst.Eras == nil {
 			dst.Eras = deepCopy(src.Eras)
+		} else {
+			mergeEras(dst.Eras, src.Eras)
+		}
+	}
+}
+
+func mergeMonths(dst, src *cldr.Months) {
+	if src == nil {
+		return
+	}
+
+	for _, srcCtx := range src.MonthContext {
+		dstCtx := findMonthContext(dst.MonthContext, srcCtx.Type)
+
+		if dstCtx == nil {
+			dst.MonthContext = append(dst.MonthContext, deepCopy(srcCtx))
+			continue
+		}
+
+		mergeMonthWidth(dstCtx, srcCtx)
+	}
+}
+
+func findMonthContext(contexts []*cldr.MonthContext, ctxType string) *cldr.MonthContext {
+	for _, c := range contexts {
+		if c.Type == ctxType {
+			return c
+		}
+	}
+
+	return nil
+}
+
+func mergeMonthWidth(dstCtx, srcCtx *cldr.MonthContext) {
+	for _, srcWidth := range srcCtx.MonthWidth {
+		dstWidth := findMonthWidth(dstCtx.MonthWidth, srcWidth.Type)
+
+		if dstWidth == nil {
+			dstCtx.MonthWidth = append(dstCtx.MonthWidth, deepCopy(srcWidth))
+			continue
+		}
+
+		mergeMonthNames(dstWidth, srcWidth)
+	}
+}
+
+func findMonthWidth(widths []*cldr.MonthWidth, wType string) *cldr.MonthWidth {
+	for _, w := range widths {
+		if w.Type == wType {
+			return w
+		}
+	}
+
+	return nil
+}
+
+func mergeMonthNames(dstWidth, srcWidth *cldr.MonthWidth) {
+	for _, srcMonth := range srcWidth.Month {
+		dstMonth := findMonth(dstWidth.Month, srcMonth.Type)
+
+		if dstMonth == nil {
+			dstWidth.Month = append(dstWidth.Month, deepCopy(srcMonth))
+		}
+	}
+}
+
+func findMonth(months []*cldr.Month, mType string) *cldr.Month {
+	for _, m := range months {
+		if m.Type == mType {
+			return m
+		}
+	}
+
+	return nil
+}
+
+func mergeEra(dst, src *cldr.Era) {
+	if src == nil {
+		return
+	}
+
+	for _, srcEra := range src.Era {
+		var dstEra *cldr.Common
+
+		for _, e := range dst.Era {
+			if e.Type == srcEra.Type {
+				dstEra = e
+				break
+			}
+		}
+
+		if dstEra == nil {
+			dst.Era = append(dst.Era, deepCopy(srcEra))
+		}
+	}
+}
+
+func mergeEras(dst, src *cldr.Eras) {
+	if src == nil {
+		return
+	}
+
+	if src.EraNames != nil {
+		if dst.EraNames == nil {
+			dst.EraNames = deepCopy(src.EraNames)
+		} else {
+			mergeEra(dst.EraNames, src.EraNames)
+		}
+	}
+
+	if src.EraAbbr != nil {
+		if dst.EraAbbr == nil {
+			dst.EraAbbr = deepCopy(src.EraAbbr)
+		} else {
+			mergeEra(dst.EraAbbr, src.EraAbbr)
+		}
+	}
+
+	if src.EraNarrow != nil {
+		if dst.EraNarrow == nil {
+			dst.EraNarrow = deepCopy(src.EraNarrow)
+		} else {
+			mergeEra(dst.EraNarrow, src.EraNarrow)
 		}
 	}
 }
