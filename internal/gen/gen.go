@@ -174,7 +174,8 @@ func (g *Generator) parentLocale(locale string, parentMap map[string]string) str
 func (g *Generator) merge(ctx context.Context, log *slog.Logger) {
 	g.mergeAliases()
 
-	parentMap := make(map[string]string)
+	localesCount := len(g.cldr.Locales())
+	parentMap := make(map[string]string, localesCount)
 
 	for _, parentLocales := range g.cldr.Supplemental().ParentLocales {
 		if parentLocales.Component == "collations" {
@@ -194,7 +195,7 @@ func (g *Generator) merge(ctx context.Context, log *slog.Logger) {
 		}
 	}
 
-	resolved := make(map[string]bool)
+	resolved := make(map[string]bool, localesCount)
 	resolved["root"] = true
 
 	var resolve func(string)
