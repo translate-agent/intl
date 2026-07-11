@@ -28,4 +28,4 @@ Go version 1.24+.
 
 # Development
 
-The project uses [Earthly](https://earthly.dev) to automate all development tasks that can be run locally and in CI/CD environments.
+The project uses [EarthBuild](https://earthbuild.dev) to automate all development tasks that can be run locally and in CI/CD environments.
