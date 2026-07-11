@@ -20,23 +20,23 @@ Each formatting file handles a specific combination of options. The files are na
 | `g`       | `Era`        | Era format (narrow, short, long). |
 
 For example:
-* [fmt_d.go](file:///Users/jhorsts/projects/translate-agent/intl/fmt_d.go) handles only the `Day` option.
-* [fmt_gm.go](file:///Users/jhorsts/projects/translate-agent/intl/fmt_gm.go) handles `Era` and `Month`.
-* [fmt_ymd.go](file:///Users/jhorsts/projects/translate-agent/intl/fmt_ymd.go) handles `Year`, `Month`, and `Day`.
+* [fmt_d.go](../../../fmt_d.go) handles only the `Day` option.
+* [fmt_gm.go](../../../fmt_gm.go) handles `Era` and `Month`.
+* [fmt_ymd.go](../../../fmt_ymd.go) handles `Year`, `Month`, and `Day`.
 
 ## Design Principles
 
 ### 1. Calendar Dispatching
-The entrypoint is [NewDateTimeFormat](file:///Users/jhorsts/projects/translate-agent/intl/intl.go#L386). It checks the default calendar for the locale (`cldr.DefaultCalendar(locale)`) and returns the appropriate constructor:
+The entrypoint is [NewDateTimeFormat](../../../intl.go#L386). It checks the default calendar for the locale (`cldr.DefaultCalendar(locale)`) and returns the appropriate constructor:
 * `gregorianDateTimeFormat(locale, options)`
 * `persianDateTimeFormat(locale, options)`
 * `buddhistDateTimeFormat(locale, options)`
 
 ### 2. Sequence Function Names
 Inside each `fmt_*.go` file, functions are defined to construct formatting sequences:
-* **Gregorian (Default):** `seq[OptionFields]` (e.g., `seqYearMonthDay` in [fmt_ymd.go](file:///Users/jhorsts/projects/translate-agent/intl/fmt_ymd.go#L10))
-* **Persian Calendar:** `seq[OptionFields]Persian` (e.g., `seqYearMonthDayPersian` in [fmt_ymd.go](file:///Users/jhorsts/projects/translate-agent/intl/fmt_ymd.go#L1261))
-* **Buddhist Calendar:** `seq[OptionFields]Buddhist` (e.g., `seqYearMonthDayBuddhist` in [fmt_ymd.go](file:///Users/jhorsts/projects/translate-agent/intl/fmt_ymd.go#L1298))
+* **Gregorian (Default):** `seq[OptionFields]` (e.g., `seqYearMonthDay` in [fmt_ymd.go](../../../fmt_ymd.go#L10))
+* **Persian Calendar:** `seq[OptionFields]Persian` (e.g., `seqYearMonthDayPersian` in [fmt_ymd.go](../../../fmt_ymd.go#L1261))
+* **Buddhist Calendar:** `seq[OptionFields]Buddhist` (e.g., `seqYearMonthDayBuddhist` in [fmt_ymd.go](../../../fmt_ymd.go#L1298))
 
 These functions return a `*symbols.Seq` which holds a slice of formatting symbols.
 
@@ -52,7 +52,7 @@ Formatting details (like zero-padding or name formats) depend on the requested o
 * These checks influence either which symbol is added (e.g., choosing `symbols.Symbol_dd` over `opts.Day.symbol()`) or change the separators dynamically (e.g., using hyphens instead of slashes when both fields are numeric).
 
 ### 5. Symbol Sequencing (`symbols.Seq`)
-Formatting is built using a sequence of tokens from [internal/symbols/symbols.go](file:///Users/jhorsts/projects/translate-agent/intl/internal/symbols/symbols.go):
+Formatting is built using a sequence of tokens from [internal/symbols/symbols.go](../../../internal/symbols/symbols.go):
 * **CLDR Symbols:** Placeholders for formatting functions (e.g., `Symbol_y`, `Symbol_MM`, `Symbol_dd`, `MonthUnit`, `DayUnit`, `Symbol_G`).
 * **Text Separators & Constants:** Separators (`'/'`, `'.'`, `'-'`) and localized texts (e.g., `Txt日`, `Txt일`, `Txt年`).
 

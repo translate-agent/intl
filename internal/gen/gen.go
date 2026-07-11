@@ -155,29 +155,13 @@ func (g *Generator) saveMerged(out string) error {
 	return nil
 }
 
-func (g *Generator) parentLocale(locale string) string {
+func (g *Generator) parentLocale(locale string, parentMap map[string]string) string {
 	if locale == "root" {
 		return ""
 	}
 
-	for _, parentLocales := range g.cldr.Supplemental().ParentLocales {
-		if parentLocales.Component == "collations" {
-			continue
-		}
-
-		for _, parentLocale := range parentLocales.ParentLocale {
-			if parentLocale.Parent == "root" {
-				// Node.js/ICU falls back to the base language at the API level for these locales
-				// because they are not natively supported as separate script locales.
-				if !slices.Contains([]string{"sd_Deva", "sr_Latn", "bs_Cyrl", "zh_Hant", "uz_Arab", "pa_Arab"}, locale) {
-					continue
-				}
-			}
-
-			if slices.Contains(strings.Fields(parentLocale.Locales), locale) {
-				return parentLocale.Parent
-			}
-		}
+	if parent, ok := parentMap[locale]; ok {
+		return parent
 	}
 
 	if idx := strings.LastIndexByte(locale, '_'); idx != -1 {
@@ -190,6 +174,26 @@ func (g *Generator) parentLocale(locale string) string {
 func (g *Generator) merge(ctx context.Context, log *slog.Logger) {
 	g.mergeAliases()
 
+	parentMap := make(map[string]string)
+
+	for _, parentLocales := range g.cldr.Supplemental().ParentLocales {
+		if parentLocales.Component == "collations" {
+			continue
+		}
+
+		for _, parentLocale := range parentLocales.ParentLocale {
+			for loc := range strings.FieldsSeq(parentLocale.Locales) {
+				if parentLocale.Parent == "root" {
+					if !slices.Contains([]string{"sd_Deva", "sr_Latn", "bs_Cyrl", "zh_Hant", "uz_Arab", "pa_Arab"}, loc) {
+						continue
+					}
+				}
+
+				parentMap[loc] = parentLocale.Parent
+			}
+		}
+	}
+
 	resolved := make(map[string]bool)
 	resolved["root"] = true
 
@@ -200,7 +204,7 @@ func (g *Generator) merge(ctx context.Context, log *slog.Logger) {
 			return
 		}
 
-		parent := g.parentLocale(locale)
+		parent := g.parentLocale(locale, parentMap)
 		if parent != "" {
 			resolve(parent)
 

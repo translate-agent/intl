@@ -9,7 +9,7 @@ This skill provides guidance on how to run, update, and debug the CLDR (Common L
 
 ## Overview
 
-The `internal/gen` tool processes raw XML files from the `.cldr` directory and compiles them into a single optimized Go source file [data.go](file:///Users/jhorsts/projects/translate-agent/intl/internal/cldr/data.go). It deduplicates all localized string tokens into a single read-only constant string (`data`), which is sliced at runtime without memory allocation.
+The `internal/gen` tool processes raw XML files from the `.cldr` directory and compiles them into a single optimized Go source file [data.go](../../../internal/cldr/data.go). It deduplicates all localized string tokens into a single read-only constant string (`data`), which is sliced at runtime without memory allocation.
 
 ## Generator Behaviour
 
@@ -28,16 +28,16 @@ CLDR structures use inheritance to avoid redundancy. The generator resolves and 
 ### 3. String Coalescing & Slicing Optimization
 To avoid runtime allocations and keep the binary footprint small:
 * All unique string constants (eras, fields, months) are collected and deduplicated (short strings that are substrings of longer strings are removed).
-* These strings are compiled into a single global read-only string constant `data` in [data.go](file:///Users/jhorsts/projects/translate-agent/intl/internal/cldr/data.go).
-* All lookups in [data.go](file:///Users/jhorsts/projects/translate-agent/intl/internal/cldr/data.go) reference slices of this constant (e.g., `data[start:end]`). Since string slicing does not allocate in Go, this yields zero allocations at runtime.
+* These strings are compiled into a single global read-only string constant `data` in [data.go](../../../internal/cldr/data.go).
+* All lookups in [data.go](../../../internal/cldr/data.go) reference slices of this constant (e.g., `data[start:end]`). Since string slicing does not allocate in Go, this yields zero allocations at runtime.
 
 ## Development Workflow
 
 When modifying locale formatting or adding a new locale fallback, use the following sequence:
 
 1. **Modify XML or Generator Code**:
-   * To add custom overrides or update the parser, edit [gen.go](file:///Users/jhorsts/projects/translate-agent/intl/internal/gen/gen.go) or [cldr.go](file:///Users/jhorsts/projects/translate-agent/intl/internal/gen/cldr/cldr.go).
-   * CLDR templates are in [cldr_data.go.tmpl](file:///Users/jhorsts/projects/translate-agent/intl/internal/gen/cldr_data.go.tmpl).
+   * To add custom overrides or update the parser, edit [gen.go](../../../internal/gen/gen.go) or [cldr.go](../../../internal/gen/cldr/cldr.go).
+   * CLDR templates are in [cldr_data.go.tmpl](../../../internal/gen/cldr_data.go.tmpl).
 
 2. **Run Code Generation**:
    * Generate Go code by running the Earthly recipe:
