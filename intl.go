@@ -376,7 +376,8 @@ type Options struct {
 // DateTimeFormat encapsulates the configuration and functionality for
 // formatting dates and times according to specific locales and options.
 type DateTimeFormat struct {
-	fmt fmtFunc
+	fmt      cldr.Fmt
+	calendar cldr.CalendarType
 }
 
 // NewDateTimeFormat creates a new [DateTimeFormat] instance for the specified locale and options.
@@ -384,13 +385,20 @@ type DateTimeFormat struct {
 // This function initializes a [DateTimeFormat] with the default calendar based on the
 // given locale. It supports different calendar systems including Gregorian, Persian, and Buddhist calendars.
 func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
-	switch cldr.DefaultCalendar(locale) {
+	if options.Era.und() && options.Year.und() && options.Month.und() && options.Day.und() {
+		options.Year = YearNumeric
+		options.Month = MonthNumeric
+		options.Day = DayNumeric
+	}
+
+	cal := cldr.DefaultCalendar(locale)
+	switch cal {
 	default:
-		return DateTimeFormat{fmt: gregorianDateTimeFormat(locale, options)}
+		return DateTimeFormat{fmt: gregorianDateTimeFormat(locale, options), calendar: cal}
 	case cldr.CalendarTypePersian:
-		return DateTimeFormat{fmt: persianDateTimeFormat(locale, options)}
+		return DateTimeFormat{fmt: persianDateTimeFormat(locale, options), calendar: cal}
 	case cldr.CalendarTypeBuddhist:
-		return DateTimeFormat{fmt: buddhistDateTimeFormat(locale, options)}
+		return DateTimeFormat{fmt: buddhistDateTimeFormat(locale, options), calendar: cal}
 	}
 }
 
@@ -399,14 +407,36 @@ func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
 // This method applies the formatting options specified in the [DateTimeFormat] instance
 // to the provided time value.
 func (f DateTimeFormat) Format(t time.Time) string {
-	return f.fmt(cldr.TimeReader(t))
+	var date cldr.CalendarDate
+
+	switch f.calendar {
+	default: // CalendarTypeGregorian (and any others)
+		date = cldr.CalendarDate{
+			Year:  t.Year(),
+			Month: int(t.Month()),
+			Day:   t.Day(),
+		}
+	case cldr.CalendarTypePersian:
+		pt := ptime.New(t)
+		date = cldr.CalendarDate{
+			Year:  pt.Year(),
+			Month: int(pt.Month()),
+			Day:   pt.Day(),
+		}
+	case cldr.CalendarTypeBuddhist:
+		bt := t.AddDate(543, 0, 0) //nolint:mnd
+		date = cldr.CalendarDate{
+			Year:  bt.Year(),
+			Month: int(bt.Month()),
+			Day:   bt.Day(),
+		}
+	}
+
+	return f.fmt.Format(date)
 }
 
-// fmtFunc is date time formatter for a particular calendar.
-type fmtFunc func(cldr.TimeReader) string
-
 //nolint:cyclop
-func gregorianDateTimeFormat(locale language.Tag, opts Options) fmtFunc {
+func gregorianDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
 	var seq *symbols.Seq
 
 	switch {
@@ -442,11 +472,11 @@ func gregorianDateTimeFormat(locale language.Tag, opts Options) fmtFunc {
 		seq = seqDay(locale, opts.Day)
 	}
 
-	return seq.Func()
+	return seq.Fmt()
 }
 
 //nolint:cyclop
-func persianDateTimeFormat(locale language.Tag, opts Options) fmtFunc {
+func persianDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
 	var seq *symbols.Seq
 
 	switch {
@@ -482,16 +512,11 @@ func persianDateTimeFormat(locale language.Tag, opts Options) fmtFunc {
 		seq = seqDayPersian(locale, opts.Day)
 	}
 
-	f := seq.Func()
-
-	return func(t cldr.TimeReader) string {
-		v, _ := t.(time.Time) // t is always [time.Time]
-		return f(persionTime(ptime.New(v)))
-	}
+	return seq.Fmt()
 }
 
 //nolint:cyclop
-func buddhistDateTimeFormat(locale language.Tag, opts Options) fmtFunc {
+func buddhistDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
 	var seq *symbols.Seq
 
 	switch {
@@ -527,24 +552,5 @@ func buddhistDateTimeFormat(locale language.Tag, opts Options) fmtFunc {
 		seq = seqDayBuddhist(locale, opts.Day)
 	}
 
-	f := seq.Func()
-
-	return func(t cldr.TimeReader) string {
-		v, _ := t.(time.Time)          // t is always [time.Time]
-		return f(v.AddDate(543, 0, 0)) //nolint:mnd
-	}
-}
-
-type persionTime ptime.Time
-
-func (p persionTime) Year() int {
-	return ptime.Time(p).Year()
-}
-
-func (p persionTime) Month() time.Month {
-	return time.Month(ptime.Time(p).Month())
-}
-
-func (p persionTime) Day() int {
-	return ptime.Time(p).Day()
+	return seq.Fmt()
 }
