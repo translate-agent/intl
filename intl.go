@@ -27,8 +27,8 @@ import (
 	"fmt"
 	"time"
 
-	ptime "github.com/yaa110/go-persian-calendar"
 	"go.expect.digital/intl/internal/cldr"
+	"go.expect.digital/intl/internal/persian"
 	"go.expect.digital/intl/internal/symbols"
 	"golang.org/x/text/language"
 )
@@ -411,24 +411,25 @@ func (f DateTimeFormat) Format(t time.Time) string {
 
 	switch f.calendar {
 	default: // CalendarTypeGregorian (and any others)
+		y, m, d := t.Date()
 		date = cldr.CalendarDate{
-			Year:  t.Year(),
-			Month: int(t.Month()),
-			Day:   t.Day(),
+			Year:  y,
+			Month: int(m),
+			Day:   d,
 		}
 	case cldr.CalendarTypePersian:
-		pt := ptime.New(t)
+		pt := persian.FromGregorian(t)
 		date = cldr.CalendarDate{
-			Year:  pt.Year(),
-			Month: int(pt.Month()),
-			Day:   pt.Day(),
+			Year:  pt.Year,
+			Month: pt.Month,
+			Day:   pt.Day,
 		}
 	case cldr.CalendarTypeBuddhist:
-		bt := t.AddDate(543, 0, 0) //nolint:mnd
+		y, m, d := t.Date()
 		date = cldr.CalendarDate{
-			Year:  bt.Year(),
-			Month: int(bt.Month()),
-			Day:   bt.Day(),
+			Year:  y + 543, //nolint:mnd
+			Month: int(m),
+			Day:   d,
 		}
 	}
 

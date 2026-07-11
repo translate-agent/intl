@@ -4,6 +4,8 @@
 
 [CLDR v48.0](https://cldr.unicode.org/downloads/cldr-48) based date formatting in Golang. The formatting output is identical to the [Intl.DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat) by the [Node.js v26.5.0](https://nodejs.org/docs/v26.5.0/api/intl.html).
 
+This project has **zero external dependencies** and relies solely on the Go standard library.
+
 ## Requirements
 
 Go version 1.24+.

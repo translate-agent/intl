@@ -166,6 +166,25 @@ func TestDateTime_Format(t *testing.T) {
 	}
 }
 
+func TestDateTime_Format_Buddhist(t *testing.T) {
+	t.Parallel()
+
+	// 2024-02-29 is B.E. 2567-02-29
+	date := time.Date(2024, time.February, 29, 0, 0, 0, 0, time.UTC)
+	f := NewDateTimeFormat(language.Make("th"), Options{
+		Year:  YearNumeric,
+		Month: MonthNumeric,
+		Day:   DayNumeric,
+	})
+
+	got := f.Format(date)
+	want := "29/2/2567"
+
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
 var locales = []string{
 	"fa-IR", // persian calendar, arabext numerals
 	"lv-LV", // gregorian calendar, cldr.Latn numerals
