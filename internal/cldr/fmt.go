@@ -1,76 +1,59 @@
 package cldr
 
-import (
-	"strings"
-	"time"
+type CalendarDate struct {
+	Year  int
+	Month int // 1-12
+	Day   int
+}
+
+type FmtKind int
+
+const (
+	FmtKindText FmtKind = iota
+	FmtKindYearNumeric
+	FmtKindYearTwoDigit
+	FmtKindMonthNumeric
+	FmtKindMonthTwoDigit
+	FmtKindMonth
+	FmtKindDayNumeric
+	FmtKindDayTwoDigit
 )
 
-type TimeReader interface {
-	Year() int
-	Month() time.Month
-	Day() int
+type FmtItem struct {
+	Digits *Digits
+	Months *CalendarMonths
+	Text   string
+	Kind   FmtKind
 }
 
-type Fmt []FmtFunc
+type Fmt []FmtItem
 
-func (f Fmt) Format(t TimeReader) string {
-	var b strings.Builder
+func (f Fmt) Format(t CalendarDate) string {
+	var buf [64]byte
 
-	for _, fn := range f {
-		fn.Format(&b, t)
+	b := buf[:0]
+
+	for i := range f {
+		item := &f[i]
+		switch item.Kind {
+		case FmtKindText:
+			b = append(b, item.Text...)
+		case FmtKindYearNumeric:
+			b = item.Digits.appendNumeric(b, t.Year)
+		case FmtKindYearTwoDigit:
+			b = item.Digits.appendTwoDigit(b, t.Year)
+		case FmtKindMonthNumeric:
+			b = item.Digits.appendNumeric(b, t.Month)
+		case FmtKindMonthTwoDigit:
+			b = item.Digits.appendTwoDigit(b, t.Month)
+		case FmtKindMonth:
+			b = append(b, item.Months[t.Month-1]...)
+		case FmtKindDayNumeric:
+			b = item.Digits.appendNumeric(b, t.Day)
+		case FmtKindDayTwoDigit:
+			b = item.Digits.appendTwoDigit(b, t.Day)
+		}
 	}
 
-	return b.String()
-}
-
-type FmtFunc interface {
-	Format(*strings.Builder, TimeReader)
-}
-
-type Text string
-
-func (t Text) Format(b *strings.Builder, _ TimeReader) {
-	b.WriteString(string(t))
-}
-
-type YearNumeric Digits
-
-func (y YearNumeric) Format(b *strings.Builder, t TimeReader) {
-	Digits(y).appendNumeric(b, t.Year())
-}
-
-type YearTwoDigit Digits
-
-func (y YearTwoDigit) Format(b *strings.Builder, t TimeReader) {
-	Digits(y).appendTwoDigit(b, t.Year())
-}
-
-type MonthNumeric Digits
-
-func (m MonthNumeric) Format(b *strings.Builder, t TimeReader) {
-	Digits(m).appendNumeric(b, int(t.Month()))
-}
-
-type MonthTwoDigit Digits
-
-func (m MonthTwoDigit) Format(b *strings.Builder, t TimeReader) {
-	Digits(m).appendTwoDigit(b, int(t.Month()))
-}
-
-type Month CalendarMonths
-
-func (m Month) Format(b *strings.Builder, t TimeReader) {
-	b.WriteString(m[t.Month()-1])
-}
-
-type DayNumeric Digits
-
-func (d DayNumeric) Format(b *strings.Builder, t TimeReader) {
-	Digits(d).appendNumeric(b, t.Day())
-}
-
-type DayTwoDigit Digits
-
-func (d DayTwoDigit) Format(b *strings.Builder, t TimeReader) {
-	Digits(d).appendTwoDigit(b, t.Day())
+	return string(b)
 }

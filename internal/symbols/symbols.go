@@ -129,73 +129,79 @@ func (s *Seq) AddSeq(seq *Seq) *Seq {
 	return s
 }
 
-// Func returns [time.Time] formatting function.
-func (s *Seq) Func() func(cldr.TimeReader) string {
-	// concatenate all sequential text values
-	var text cldr.Text
+// Fmt returns the [cldr.Fmt] formatting sequence.
+func (s *Seq) Fmt() cldr.Fmt {
+	var text string
 
-	digits := cldr.LocaleDigits(s.locale)
+	digits := cldr.LocaleDigitsPtr(s.locale)
 	fmt := make(cldr.Fmt, 0, len(s.symbols))
 
 	for _, symbol := range s.symbols {
 		if symbol < symbolStart {
-			text += cldr.Text(symbol.String())
+			text += symbol.String()
 			continue
 		}
 
-		var symFmt cldr.FmtFunc
+		var (
+			item   cldr.FmtItem
+			isText bool
+		)
 
 		//nolint:exhaustive
 		switch symbol {
 		case Symbol_G:
-			symFmt = cldr.Text(cldr.EraName(s.locale)[1])
+			text += cldr.EraName(s.locale)[1]
+			isText = true
 		case Symbol_GGGG:
-			symFmt = cldr.Text(cldr.EraName(s.locale)[2])
+			text += cldr.EraName(s.locale)[2]
+			isText = true
 		case Symbol_GGGGG:
-			symFmt = cldr.Text(cldr.EraName(s.locale)[0])
+			text += cldr.EraName(s.locale)[0]
+			isText = true
 		case Symbol_y:
-			symFmt = cldr.YearNumeric(digits)
+			item = cldr.FmtItem{Kind: cldr.FmtKindYearNumeric, Digits: digits}
 		case Symbol_yy:
-			symFmt = cldr.YearTwoDigit(digits)
+			item = cldr.FmtItem{Kind: cldr.FmtKindYearTwoDigit, Digits: digits}
 		case Symbol_M:
-			symFmt = cldr.MonthNumeric(digits)
+			item = cldr.FmtItem{Kind: cldr.FmtKindMonthNumeric, Digits: digits}
 		case Symbol_MM:
-			symFmt = cldr.MonthTwoDigit(digits)
+			item = cldr.FmtItem{Kind: cldr.FmtKindMonthTwoDigit, Digits: digits}
 		case Symbol_MMM:
-			names := cldr.MonthNames(s.locale.String(), "format", "abbreviated")
-			symFmt = cldr.Month(names)
+			names := cldr.MonthNamesPtr(s.locale.String(), "format", "abbreviated")
+			item = cldr.FmtItem{Kind: cldr.FmtKindMonth, Months: names}
 		case Symbol_LLLLL:
-			names := cldr.MonthNames(s.locale.String(), "stand-alone", "narrow")
-			symFmt = cldr.Month(names)
+			names := cldr.MonthNamesPtr(s.locale.String(), "stand-alone", "narrow")
+			item = cldr.FmtItem{Kind: cldr.FmtKindMonth, Months: names}
 		case Symbol_LLL:
-			names := cldr.MonthNames(s.locale.String(), "stand-alone", "abbreviated")
-			symFmt = cldr.Month(names)
+			names := cldr.MonthNamesPtr(s.locale.String(), "stand-alone", "abbreviated")
+			item = cldr.FmtItem{Kind: cldr.FmtKindMonth, Months: names}
 		case Symbol_d:
-			symFmt = cldr.DayNumeric(digits)
+			item = cldr.FmtItem{Kind: cldr.FmtKindDayNumeric, Digits: digits}
 		case Symbol_dd:
-			symFmt = cldr.DayTwoDigit(digits)
+			item = cldr.FmtItem{Kind: cldr.FmtKindDayTwoDigit, Digits: digits}
 		case MonthUnit:
-			symFmt = cldr.Text(cldr.UnitName(s.locale).Month)
+			text += cldr.UnitName(s.locale).Month
+			isText = true
 		case DayUnit:
-			symFmt = cldr.Text(cldr.UnitName(s.locale).Day)
+			text += cldr.UnitName(s.locale).Day
+			isText = true
 		}
 
-		if f, ok := symFmt.(cldr.Text); ok {
-			text += f
+		if isText {
 			continue
 		}
 
 		if text != "" {
-			fmt = append(fmt, text)
+			fmt = append(fmt, cldr.FmtItem{Kind: cldr.FmtKindText, Text: text})
 			text = ""
 		}
 
-		fmt = append(fmt, symFmt)
+		fmt = append(fmt, item)
 	}
 
 	if text != "" {
-		fmt = append(fmt, text)
+		fmt = append(fmt, cldr.FmtItem{Kind: cldr.FmtKindText, Text: text})
 	}
 
-	return fmt.Format
+	return fmt
 }

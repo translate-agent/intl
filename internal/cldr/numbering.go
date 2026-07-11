@@ -1,7 +1,7 @@
 package cldr
 
 import (
-	"strings"
+	"unicode/utf8"
 
 	"golang.org/x/text/language"
 )
@@ -20,82 +20,80 @@ import (
 // and triggers special handling in some methods.
 type Digits [10]rune
 
-func (d Digits) TwoDigit(number int) string {
+func (d Digits) appendTwoDigit(b []byte, number int) []byte {
+	if d[0] == '0' {
+		if number < 10 { //nolint:mnd
+			//nolint:gosec // number is < 10, won't overflow
+			digit := byte('0' + number)
+
+			return append(b, '0', digit)
+		}
+
+		ones := number % 10      //nolint:mnd
+		tens := number / 10 % 10 //nolint:mnd
+
+		return append(b, byte('0'+tens), byte('0'+ones))
+	}
+
 	if number < 10 { //nolint:mnd
-		return string(d[0]) + string(d[number])
-	}
+		b = utf8.AppendRune(b, d[0])
+		b = utf8.AppendRune(b, d[number])
 
-	last := number % 10 //nolint:mnd
-	number /= 10
-	beforeLast := number % 10 //nolint:mnd
-
-	return string(d[beforeLast]) + string(d[last])
-}
-
-func (d Digits) Numeric(number int) string {
-	// single digit
-	if number < 10 { //nolint:mnd
-		return string(d[number])
-	}
-
-	const maxDigits = 4 // based on digits in the current Gregorian calendar year
-
-	// more than one digit
-	chars := make([]int, 0, maxDigits)
-
-	for number > 0 {
-		chars = append(chars, number%10) //nolint:mnd
-		number /= 10
-	}
-
-	var sb strings.Builder
-
-	const bytesPerRune = 4
-
-	sb.Grow(len(chars) * bytesPerRune)
-
-	for i := len(chars) - 1; i >= 0; i-- {
-		sb.WriteRune(d[chars[i]])
-	}
-
-	return sb.String()
-}
-
-func (d Digits) appendTwoDigit(b *strings.Builder, number int) {
-	if number < 10 { //nolint:mnd
-		b.WriteRune(d[0])
-		b.WriteRune(d[number])
-
-		return
+		return b
 	}
 
 	ones := number % 10      //nolint:mnd
 	tens := number / 10 % 10 //nolint:mnd
 
-	b.WriteRune(d[tens])
-	b.WriteRune(d[ones])
+	b = utf8.AppendRune(b, d[tens])
+	b = utf8.AppendRune(b, d[ones])
+
+	return b
 }
 
-func (d Digits) appendNumeric(b *strings.Builder, number int) {
-	// single digit
-	if number < 10 { //nolint:mnd
-		b.WriteRune(d[number])
-		return
+func (d Digits) appendNumeric(b []byte, number int) []byte {
+	if d[0] == '0' {
+		if number < 10 { //nolint:mnd
+			//nolint:gosec // number is < 10, won't overflow
+			digit := byte('0' + number)
+
+			return append(b, digit)
+		}
+
+		var buf [19]byte
+
+		i := len(buf)
+
+		for number > 0 {
+			i--
+			buf[i] = byte('0' + number%10)
+			number /= 10
+		}
+
+		return append(b, buf[i:]...)
 	}
 
-	const maxDigits = 4 // based on digits in the current Gregorian calendar year
+	// single digit
+	if number < 10 { //nolint:mnd
+		return utf8.AppendRune(b, d[number])
+	}
 
-	// more than one digit
-	chars := make([]int, 0, maxDigits)
+	// Use fixed-size stack array instead of make([]int, 0, maxDigits)
+	var chars [19]int
+
+	i := 0
 
 	for number > 0 {
-		chars = append(chars, number%10) //nolint:mnd
+		chars[i] = number % 10 //nolint:mnd
+		i++
 		number /= 10
 	}
 
-	for i := len(chars) - 1; i >= 0; i-- {
-		b.WriteRune(d[chars[i]])
+	for j := i - 1; j >= 0; j-- {
+		b = utf8.AppendRune(b, d[chars[j]])
 	}
+
+	return b
 }
 
 func defaultNumberingSystem(locale language.Tag) NumberingSystem {
@@ -177,4 +175,12 @@ func LocaleDigits(locale language.Tag) Digits {
 	}
 
 	return numberingSystems[NumberingSystemLatn]
+}
+
+func LocaleDigitsPtr(locale language.Tag) *Digits {
+	if i := defaultNumberingSystem(locale); i >= 0 && int(i) < len(numberingSystems) { // isInBounds()
+		return &numberingSystems[i]
+	}
+
+	return &numberingSystems[NumberingSystemLatn]
 }

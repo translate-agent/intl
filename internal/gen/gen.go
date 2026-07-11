@@ -1035,9 +1035,9 @@ func (d *TemplateData) UniqString() string {
 	})
 
 	// remove value if it is a substring of another value
-	for i := len(uniq) - 1; i >= 0; i-- {
+	for i, v := range slices.Backward(uniq) {
 		for _, s := range uniq[:i] {
-			if strings.Contains(s, uniq[i]) {
+			if strings.Contains(s, v) {
 				uniq = slices.Delete(uniq, i, i+1)
 				break
 			}

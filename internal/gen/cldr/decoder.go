@@ -162,11 +162,9 @@ func cleanLDML(ldml *LDML) {
 		}
 
 		if dates.Fields != nil {
-			for i := len(dates.Fields.Field) - 1; i >= 0; i-- {
-				dates.Fields.Field = filter(dates.Fields.Field, func(v *Field) bool {
-					return len(v.DisplayName) > 0 && v.DisplayName[0].isContributedOrApproved()
-				})
-			}
+			dates.Fields.Field = filter(dates.Fields.Field, func(v *Field) bool {
+				return len(v.DisplayName) > 0 && v.DisplayName[0].isContributedOrApproved()
+			})
 		}
 	}
 }
