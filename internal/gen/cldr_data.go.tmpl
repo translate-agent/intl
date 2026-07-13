@@ -5,27 +5,17 @@ package cldr
 // data contains all the unique text values from CLDR.
 const data = "{{ .UniqString }}"
 
-type Fields struct {
-  Month, Day string
-}
-
-var FieldsLookup = map[string]Fields{
+var fieldsLookup = [...]fieldsEntry{
 {{- range $locale, $field := .Fields }}
-  "{{ $locale }}": {Month: {{ value $field.Month }}, Day: {{ value $field.Day }}},
+  {"{{ $locale }}", Fields{Month: {{ value $field.Month }}, Day: {{ value $field.Day }}}},
 {{- end }}
 }
 
-// era contains era names: 0 - narrow, 1 - short, 2 - long.
-// The index is the value of iota [Era].
-type Era [3]string
-
-var EraLookup = map[string]Era{
+var eraLookup = [...]eraEntry{
 {{-  range $locale, $era := .Eras }}
-  "{{ $locale }}": { {{- value $era.Narrow }} /* {{ $era.Narrow }} */ , {{ value $era.Short }} /* {{ $era.Short }} */, {{ value $era.Long -}} /* {{ $era.Long }} */ },
+  {"{{ $locale }}", Era{ {{- value $era.Narrow }}, {{ value $era.Short }}, {{ value $era.Long }} }},
 {{- end }}
 }
-
-type CalendarMonths [12]string
 
 var CalendarMonthNames = [...]CalendarMonths{
 {{- range $calendarMonths := .Months.List }}
@@ -37,23 +27,11 @@ var CalendarMonthNames = [...]CalendarMonths{
 {{- end }}
 }
 
-// monthIndexes contains indexes of months names in Gregorian calendar, it has 6 indexes
-// for all variations of "width" and "context".
-//	0 - abbreviated, format
-//	1 - abbreviated, stand-alone
-//	2 - wide, format
-//	3 - wide, stand-alone
-//	4 - narrow, format
-//	5 - narrow, stand-alone
-type monthIndexes [6]int16
-
-var MonthLookup = map[string]monthIndexes{
+var monthLookup = [...]monthEntry{
 {{- range $locale, $indexes := .Months.Lookup }}
-  "{{ $locale }}": { {{ range $i, $v := $indexes }}{{ $v }},{{ end }} },
+  {"{{ $locale }}", monthIndexes{ {{ range $i, $v := $indexes }}{{ $v }},{{ end }} }},
 {{- end }}
 }
-
-type NumberingSystem int
 
 const (
   NumberingSystemLatn NumberingSystem = iota
