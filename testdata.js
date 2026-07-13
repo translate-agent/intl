@@ -42,6 +42,14 @@ function generateTests(locales) {
   const tests = locales.reduce((r, locale) => {
     const result = [];
 
+    ["long", "short", "narrow"].forEach((weekday) => {
+      const options = { weekday };
+      result.push([
+        options,
+        new Intl.DateTimeFormat(locale, options).format(date),
+      ]);
+    });
+
     [undefined, "long", "short", "narrow"].forEach((era) => {
       [undefined, "numeric", "2-digit"].forEach((year) => {
         [undefined, "numeric", "2-digit"].forEach((month) => {

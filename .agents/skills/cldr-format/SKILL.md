@@ -66,7 +66,29 @@ Calling `seq.Func()` compiles the sequence:
 
 To add support for a new locale:
 1. Identify the correct `fmt_*.go` file based on which option fields are involved.
-2. Add a `case cldr.XX:` clause to the `switch lang` block in the appropriate `seq*` function (and calendar variant if necessary).
+2. Add a `case cldr.XX:` clause to the switch lang block in the appropriate `seq*` function (and calendar variant if necessary).
 3. Use `seq.Add(...)` to describe the token sequence. Use the symbol constants for date fields and literal runes or `Txt*` constants for separators/units.
 4. If script or region overrides are required, add nested switch blocks.
 5. Add width-dependent conditions (e.g., `opts.Month.numeric()`) to output the correct layout structure.
+
+## ICU/Node.js Truthfulness (Compliance)
+
+The Go implementation must strictly match the output behavior of JavaScript's `Intl.DateTimeFormat` (which is backed by ICU/Node.js). In case of discrepancies:
+
+1. **ICU/Node.js is the Source of Truth:**
+   Always prioritize matching the exact output of Node.js formatting. Do not override or attempt to make formatting "more correct" if it deviates from what standard Node.js/ICU generates in the tests.
+
+2. **Unsupported Script Fallbacks (e.g., Deseret, Shavian):**
+   Some less common script/locale variants (like `en-Dsrt` and `en-Shaw`) are not packaged in standard Node.js/ICU builds, causing them to fall back to the base language (`en`). 
+   To match this behavior, exclude these locales from the CLDR code generation (in [internal/gen/cldr/decoder.go](../../../internal/gen/cldr/decoder.go)) so that Go's language matcher naturally falls back to `en`.
+
+3. **Standalone Field Context:**
+   When formatting a field on its own (such as only a weekday or month), ICU/Node.js uses the **stand-alone** context (`Symbol_ccc`, `Symbol_cccc`, `Symbol_ccccc` / `Symbol_LLL`, `Symbol_LLLL`, `Symbol_LLLLL`) rather than the **format** context. The weekday formatting sequence (`seqWeekday`) must map `Weekday` choices to stand-alone symbols.
+
+4. **CLDR Width Fallback Rules:**
+   When a requested width is missing in the CLDR data for a locale, fallback resolution must follow the strict CLDR/ICU width hierarchy:
+   - `narrow` -> `abbreviated` -> `wide`
+   - `short` -> `abbreviated` -> `wide`
+   - `abbreviated` -> `wide` (Note: `abbreviated` does *not* fall back to `short`).
+   - `wide` -> no fallback.
+   This resolution must be implemented in the name lookup helpers (e.g., `resolveWeekdayIndex` in [internal/cldr/cldr.go](../../../internal/cldr/cldr.go)).

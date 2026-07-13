@@ -87,6 +87,9 @@ func DecodePath(dir string) (*CLDR, error) {
 
 	for v := range cldr.ldml {
 		if v != "root" {
+			if v == "en_Dsrt" || v == "en_Dsrt_US" || v == "en_Shaw" || v == "en_Shaw_GB" || v == "mn_Mong" || v == "mn_Mong_MN" || v == "mn_Mong_CN" || v == "bm_Nkoo" || v == "bm_Nkoo_ML" || v == "ha_Arab" || v == "ha_Arab_NG" || v == "ha_Arab_SD" || v == "ku_Arab" || v == "ku_Arab_IQ" || v == "ku_Arab_IR" || v == "mni_Mtei" || v == "mni_Mtei_IN" || v == "ms_Arab" || v == "ms_Arab_BN" || v == "ms_Arab_MY" || v == "sat_Deva" || v == "sat_Deva_IN" || v == "az_Arab" || v == "az_Arab_IQ" || v == "az_Arab_IR" || v == "az_Arab_TR" {
+				continue
+			}
 			locales = append(locales, v)
 		}
 	}
@@ -136,6 +139,16 @@ func cleanLDML(ldml *LDML) {
 			for _, monthContext := range calendar.Months.MonthContext {
 				for _, monthWidth := range monthContext.MonthWidth {
 					monthWidth.Month = filter(monthWidth.Month, func(v *Month) bool {
+						return v.isContributedOrApproved()
+					})
+				}
+			}
+		}
+
+		if calendar.Days != nil {
+			for _, dayContext := range calendar.Days.DayContext {
+				for _, dayWidth := range dayContext.DayWidth {
+					dayWidth.Day = filter(dayWidth.Day, func(v *Weekday) bool {
 						return v.isContributedOrApproved()
 					})
 				}

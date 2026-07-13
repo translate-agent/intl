@@ -108,6 +108,7 @@ type Calendars struct {
 type Calendar struct {
 	Alias           *Alias           `xml:"alias"`
 	Months          *Months          `xml:"months"`
+	Days            *Days            `xml:"days"`
 	DateTimeFormats *DateTimeFormats `xml:"dateTimeFormats"`
 	Eras            *Eras            `xml:"eras"`
 
@@ -148,6 +149,28 @@ type MonthWidth struct {
 }
 
 type Month struct {
+	Common
+}
+
+type Days struct {
+	Common
+
+	DayContext []*DayContext `xml:"dayContext"`
+}
+
+type DayContext struct {
+	Common
+
+	DayWidth []*DayWidth `xml:"dayWidth"`
+}
+
+type DayWidth struct {
+	Common
+
+	Day []*Weekday `xml:"day"`
+}
+
+type Weekday struct {
 	Common
 }
 

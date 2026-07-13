@@ -49,6 +49,14 @@ const (
 	Symbol_LLLLL                          // LLLLL, stand-alone narrow
 	Symbol_MMM                            // MMM, format abbreviated
 	Symbol_MMMMM                          // MMMMM, format narrow
+	Symbol_E                              // E, format abbreviated
+	Symbol_EEEE                           // EEEE, format wide
+	Symbol_EEEEE                          // EEEEE, format narrow
+	Symbol_EEEEEE                         // EEEEEE, format short
+	Symbol_ccc                            // ccc, stand-alone abbreviated
+	Symbol_cccc                           // cccc, stand-alone wide
+	Symbol_ccccc                          // ccccc, stand-alone narrow
+	Symbol_cccccc                         // cccccc, stand-alone short
 )
 
 func (s Symbol) String() string {
@@ -179,6 +187,30 @@ func (s *Seq) Fmt() cldr.Fmt {
 			item = cldr.FmtItem{Kind: cldr.FmtKindDayNumeric, Digits: digits}
 		case Symbol_dd:
 			item = cldr.FmtItem{Kind: cldr.FmtKindDayTwoDigit, Digits: digits}
+		case Symbol_E:
+			names := cldr.WeekdayNamesPtr(s.locale.String(), "format", "abbreviated")
+			item = cldr.FmtItem{Kind: cldr.FmtKindWeekday, Weekdays: names}
+		case Symbol_EEEE:
+			names := cldr.WeekdayNamesPtr(s.locale.String(), "format", "wide")
+			item = cldr.FmtItem{Kind: cldr.FmtKindWeekday, Weekdays: names}
+		case Symbol_EEEEE:
+			names := cldr.WeekdayNamesPtr(s.locale.String(), "format", "narrow")
+			item = cldr.FmtItem{Kind: cldr.FmtKindWeekday, Weekdays: names}
+		case Symbol_EEEEEE:
+			names := cldr.WeekdayNamesPtr(s.locale.String(), "format", "short")
+			item = cldr.FmtItem{Kind: cldr.FmtKindWeekday, Weekdays: names}
+		case Symbol_ccc:
+			names := cldr.WeekdayNamesPtr(s.locale.String(), "stand-alone", "abbreviated")
+			item = cldr.FmtItem{Kind: cldr.FmtKindWeekday, Weekdays: names}
+		case Symbol_cccc:
+			names := cldr.WeekdayNamesPtr(s.locale.String(), "stand-alone", "wide")
+			item = cldr.FmtItem{Kind: cldr.FmtKindWeekday, Weekdays: names}
+		case Symbol_ccccc:
+			names := cldr.WeekdayNamesPtr(s.locale.String(), "stand-alone", "narrow")
+			item = cldr.FmtItem{Kind: cldr.FmtKindWeekday, Weekdays: names}
+		case Symbol_cccccc:
+			names := cldr.WeekdayNamesPtr(s.locale.String(), "stand-alone", "short")
+			item = cldr.FmtItem{Kind: cldr.FmtKindWeekday, Weekdays: names}
 		case MonthUnit:
 			text += cldr.UnitName(s.locale).Month
 			isText = true

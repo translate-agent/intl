@@ -95,6 +95,7 @@ func (g *Generator) process(ctx context.Context, conf Conf, log *slog.Logger) (*
 		DefaultNumberingSystems: defaultNumberingSystems,
 		Fields:                  g.fields(),
 		Months:                  g.months(),
+		Weekdays:                g.weekdays(),
 	}, nil
 }
 
@@ -185,7 +186,16 @@ func (g *Generator) merge(ctx context.Context, log *slog.Logger) {
 		for _, parentLocale := range parentLocales.ParentLocale {
 			for loc := range strings.FieldsSeq(parentLocale.Locales) {
 				if parentLocale.Parent == "root" {
-					if !slices.Contains([]string{"sd_Deva", "sr_Latn", "bs_Cyrl", "zh_Hant", "uz_Arab", "pa_Arab"}, loc) {
+					if !slices.Contains([]string{
+						"sd_Deva", "sr_Latn", "bs_Cyrl", "zh_Hant", "uz_Arab", "pa_Arab", "az_Cyrl", "uz_Cyrl",
+						"kxv_Deva", "kxv_Orya", "kxv_Telu", "en_Dsrt", "en_Shaw", "zh_Hans",
+						"az_Arab", "bal_Latn", "blt_Latn", "bm_Nkoo", "byn_Latn", "cu_Glag", "dje_Arab",
+						"dyo_Arab", "ff_Adlm", "ff_Arab", "ha_Arab", "iu_Latn", "kaa_Latn", "kk_Arab",
+						"kok_Latn", "ks_Deva", "ku_Arab", "ky_Arab", "ky_Latn", "ml_Arab", "mn_Mong",
+						"mni_Mtei", "ms_Arab", "sat_Deva", "sd_Khoj", "sd_Sind", "shi_Latn", "so_Arab",
+						"sw_Arab", "suz_Sunu", "tg_Arab", "ug_Cyrl", "vai_Latn", "wo_Arab", "yo_Arab",
+						"yue_Hans",
+					}, loc) {
 						continue
 					}
 				}
@@ -366,6 +376,15 @@ func mergeCalendar(ctx context.Context, dst, src *cldr.Calendar, log *slog.Logge
 		}
 	}
 
+	// days
+	if src.Days != nil {
+		if dst.Days == nil {
+			dst.Days = deepCopy(src.Days)
+		} else {
+			mergeDays(dst.Days, src.Days)
+		}
+	}
+
 	// eras
 	if src.Eras != nil {
 		if dst.Eras == nil {
@@ -374,6 +393,76 @@ func mergeCalendar(ctx context.Context, dst, src *cldr.Calendar, log *slog.Logge
 			mergeEras(dst.Eras, src.Eras)
 		}
 	}
+}
+
+func mergeDays(dst, src *cldr.Days) {
+	if src == nil {
+		return
+	}
+
+	for _, srcCtx := range src.DayContext {
+		dstCtx := findDayContext(dst.DayContext, srcCtx.Type)
+
+		if dstCtx == nil {
+			dst.DayContext = append(dst.DayContext, deepCopy(srcCtx))
+			continue
+		}
+
+		mergeDayWidth(dstCtx, srcCtx)
+	}
+}
+
+func findDayContext(contexts []*cldr.DayContext, ctxType string) *cldr.DayContext {
+	for _, c := range contexts {
+		if c.Type == ctxType {
+			return c
+		}
+	}
+
+	return nil
+}
+
+func mergeDayWidth(dstCtx, srcCtx *cldr.DayContext) {
+	for _, srcWidth := range srcCtx.DayWidth {
+		dstWidth := findDayWidth(dstCtx.DayWidth, srcWidth.Type)
+
+		if dstWidth == nil {
+			dstCtx.DayWidth = append(dstCtx.DayWidth, deepCopy(srcWidth))
+			continue
+		}
+
+		mergeDayNames(dstWidth, srcWidth)
+	}
+}
+
+func findDayWidth(widths []*cldr.DayWidth, wType string) *cldr.DayWidth {
+	for _, w := range widths {
+		if w.Type == wType {
+			return w
+		}
+	}
+
+	return nil
+}
+
+func mergeDayNames(dstWidth, srcWidth *cldr.DayWidth) {
+	for _, srcDay := range srcWidth.Day {
+		dstDay := findDay(dstWidth.Day, srcDay.Type)
+
+		if dstDay == nil {
+			dstWidth.Day = append(dstWidth.Day, deepCopy(srcDay))
+		}
+	}
+}
+
+func findDay(days []*cldr.Weekday, dType string) *cldr.Weekday {
+	for _, d := range days {
+		if d.Type == dType {
+			return d
+		}
+	}
+
+	return nil
 }
 
 func mergeMonths(dst, src *cldr.Months) {
@@ -574,6 +663,7 @@ func (g *Generator) defaultNumberingSystems() LocaleLookup {
 
 func (g *Generator) months() Months { //nolint:gocognit
 	months := NewMonths()
+	months.List = append(months.List, MonthNames{})
 
 	for _, locale := range g.cldr.Locales() {
 		ldml := g.cldr.RawLDML(locale)
@@ -651,6 +741,101 @@ func (g *Generator) months() Months { //nolint:gocognit
 	}
 
 	return months
+}
+
+//nolint:mnd
+func dayIndex(dayType string) (int, error) {
+	switch dayType {
+	case "sun":
+		return 0, nil
+	case "mon":
+		return 1, nil
+	case "tue":
+		return 2, nil
+	case "wed":
+		return 3, nil
+	case "thu":
+		return 4, nil
+	case "fri":
+		return 5, nil
+	case "sat":
+		return 6, nil
+	default:
+		return 0, fmt.Errorf("unknown day type: %s", dayType)
+	}
+}
+
+//nolint:gocognit
+func (g *Generator) weekdays() Weekdays {
+	weekdays := NewWeekdays()
+	weekdays.List = append(weekdays.List, WeekdayNames{})
+
+	for _, locale := range g.cldr.Locales() {
+		ldml := g.cldr.RawLDML(locale)
+
+		locale = strings.ReplaceAll(locale, "_", "-")
+
+		if ldml.Dates == nil || ldml.Dates.Calendars == nil {
+			continue
+		}
+
+		calendar := ldml.GetCalendar("gregorian")
+
+		if calendar.Days == nil {
+			continue
+		}
+
+		for _, dayContext := range calendar.Days.DayContext {
+			for _, dayWidth := range dayContext.DayWidth {
+				if len(dayWidth.Day) == 0 {
+					continue
+				}
+
+				var weekdayNames WeekdayNames
+
+				for _, day := range dayWidth.Day {
+					idx, err := dayIndex(day.Type)
+					if err != nil {
+						panic(err)
+					}
+
+					weekdayNames[idx] = day.CharData
+				}
+
+				// skip empty names
+				if weekdayNames[0] == "" {
+					continue
+				}
+
+				i := slices.IndexFunc(weekdays.List, func(names WeekdayNames) bool {
+					for i, v := range names {
+						if v != weekdayNames[i] {
+							return false
+						}
+					}
+
+					return true
+				})
+
+				if i == -1 {
+					weekdays.List = append(weekdays.List, weekdayNames)
+					i = len(weekdays.List) - 1
+				}
+
+				indexes := weekdays.Lookup[locale]
+				indexes.Set(dayWidth.Type, dayContext.Type, i)
+
+				// NOTE: fallback "format" context when "stand-alone" not defined
+				if dayContext.Type == "format" {
+					indexes.Set(dayWidth.Type, "stand-alone", i)
+				}
+
+				weekdays.Lookup[locale] = indexes
+			}
+		}
+	}
+
+	return weekdays
 }
 
 //nolint:gocognit
@@ -838,6 +1023,8 @@ func (g *Generator) eras(calendarPreferences CalendarPreferences) Eras {
 		}
 
 		switch locale {
+		case "az-Cyrl", "az-Cyrl-AZ":
+			era.Narrow = "ј.е."
 		case "en-Dsrt", "en-Dsrt-US", "en-Shaw", "en-Shaw-GB", "kaa", "kaa-Cyrl", "kaa-Cyrl-UZ", "kaa-Latn", "kaa-Latn-UZ",
 			"mhn", "mhn-IT":
 			era.Narrow = "A"
@@ -970,6 +1157,7 @@ type TemplateData struct {
 	uniqString              string
 	Eras                    Eras
 	Months                  Months
+	Weekdays                Weekdays
 	Fields                  Fields
 	DefaultNumberingSystems LocaleLookup
 	NumberingSystemIota     []string
@@ -981,6 +1169,8 @@ type TemplateData struct {
 // Any text value can be looked up in the generated string value.
 //
 // In the go template, "value" function can be used to get the value.
+//
+//nolint:gocognit
 func (d *TemplateData) UniqString() string {
 	if d.uniqString != "" {
 		return d.uniqString
@@ -1017,6 +1207,14 @@ func (d *TemplateData) UniqString() string {
 	}
 
 	for _, names := range d.Months.List {
+		for _, v := range names {
+			if !slices.Contains(uniq, v) {
+				uniq = append(uniq, v)
+			}
+		}
+	}
+
+	for _, names := range d.Weekdays.List {
 		for _, v := range names {
 			if !slices.Contains(uniq, v) {
 				uniq = append(uniq, v)
@@ -1108,6 +1306,70 @@ func (m *MonthIndexes) Set(width, context string, i int) {
 type MonthNames [12]string
 
 func (n MonthNames) String() string {
+	return `{"` + strings.Join(n[:], `", "`) + `"}`
+}
+
+type Weekdays struct {
+	Lookup map[string]WeekdayIndexes
+	List   []WeekdayNames
+}
+
+func NewWeekdays() Weekdays {
+	return Weekdays{
+		Lookup: make(map[string]WeekdayIndexes),
+	}
+}
+
+type WeekdayKey struct {
+	Locale       string
+	CalendarType string // gregorian, persian or buddhist
+	Width        string // wide, narrow, abbreviated
+	Context      string // format or stand-alone
+}
+
+// WeekdayIndexes contains indexes for weekday names in [Weekdays.List]:
+//
+//	0 - abbreviated, format
+//	1 - abbreviated, stand-alone
+//	2 - short, format
+//	3 - short, stand-alone
+//	4 - wide, format
+//	5 - wide, stand-alone
+//	6 - narrow, format
+//	7 - narrow, stand-alone
+type WeekdayIndexes [8]int
+
+func (m *WeekdayIndexes) Set(width, context string, i int) {
+	contextCount := 2
+
+	var w, c int
+
+	switch width {
+	case "abbreviated":
+		w = 0
+	case "short":
+		w = 1
+	case "wide":
+		w = 2
+	case "narrow":
+		w = 3
+	}
+
+	switch context {
+	case "format":
+		c = 0
+	case "stand-alone":
+		c = 1
+	}
+
+	index := w*contextCount + c
+
+	m[index] = i
+}
+
+type WeekdayNames [7]string
+
+func (n WeekdayNames) String() string {
 	return `{"` + strings.Join(n[:], `", "`) + `"}`
 }
 
