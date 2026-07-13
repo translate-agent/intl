@@ -444,7 +444,7 @@ func DefaultCalendar(locale language.Tag) CalendarType {
 }
 
 func UnitName(locale language.Tag) Fields {
-	if v, ok := FieldsLookup[locale.String()]; ok {
+	if v, ok := findFields(locale.String()); ok {
 		return v
 	}
 
@@ -454,7 +454,7 @@ func UnitName(locale language.Tag) Fields {
 	if v, confidence := locale.Script(); confidence == language.Exact {
 		s += "-" + v.String()
 
-		v, ok := FieldsLookup[s]
+		v, ok := findFields(s)
 		if ok {
 			return v
 		}
@@ -464,12 +464,12 @@ func UnitName(locale language.Tag) Fields {
 		s += "-" + v.String()
 	}
 
-	v, ok := FieldsLookup[s]
+	v, ok := findFields(s)
 	if ok {
 		return v
 	}
 
-	v, ok = FieldsLookup[lang.String()]
+	v, ok = findFields(lang.String())
 	if ok {
 		return v
 	}
