@@ -7,7 +7,7 @@ import (
 )
 
 func seqMonth(locale language.Tag, opt Month) *symbols.Seq {
-	lang, _ := locale.Base()
+	lang, _, _ := locale.Raw()
 	seq := symbols.NewSeq(locale)
 
 	switch lang {
@@ -20,8 +20,14 @@ func seqMonth(locale language.Tag, opt Month) *symbols.Seq {
 		case cldr.JA, cldr.YUE, cldr.ZH, cldr.KO:
 			seq.Add(symbols.MonthUnit)
 		}
-	case cldr.BR, cldr.FO, cldr.GA, cldr.LT, cldr.UK, cldr.UZ:
+	case cldr.BR, cldr.FO, cldr.GA, cldr.LT, cldr.UK:
 		seq.Add(symbols.Symbol_MM)
+	case cldr.UZ:
+		if region, _ := locale.Region(); region == cldr.RegionAF {
+			seq.Add(opt.symbolFormat())
+		} else {
+			seq.Add(symbols.Symbol_MM)
+		}
 	case cldr.MN:
 		seq.Add(symbols.Symbol_LLLLL)
 	case cldr.WAE:
@@ -29,12 +35,4 @@ func seqMonth(locale language.Tag, opt Month) *symbols.Seq {
 	}
 
 	return seq
-}
-
-func seqMonthBuddhist(locale language.Tag, opt Month) *symbols.Seq {
-	return symbols.NewSeq(locale).Add(opt.symbolFormat())
-}
-
-func seqMonthPersian(locale language.Tag, opt Month) *symbols.Seq {
-	return symbols.NewSeq(locale).Add(opt.symbolFormat())
 }

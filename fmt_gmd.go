@@ -8,26 +8,48 @@ import (
 
 //nolint:cyclop,gocognit
 func seqEraMonthDay(locale language.Tag, opts Options) *symbols.Seq {
-	lang, script, region := locale.Raw()
+	lang, script, _ := locale.Raw()
+	region, _ := locale.Region()
 	seq := symbols.NewSeq(locale)
 	era := opts.Era.symbol()
 
 	switch lang {
-	default:
-		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
+	case cldr.TH:
+		seq.Add(era, ' ').AddSeq(seqMonthDay(locale, opts))
+	case cldr.SHN:
+		seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
+	case cldr.FA, cldr.PS:
+		if region == cldr.RegionIR || region == cldr.RegionAF {
+			seq.Add(era, ' ', opts.Month.symbolFormat(), '/', opts.Day.symbol())
+		} else {
+			seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
+		}
+	case cldr.MZN, cldr.CKB:
+		if region == cldr.RegionIR || region == cldr.RegionAF {
+			seq.Add(era, ' ', opts.Month.symbolFormat(), '-', opts.Day.symbol())
+		} else {
+			seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
+		}
+	case cldr.UZ:
+		if region == cldr.RegionAF {
+			seq.Add(era, ' ', opts.Month.symbolFormat(), '-', opts.Day.symbol())
+		} else {
+			seq.Add(era, ' ', symbols.Symbol_dd, '/', symbols.Symbol_MM)
+		}
 	case cldr.AF, cldr.AS, cldr.IA, cldr.KY, cldr.MI, cldr.RM, cldr.RW, cldr.TG, cldr.WO:
-		return seq.Add(era, ' ', symbols.Symbol_dd, '-', symbols.Symbol_MM)
+		seq.Add(era, ' ', symbols.Symbol_dd, '-', symbols.Symbol_MM)
 	case cldr.SD:
 		if script == cldr.Deva {
-			return seq.Add(era, ' ', opts.Month.symbolFormat(), '/', opts.Day.symbol())
+			seq.Add(era, ' ', opts.Month.symbolFormat(), '/', opts.Day.symbol())
+			break
 		}
 
 		fallthrough
-	case cldr.BGC, cldr.BHO, cldr.BO, cldr.BUA, cldr.CE, cldr.CKB, cldr.CSW, cldr.EO, cldr.GAA, cldr.GV, cldr.KL, cldr.KSH,
+	case cldr.BGC, cldr.BHO, cldr.BO, cldr.BUA, cldr.CE, cldr.CSW, cldr.EO, cldr.GAA, cldr.GV, cldr.KL, cldr.KSH,
 		cldr.KW, cldr.LIJ, cldr.LKT, cldr.LMO, cldr.MGO, cldr.MT, cldr.NDS, cldr.NNH, cldr.NE, cldr.NQO, cldr.NSO, cldr.OC,
-		cldr.PMS, cldr.PRG, cldr.PS, cldr.QU, cldr.RAJ, cldr.SAH, cldr.SAT, cldr.SHN, cldr.SN, cldr.ST, cldr.SZL, cldr.TN,
+		cldr.PMS, cldr.PRG, cldr.QU, cldr.RAJ, cldr.SAH, cldr.SAT, cldr.SN, cldr.ST, cldr.SZL, cldr.TN,
 		cldr.TOK, cldr.TYV, cldr.VMW, cldr.XH, cldr.YI, cldr.ZA, cldr.ZU:
-		return seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
+		seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
 	case cldr.LT:
 		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
@@ -35,73 +57,76 @@ func seqEraMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 
 		fallthrough
 	case cldr.DZ, cldr.SI:
-		return seq.Add(era, ' ', opts.Month.symbolFormat(), '-', opts.Day.symbol())
+		seq.Add(era, ' ', opts.Month.symbolFormat(), '-', opts.Day.symbol())
 	case cldr.NL:
 		if region == cldr.RegionBE {
-			return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
+			seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
+			break
 		}
 
 		fallthrough
 	case cldr.FY, cldr.UG:
-		return seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
+		seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
 	case cldr.OR:
 		if opts.Month.numeric() && opts.Day.numeric() {
-			return seq.Add(era, ' ', opts.Month.symbolFormat(), '/', opts.Day.symbol())
+			seq.Add(era, ' ', opts.Month.symbolFormat(), '/', opts.Day.symbol())
+		} else {
+			seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
 		}
-
-		return seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
 	case cldr.MS:
 		if opts.Month.numeric() && opts.Day.numeric() {
-			return seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
+			seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
+		} else {
+			seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 		}
-
-		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 	case cldr.SE:
 		if region == cldr.RegionFI {
-			return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
+			seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
+		} else {
+			seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
 		}
-
-		return seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
 	case cldr.KN, cldr.MR, cldr.VI:
 		if !opts.Month.numeric() || !opts.Day.numeric() {
-			return seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
+			seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
+		} else {
+			seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 		}
-
-		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 	case cldr.TI:
-		return seq.Add(era, ' ', symbols.Symbol_d, '/', symbols.Symbol_M)
+		seq.Add(era, ' ', symbols.Symbol_d, '/', symbols.Symbol_M)
 	case cldr.FF:
 		if script == cldr.Adlm {
-			return seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
+			seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
+		} else {
+			seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 		}
-
-		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 	case cldr.BN, cldr.CCP, cldr.GU, cldr.TA, cldr.TE:
 		if opts.Month.twoDigit() || opts.Day.twoDigit() {
-			return seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
+			seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
+		} else {
+			seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 		}
-
-		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 	case cldr.KK:
 		if script == cldr.Arab {
-			return seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
+			seq.Add(era, ' ', opts.Day.symbol(), '-', opts.Month.symbolFormat())
+
+			break
 		}
 
 		fallthrough
 	case cldr.AZ, cldr.BA, cldr.FO, cldr.HY, cldr.KU, cldr.OS, cldr.TK, cldr.TT, cldr.UK:
-		return seq.Add(era, ' ', symbols.Symbol_dd, '.', symbols.Symbol_MM)
+		seq.Add(era, ' ', symbols.Symbol_dd, '.', symbols.Symbol_MM)
 	case cldr.SQ:
-		return seq.Add(era, ' ', symbols.Symbol_d, '.', symbols.Symbol_M)
+		seq.Add(era, ' ', symbols.Symbol_d, '.', symbols.Symbol_M)
 	case cldr.BG, cldr.PL:
-		return seq.Add(era, ' ', opts.Day.symbol(), '.', symbols.Symbol_MM)
+		seq.Add(era, ' ', opts.Day.symbol(), '.', symbols.Symbol_MM)
 	case cldr.BE, cldr.DA, cldr.ET, cldr.HE, cldr.IE, cldr.JGO, cldr.KA:
-		return seq.Add(era, ' ', opts.Day.symbol(), '.', opts.Month.symbolFormat())
+		seq.Add(era, ' ', opts.Day.symbol(), '.', opts.Month.symbolFormat())
 	case cldr.MK:
-		return seq.Add(era, ' ', symbols.Symbol_d, '.', opts.Month.symbolFormat())
+		seq.Add(era, ' ', symbols.Symbol_d, '.', opts.Month.symbolFormat())
 	case cldr.NB, cldr.NN, cldr.NO:
-		return seq.Add(era, ' ', symbols.Symbol_d, '.', symbols.Symbol_M, '.')
+		seq.Add(era, ' ', symbols.Symbol_d, '.', symbols.Symbol_M, '.')
 	case cldr.LV:
-		return seq.Add(era, ' ', symbols.Symbol_dd, '.', symbols.Symbol_MM, '.')
+		seq.Add(era, ' ', symbols.Symbol_dd, '.', symbols.Symbol_MM, '.')
 	case cldr.SR:
 		seq.Add(era, ' ', opts.Day.symbol(), '.')
 
@@ -109,48 +134,54 @@ func seqEraMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 			seq.Add(' ')
 		}
 
-		return seq.Add(opts.Month.symbolFormat(), '.')
+		seq.Add(opts.Month.symbolFormat(), '.')
 	case cldr.HR:
 		if opts.Month.numeric() && opts.Day.numeric() {
-			return seq.Add(era, ' ', symbols.Symbol_dd, '.', ' ', symbols.Symbol_MM, '.')
+			seq.Add(era, ' ', symbols.Symbol_dd, '.', ' ', symbols.Symbol_MM, '.')
+
+			break
 		}
 
 		fallthrough
 	case cldr.CS, cldr.SK, cldr.SL:
-		return seq.Add(era, ' ', opts.Day.symbol(), '.', ' ', opts.Month.symbolFormat(), '.')
+		seq.Add(era, ' ', opts.Day.symbol(), '.', ' ', opts.Month.symbolFormat(), '.')
 	case cldr.RO, cldr.RU:
 		if opts.Month.numeric() && opts.Day.numeric() {
-			return seq.Add(era, ' ', symbols.Symbol_dd, '.', symbols.Symbol_MM)
+			seq.Add(era, ' ', symbols.Symbol_dd, '.', symbols.Symbol_MM)
+		} else {
+			seq.Add(era, ' ', opts.Day.symbol(), '.', opts.Month.symbolFormat())
 		}
-
-		return seq.Add(era, ' ', opts.Day.symbol(), '.', opts.Month.symbolFormat())
 	case cldr.DE:
 		if opts.Month.twoDigit() && opts.Day.numeric() {
-			return seq.Add(era, ' ', symbols.Symbol_dd, '.', opts.Month.symbolFormat(), '.')
+			seq.Add(era, ' ', symbols.Symbol_dd, '.', opts.Month.symbolFormat(), '.')
+
+			break
 		}
 
 		fallthrough
 	case cldr.DSB, cldr.FI, cldr.GSW, cldr.HSB, cldr.LB, cldr.IS, cldr.SMN:
-		return seq.Add(era, ' ', opts.Day.symbol(), '.', opts.Month.symbolFormat(), '.')
+		seq.Add(era, ' ', opts.Day.symbol(), '.', opts.Month.symbolFormat(), '.')
 	case cldr.HU, cldr.KO:
-		return seq.Add(era, ' ', opts.Month.symbolFormat(), '.', ' ', opts.Day.symbol(), '.')
+		seq.Add(era, ' ', opts.Month.symbolFormat(), '.', ' ', opts.Day.symbol(), '.')
 	case cldr.WAE:
-		return seq.Add(era, ' ', opts.Day.symbol(), '.', ' ', symbols.Symbol_MMM)
+		seq.Add(era, ' ', opts.Day.symbol(), '.', ' ', symbols.Symbol_MMM)
 	case cldr.BS:
 		if script == cldr.Cyrl {
-			return seq.Add(era, ' ', symbols.Symbol_dd, '.', symbols.Symbol_MM, '.')
+			seq.Add(era, ' ', symbols.Symbol_dd, '.', symbols.Symbol_MM, '.')
+		} else {
+			seq.Add(era, ' ', symbols.Symbol_d, '.', ' ', symbols.Symbol_M, '.')
 		}
-
-		return seq.Add(era, ' ', symbols.Symbol_d, '.', ' ', symbols.Symbol_M, '.')
 	case cldr.OM:
 		if opts.Month.twoDigit() || opts.Day.twoDigit() {
-			return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
+			seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
+		} else {
+			seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
 		}
-
-		return seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
 	case cldr.KS:
 		if script == cldr.Deva {
-			return seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
+			seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
+
+			break
 		}
 
 		fallthrough
@@ -158,179 +189,178 @@ func seqEraMonthDay(locale language.Tag, opts Options) *symbols.Seq {
 		cldr.EE, cldr.EU, cldr.FIL, cldr.GUZ, cldr.HA, cldr.KAM, cldr.KDE, cldr.KLN, cldr.TEO, cldr.VAI, cldr.JA,
 		cldr.JMC, cldr.KI, cldr.KSB, cldr.LAG, cldr.LG, cldr.LUO, cldr.LUY, cldr.MAS, cldr.MER, cldr.NAQ, cldr.ND,
 		cldr.NYN, cldr.ROF, cldr.RWK, cldr.SAQ, cldr.SBP, cldr.SO, cldr.TZM, cldr.VUN, cldr.XOG, cldr.YUE:
-		return seq.Add(era, ' ', opts.Month.symbolFormat(), '/', opts.Day.symbol())
+		seq.Add(era, ' ', opts.Month.symbolFormat(), '/', opts.Day.symbol())
 	case cldr.MN:
-		return seq.Add(era, ' ', symbols.Symbol_LLLLL, '/', symbols.Symbol_dd)
+		seq.Add(era, ' ', symbols.Symbol_LLLLL, '/', symbols.Symbol_dd)
 	case cldr.ZH:
 		if region == cldr.RegionHK || region == cldr.RegionMO {
-			return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
-		}
-
-		seq.Add(era, ' ', opts.Month.symbolFormat())
-
-		if region == cldr.RegionSG {
-			seq.Add('-')
+			seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 		} else {
-			seq.Add('/')
-		}
+			seq.Add(era, ' ', opts.Month.symbolFormat())
 
-		return seq.Add(opts.Day.symbol())
+			if region == cldr.RegionSG {
+				seq.Add('-')
+			} else {
+				seq.Add('/')
+			}
+
+			seq.Add(opts.Day.symbol())
+		}
 	case cldr.FR:
-		if region == cldr.RegionCA {
+		switch region {
+		case cldr.RegionCA:
 			if opts.Month.twoDigit() || opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
 
-			return seq.Add(era, ' ', opts.Month.symbolFormat(), '-', opts.Day.symbol())
-		}
-
-		if region == cldr.RegionCH {
+			seq.Add(era, ' ', opts.Month.symbolFormat(), '-', opts.Day.symbol())
+		case cldr.RegionCH:
 			if opts.Month.numeric() && opts.Day.numeric() {
-				return seq.Add(era, ' ', symbols.Symbol_dd, '.', symbols.Symbol_MM, '.')
+				seq.Add(era, ' ', symbols.Symbol_dd, '.', symbols.Symbol_MM, '.')
+			} else {
+				seq.Add(era, ' ', opts.Day.symbol(), '.', opts.Month.symbolFormat())
 			}
-
-			return seq.Add(era, ' ', opts.Day.symbol(), '.', opts.Month.symbolFormat())
+		default:
+			seq.Add(era, ' ', symbols.Symbol_dd, '/', symbols.Symbol_MM)
 		}
-
-		fallthrough
-	case cldr.BR, cldr.GA, cldr.IT, cldr.JV, cldr.KKJ, cldr.SC, cldr.SYR, cldr.VEC, cldr.UZ:
-		return seq.Add(era, ' ', symbols.Symbol_dd, '/', symbols.Symbol_MM)
+	case cldr.BR, cldr.GA, cldr.IT, cldr.JV, cldr.KKJ, cldr.SC, cldr.SYR, cldr.VEC:
+		seq.Add(era, ' ', symbols.Symbol_dd, '/', symbols.Symbol_MM)
 	case cldr.PCM:
-		return seq.Add(era, ' ', opts.Day.symbol(), ' ', '/', opts.Month.symbolFormat())
+		seq.Add(era, ' ', opts.Day.symbol(), ' ', '/', opts.Month.symbolFormat())
 	case cldr.SV:
 		if opts.Month.twoDigit() && opts.Day.numeric() {
 			opts.Month = MonthNumeric
 		}
 
 		if region == cldr.RegionFI {
-			return seq.Add(era, ' ', opts.Day.symbol(), '.', opts.Month.symbolFormat())
+			seq.Add(era, ' ', opts.Day.symbol(), '.', opts.Month.symbolFormat())
+		} else {
+			seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 		}
-
-		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 	case cldr.KEA, cldr.PT:
 		if opts.Month.numeric() && opts.Day.numeric() {
 			opts.Month = Month2Digit
 			opts.Day = Day2Digit
 		}
 
-		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
+		seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 	case cldr.HI:
 		if script != cldr.Latn {
-			return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
-		}
+			seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
+		} else {
+			if opts.Month.numeric() && opts.Day.numeric() {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
+			}
 
-		if opts.Month.numeric() && opts.Day.numeric() {
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
+			seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), ' ', era)
 		}
-
-		return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), ' ', era)
 	case cldr.AR:
-		return seq.Add(era, ' ', opts.Day.symbol(), symbols.Txt02, opts.Month.symbolFormat())
+		seq.Add(era, ' ', opts.Day.symbol(), symbols.Txt02, opts.Month.symbolFormat())
 	case cldr.LRC:
-		if region == cldr.RegionIQ {
-			return seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
-		}
-
-		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
-	case cldr.EN:
 		switch region {
-		case cldr.RegionUS, cldr.RegionAS, cldr.RegionBI, cldr.RegionGU, cldr.RegionJP, cldr.RegionMH, cldr.RegionMP,
-			cldr.RegionPH, cldr.RegionPR, cldr.RegionUM, cldr.RegionVI, cldr.RegionZZ:
-			return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), ' ', era)
-		case cldr.RegionAU, cldr.RegionBE, cldr.RegionIE, cldr.RegionNZ, cldr.RegionZW:
-			return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), ' ', era)
-		case cldr.RegionCA:
+		case cldr.RegionIR, cldr.RegionAF:
+			seq.Add(era, ' ', opts.Month.symbolFormat(), '-', opts.Day.symbol())
+		case cldr.RegionIQ:
+			seq.Add(era, ' ', symbols.Symbol_MM, '-', symbols.Symbol_dd)
+		default:
+			seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
+		}
+	case cldr.EN:
+		switch {
+		case region == cldr.RegionUS ||
+			region == cldr.RegionAS ||
+			region == cldr.RegionBI ||
+			region == cldr.RegionGU ||
+			region == cldr.RegionJP ||
+			region == cldr.RegionMH ||
+			region == cldr.RegionMP ||
+			region == cldr.RegionPH ||
+			region == cldr.RegionPR ||
+			region == cldr.RegionUM ||
+			region == cldr.RegionVI ||
+			region == cldr.RegionZZ:
+			seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), ' ', era)
+		case region == cldr.RegionAU ||
+			region == cldr.RegionBE ||
+			region == cldr.RegionIE ||
+			region == cldr.RegionNZ ||
+			region == cldr.RegionZW:
+			seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), ' ', era)
+		case region == cldr.RegionCA:
 			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
 
-			return seq.Add(opts.Month.symbolFormat(), '-', opts.Day.symbol(), ' ', era)
-		case cldr.RegionCH:
+			seq.Add(opts.Month.symbolFormat(), '-', opts.Day.symbol(), ' ', era)
+		case region == cldr.RegionCH:
 			if opts.Month.numeric() && opts.Day.numeric() {
 				opts.Month = Month2Digit
 				opts.Day = Day2Digit
 			}
 
-			return seq.Add(opts.Day.symbol(), '.', opts.Month.symbolFormat(), ' ', era)
-		case cldr.RegionZA:
-			if !opts.Month.twoDigit() || !opts.Day.twoDigit() {
-				return seq.Add(symbols.Symbol_MM, '/', symbols.Symbol_dd, ' ', era)
+			seq.Add(opts.Day.symbol(), '.', opts.Month.symbolFormat(), ' ', era)
+		case region == cldr.RegionZA && (!opts.Month.twoDigit() || !opts.Day.twoDigit()):
+			seq.Add(symbols.Symbol_MM, '/', symbols.Symbol_dd, ' ', era)
+		case script == cldr.Shaw || script == cldr.Dsrt:
+			seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), ' ', era)
+		default:
+			if opts.Month.numeric() && opts.Day.numeric() {
+				opts.Month = Month2Digit
+				opts.Day = Day2Digit
 			}
-		}
 
-		if script == cldr.Shaw || script == cldr.Dsrt {
-			return seq.Add(opts.Month.symbolFormat(), '/', opts.Day.symbol(), ' ', era)
+			seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), ' ', era)
 		}
-
-		if opts.Month.numeric() && opts.Day.numeric() {
-			opts.Month = Month2Digit
-			opts.Day = Day2Digit
-		}
-
-		return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat(), ' ', era)
 	case cldr.ES:
 		seq.Add(era, ' ')
 
 		switch region {
 		default:
-			return seq.Add(symbols.Symbol_d, '/', symbols.Symbol_M)
+			seq.Add(symbols.Symbol_d, '/', symbols.Symbol_M)
 		case cldr.RegionUS, cldr.RegionMX:
-			return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat())
+			seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat())
 		case cldr.RegionCL:
 			if opts.Month.twoDigit() {
-				return seq.Add(symbols.Symbol_d, '/', symbols.Symbol_M)
+				seq.Add(symbols.Symbol_d, '/', symbols.Symbol_M)
+			} else {
+				seq.Add(symbols.Symbol_dd, '-', symbols.Symbol_MM)
 			}
-
-			return seq.Add(symbols.Symbol_dd, '-', symbols.Symbol_MM)
 		case cldr.RegionPA, cldr.RegionPR:
 			if opts.Month.numeric() {
-				return seq.Add(symbols.Symbol_MM, '/', symbols.Symbol_dd)
-			}
-
-			if opts.Month.twoDigit() {
-				opts.Month = MonthNumeric
-				opts.Day = DayNumeric
+				seq.Add(symbols.Symbol_MM, '/', symbols.Symbol_dd)
 			} else {
-				opts.Month = Month2Digit
-				opts.Day = Day2Digit
-			}
+				if opts.Month.twoDigit() {
+					opts.Month = MonthNumeric
+					opts.Day = DayNumeric
+				} else {
+					opts.Month = Month2Digit
+					opts.Day = Day2Digit
+				}
 
-			return seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat())
+				seq.Add(opts.Day.symbol(), '/', opts.Month.symbolFormat())
+			}
 		}
 	case cldr.II:
-		return seq.Add(era, ' ', symbols.Symbol_MM, symbols.Txt03, symbols.Symbol_dd, symbols.Txtꑍ)
+		seq.Add(era, ' ', symbols.Symbol_MM, symbols.Txt03, symbols.Symbol_dd, symbols.Txtꑍ)
 	case cldr.KOK:
-		return seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
+		seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
 	case cldr.KAA, cldr.MHN:
-		return seq.Add(opts.Month.symbolFormat(), ' ', opts.Day.symbol(), ' ', era)
+		seq.Add(opts.Month.symbolFormat(), ' ', opts.Day.symbol(), ' ', era)
 	case cldr.CV:
 		if opts.Month.numeric() || opts.Day.numeric() {
-			return seq.Add(era, ' ', symbols.Symbol_MM, '.', symbols.Symbol_dd)
+			seq.Add(era, ' ', symbols.Symbol_MM, '.', symbols.Symbol_dd)
+		} else {
+			seq.Add(era, ' ', opts.Month.symbolFormat(), '.', opts.Day.symbol())
 		}
 
-		return seq.Add(era, ' ', opts.Month.symbolFormat(), '.', opts.Day.symbol())
-	}
-}
-
-func seqEraMonthDayPersian(locale language.Tag, opts Options) *symbols.Seq {
-	seq := symbols.NewSeq(locale)
-	lang, _ := locale.Base()
-
-	seq.Add(opts.Era.symbol(), ' ', opts.Month.symbolFormat())
-
-	switch lang {
-	default:
-		seq.Add('-')
-	case cldr.FA, cldr.PS:
-		seq.Add('/')
 	}
 
-	return seq.Add(opts.Day.symbol())
-}
+	if seq.Empty() {
+		seq.Add(era, ' ', opts.Day.symbol(), '/', opts.Month.symbolFormat())
+	}
 
-func seqEraMonthDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
-	return symbols.NewSeq(locale).Add(opts.Era.symbol(), ' ').AddSeq(seqMonthDayBuddhist(locale, opts))
+	return seq
 }

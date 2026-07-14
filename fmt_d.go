@@ -37,11 +37,3 @@ func seqDay(locale language.Tag, opt Day) *symbols.Seq {
 
 	return seq
 }
-
-func seqDayBuddhist(locale language.Tag, opt Day) *symbols.Seq {
-	return symbols.NewSeq(locale).Add(opt.symbol())
-}
-
-func seqDayPersian(locale language.Tag, opt Day) *symbols.Seq {
-	return symbols.NewSeq(locale).Add(opt.symbol())
-}
