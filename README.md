@@ -18,7 +18,7 @@ Go version 1.24+.
 | year                   |     ✅︎    |
 | month                  |     ✅︎    |
 | day                    |     ✅︎    |
-| weekday (standalone)   |     ✅︎    |
+| weekday (standalone, day+weekday)   |     ✅︎    |
 | weekday (format)       |     ❌    |
 | hour                   |     ❌    |
 | minute                 |     ❌    |

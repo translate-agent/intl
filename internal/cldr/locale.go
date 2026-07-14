@@ -263,15 +263,23 @@ var (
 var (
 	Adlm = language.MustParseScript("Adlm")
 	Arab = language.MustParseScript("Arab")
+	Beng = language.MustParseScript("Beng")
 	Cyrl = language.MustParseScript("Cyrl")
 	Deva = language.MustParseScript("Deva")
 	Dsrt = language.MustParseScript("Dsrt")
+	Guru = language.MustParseScript("Guru")
 	Hans = language.MustParseScript("Hans")
 	Hant = language.MustParseScript("Hant")
 	Latn = language.MustParseScript("Latn")
+	Mong = language.MustParseScript("Mong")
+	Mtei = language.MustParseScript("Mtei")
+	Nkoo = language.MustParseScript("Nkoo")
+	Olck = language.MustParseScript("Olck")
 	Orya = language.MustParseScript("Orya")
 	Shaw = language.MustParseScript("Shaw")
 	Telu = language.MustParseScript("Telu")
+	Tfng = language.MustParseScript("Tfng")
+	Vaii = language.MustParseScript("Vaii")
 )
 
 // Regions.
