@@ -1,9 +1,10 @@
 package cldr
 
 type CalendarDate struct {
-	Year  int
-	Month int // 1-12
-	Day   int
+	Year    int
+	Month   int // 1-12
+	Day     int
+	Weekday int // 0-6 (Sunday-Saturday)
 }
 
 type FmtKind int
@@ -17,13 +18,15 @@ const (
 	FmtKindMonth
 	FmtKindDayNumeric
 	FmtKindDayTwoDigit
+	FmtKindWeekday
 )
 
 type FmtItem struct {
-	Digits *Digits
-	Months *CalendarMonths
-	Text   string
-	Kind   FmtKind
+	Digits   *Digits
+	Months   *CalendarMonths
+	Weekdays *CalendarWeekdays
+	Text     string
+	Kind     FmtKind
 }
 
 type Fmt []FmtItem
@@ -52,6 +55,8 @@ func (f Fmt) Format(t CalendarDate) string {
 			b = item.Digits.appendNumeric(b, t.Day)
 		case FmtKindDayTwoDigit:
 			b = item.Digits.appendTwoDigit(b, t.Day)
+		case FmtKindWeekday:
+			b = append(b, item.Weekdays[t.Weekday]...)
 		}
 	}
 

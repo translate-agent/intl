@@ -53,6 +53,15 @@ func (t *Test) String() string {
 		sb.WriteString(t.Options.Day.String())
 	}
 
+	if !t.Options.Weekday.und() {
+		if sb.Len() > 0 {
+			sb.WriteRune(',')
+		}
+
+		sb.WriteString("weekday=")
+		sb.WriteString(t.Options.Weekday.String())
+	}
+
 	if sb.Len() > 0 {
 		sb.WriteRune(',')
 	}
@@ -94,6 +103,7 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 
 	test := Test{Output: out}
 
+	//nolint:nestif
 	if o, ok := args[0].(map[string]any); ok {
 		if v, ok := o["era"].(string); ok {
 			test.Options.Era = MustParseEra(v)
@@ -109,6 +119,10 @@ func (t *Test) UnmarshalJSON(b []byte) error {
 
 		if v, ok := o["day"].(string); ok {
 			test.Options.Day = MustParseDay(v)
+		}
+
+		if v, ok := o["weekday"].(string); ok {
+			test.Options.Weekday = MustParseWeekday(v)
 		}
 	}
 

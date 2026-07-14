@@ -33,6 +33,23 @@ var monthLookup = [...]monthEntry{
 {{- end }}
 }
 
+var CalendarWeekdayNames = [...]CalendarWeekdays{
+{{- range $calendarWeekdays := .Weekdays.List }}
+  {
+  {{- range $i, $weekday := $calendarWeekdays }}
+    {{- value $weekday }},
+  {{- end -}}
+  },
+{{- end }}
+}
+
+var weekdayLookup = [...]weekdayEntry{
+{{- range $locale, $indexes := .Weekdays.Lookup }}
+  {"{{ $locale }}", weekdayIndexes{ {{ range $i, $v := $indexes }}{{ $v }},{{ end }} }},
+{{- end }}
+}
+
+
 const (
   NumberingSystemLatn NumberingSystem = iota
 {{- range $v := .NumberingSystemIota }}

@@ -364,13 +364,80 @@ func ParseDay(s string) (Day, error) {
 	}
 }
 
+// Weekday represents the format for displaying weekdays.
+type Weekday byte
+
+const (
+	WeekdayUnd Weekday = iota
+	WeekdayLong
+	WeekdayShort
+	WeekdayNarrow
+)
+
+// MustParseWeekday converts a string representation of a weekday format to the [Weekday] type.
+// It panics if the input string is not a valid weekday format.
+func MustParseWeekday(s string) Weekday {
+	v, err := ParseWeekday(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
+
+// String returns the string representation of the [Weekday] format.
+func (wd Weekday) String() string {
+	switch wd {
+	default:
+		return ""
+	case WeekdayLong:
+		return "long"
+	case WeekdayShort:
+		return "short"
+	case WeekdayNarrow:
+		return "narrow"
+	}
+}
+
+func (wd Weekday) und() bool { return wd == WeekdayUnd }
+
+func (wd Weekday) symbol() symbols.Symbol {
+	switch wd {
+	default:
+		return symbols.Symbol_ccc
+	case WeekdayLong:
+		return symbols.Symbol_cccc
+	case WeekdayNarrow:
+		return symbols.Symbol_ccccc
+	case WeekdayShort:
+		return symbols.Symbol_ccc
+	}
+}
+
+// ParseWeekday converts a string representation of a weekday format to the [Weekday] type.
+func ParseWeekday(s string) (Weekday, error) {
+	switch s {
+	default:
+		return WeekdayUnd, fmt.Errorf(`bad weekday value "%s", want "long", "short", "narrow" or ""`, s)
+	case "":
+		return WeekdayUnd, nil
+	case "long":
+		return WeekdayLong, nil
+	case "short":
+		return WeekdayShort, nil
+	case "narrow":
+		return WeekdayNarrow, nil
+	}
+}
+
 // Options defines configuration parameters for [NewDateTimeFormat].
 // It allows customization of the date and time representations in formatted output.
 type Options struct {
-	Era   Era
-	Year  Year
-	Month Month
-	Day   Day
+	Era     Era
+	Year    Year
+	Month   Month
+	Day     Day
+	Weekday Weekday
 }
 
 // DateTimeFormat encapsulates the configuration and functionality for
@@ -385,7 +452,7 @@ type DateTimeFormat struct {
 // This function initializes a [DateTimeFormat] with the default calendar based on the
 // given locale. It supports different calendar systems including Gregorian, Persian, and Buddhist calendars.
 func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
-	if options.Era.und() && options.Year.und() && options.Month.und() && options.Day.und() {
+	if options.Era.und() && options.Year.und() && options.Month.und() && options.Day.und() && options.Weekday.und() {
 		options.Year = YearNumeric
 		options.Month = MonthNumeric
 		options.Day = DayNumeric
@@ -413,23 +480,26 @@ func (f DateTimeFormat) Format(t time.Time) string {
 	default: // CalendarTypeGregorian (and any others)
 		y, m, d := t.Date()
 		date = cldr.CalendarDate{
-			Year:  y,
-			Month: int(m),
-			Day:   d,
+			Year:    y,
+			Month:   int(m),
+			Day:     d,
+			Weekday: int(t.Weekday()),
 		}
 	case cldr.CalendarTypePersian:
 		pt := persian.FromGregorian(t)
 		date = cldr.CalendarDate{
-			Year:  pt.Year,
-			Month: pt.Month,
-			Day:   pt.Day,
+			Year:    pt.Year,
+			Month:   pt.Month,
+			Day:     pt.Day,
+			Weekday: int(t.Weekday()),
 		}
 	case cldr.CalendarTypeBuddhist:
 		y, m, d := t.Date()
 		date = cldr.CalendarDate{
-			Year:  y + 543, //nolint:mnd
-			Month: int(m),
-			Day:   d,
+			Year:    y + 543, //nolint:mnd
+			Month:   int(m),
+			Day:     d,
+			Weekday: int(t.Weekday()),
 		}
 	}
 
@@ -471,6 +541,8 @@ func gregorianDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
 		seq = seqMonth(locale, opts.Month)
 	case !opts.Day.und():
 		seq = seqDay(locale, opts.Day)
+	case !opts.Weekday.und():
+		seq = seqWeekday(locale, opts.Weekday)
 	}
 
 	return seq.Fmt()
@@ -511,6 +583,8 @@ func persianDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
 		seq = seqMonthPersian(locale, opts.Month)
 	case !opts.Day.und():
 		seq = seqDayPersian(locale, opts.Day)
+	case !opts.Weekday.und():
+		seq = seqWeekdayPersian(locale, opts.Weekday)
 	}
 
 	return seq.Fmt()
@@ -551,6 +625,8 @@ func buddhistDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
 		seq = seqMonthBuddhist(locale, opts.Month)
 	case !opts.Day.und():
 		seq = seqDayBuddhist(locale, opts.Day)
+	case !opts.Weekday.und():
+		seq = seqWeekdayBuddhist(locale, opts.Weekday)
 	}
 
 	return seq.Fmt()
