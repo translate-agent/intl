@@ -105,11 +105,7 @@ func seqDayWeekday(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.KSH:
 		return seq.Add(weekday, symbols.TxtColognianDa, day, '.')
 	case cldr.MN:
-		if opts.Day.twoDigit() {
-			return seq.Add(day, '.', ' ', weekday)
-		}
-
-		return seq.Add('0', day, '.', ' ', weekday)
+		return seq.Add(symbols.Symbol_dd, '.', ' ', weekday)
 	case cldr.MY:
 		return seq.Add(day, symbols.TxtBurmeseDay, weekday)
 	case cldr.SD:
