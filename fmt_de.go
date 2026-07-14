@@ -8,9 +8,7 @@ import (
 
 //nolint:gocognit,cyclop
 func seqDayWeekday(locale language.Tag, opts Options) *symbols.Seq {
-	lang, _ := locale.Base()
-	script, _ := locale.Script()
-	region, _ := locale.Region()
+	lang, script, region := locale.Raw()
 	seq := symbols.NewSeq(locale)
 	weekday := opts.Weekday.symbolFormat()
 	day := opts.Day.symbol()

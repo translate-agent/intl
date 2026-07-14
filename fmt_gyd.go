@@ -7,8 +7,7 @@ import (
 )
 
 func seqEraYearDay(locale language.Tag, opts Options) *symbols.Seq {
-	lang, _ := locale.Base()
-	script, _ := locale.Script()
+	lang, script, _ := locale.Raw()
 	region, regionConfidence := locale.Region()
 	seq := symbols.NewSeq(locale)
 	era := opts.Era.symbol()

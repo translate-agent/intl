@@ -7,7 +7,7 @@ import (
 )
 
 func seqMonth(locale language.Tag, opt Month) *symbols.Seq {
-	lang, _ := locale.Base()
+	lang, _, region := locale.Raw()
 	seq := symbols.NewSeq(locale)
 
 	switch lang {
@@ -23,7 +23,7 @@ func seqMonth(locale language.Tag, opt Month) *symbols.Seq {
 	case cldr.BR, cldr.FO, cldr.GA, cldr.LT, cldr.UK:
 		seq.Add(symbols.Symbol_MM)
 	case cldr.UZ:
-		if region, _ := locale.Region(); region == cldr.RegionAF {
+		if region == cldr.RegionAF {
 			seq.Add(opt.symbolFormat())
 		} else {
 			seq.Add(symbols.Symbol_MM)
