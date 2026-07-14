@@ -414,6 +414,19 @@ func (wd Weekday) symbol() symbols.Symbol {
 	}
 }
 
+func (wd Weekday) symbolFormat() symbols.Symbol {
+	switch wd {
+	default:
+		return symbols.Symbol_E
+	case WeekdayLong:
+		return symbols.Symbol_EEEE
+	case WeekdayNarrow:
+		return symbols.Symbol_EEEEE
+	case WeekdayShort:
+		return symbols.Symbol_E
+	}
+}
+
 // ParseWeekday converts a string representation of a weekday format to the [Weekday] type.
 func ParseWeekday(s string) (Weekday, error) {
 	switch s {
@@ -539,6 +552,8 @@ func gregorianDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
 		seq = seqMonthDay(locale, opts)
 	case !opts.Month.und():
 		seq = seqMonth(locale, opts.Month)
+	case !opts.Day.und() && !opts.Weekday.und():
+		seq = seqDayWeekday(locale, opts)
 	case !opts.Day.und():
 		seq = seqDay(locale, opts.Day)
 	case !opts.Weekday.und():
@@ -581,6 +596,8 @@ func persianDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
 		seq = seqMonthDayPersian(locale, opts)
 	case !opts.Month.und():
 		seq = seqMonthPersian(locale, opts.Month)
+	case !opts.Day.und() && !opts.Weekday.und():
+		seq = seqDayWeekdayPersian(locale, opts)
 	case !opts.Day.und():
 		seq = seqDayPersian(locale, opts.Day)
 	case !opts.Weekday.und():
@@ -623,6 +640,8 @@ func buddhistDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
 		seq = seqMonthDayBuddhist(locale, opts)
 	case !opts.Month.und():
 		seq = seqMonthBuddhist(locale, opts.Month)
+	case !opts.Day.und() && !opts.Weekday.und():
+		seq = seqDayWeekdayBuddhist(locale, opts)
 	case !opts.Day.und():
 		seq = seqDayBuddhist(locale, opts.Day)
 	case !opts.Weekday.und():

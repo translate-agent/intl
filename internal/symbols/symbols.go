@@ -9,56 +9,66 @@ type Symbol byte
 
 //nolint:asciicheck,revive
 const (
-	Txt日              Symbol = iota + 128 // "日"
-	Txt일                                  // "일"
-	Txtꑍ                                  // "ꑍ"
-	Txt年                                  // "年"
-	Txt月                                  // "月"
-	Txt년                                  // "년"
-	Txtс                                  // "с"
-	Txtҫ                                  // "ҫ"
-	Txtж                                  // "ж"
-	Txtթ                                  // "թ"
-	TxtNNBSP                              // " "
-	Txtр                                  // "р"
-	Txt00                                 // "г."
-	Txt01                                 // ". g."
-	Txt02                                 // "\u200f/"
-	Txt03                                 // "ꆪ-"
-	Txt04                                 // "tháng "
-	Txt05                                 // "ел"
-	Txt06                                 // "སྤྱི་ཟླ་"
-	Txt08                                 // "urteko"
-	Txt09                                 // "an"
-	Txt10                                 // "оны"
-	TxtArabicComma                        // "،"
-	TxtCyrillicShortI                     // "й"
-	symbolStart                           // the start of CLDR symbols
-	MonthUnit                             // "month" in the local language
-	DayUnit                               // "day" in the local language
-	Symbol_G                              // G, era, abbreviated
-	Symbol_GGGG                           // GGGG, era, long
-	Symbol_GGGGG                          // GGGGG, era, narrow
-	Symbol_y                              // y, year
-	Symbol_yy                             // yy, two-digit year
-	Symbol_M                              // M, month
-	Symbol_MM                             // MM, two-digit month
-	Symbol_d                              // d, day
-	Symbol_dd                             // dd, two-digit day
-	Symbol_LLL                            // LLL, stand-alone abbreviated
-	Symbol_LLLLL                          // LLLLL, stand-alone narrow
-	Symbol_MMM                            // MMM, format abbreviated
-	Symbol_MMMMM                          // MMMMM, format narrow
-	Symbol_E                              // E, format abbreviated
-	Symbol_EEEE                           // EEEE, format wide
-	Symbol_EEEEE                          // EEEEE, format narrow
-	Symbol_EEEEEE                         // EEEEEE, format short
-	Symbol_ccc                            // ccc, stand-alone abbreviated
-	Symbol_cccc                           // cccc, stand-alone wide
-	Symbol_ccccc                          // ccccc, stand-alone narrow
-	Symbol_cccccc                         // cccccc, stand-alone short
+	Txt日                    Symbol = iota + 128 // "日"
+	Txt일                                        // "일"
+	Txtꑍ                                        // "ꑍ"
+	Txt年                                        // "年"
+	Txt月                                        // "月"
+	Txt년                                        // "년"
+	Txtс                                        // "с"
+	Txtҫ                                        // "ҫ"
+	Txtж                                        // "ж"
+	Txtթ                                        // "թ"
+	TxtNNBSP                                    // " "
+	Txtр                                        // "р"
+	Txt00                                       // "г."
+	Txt01                                       // ". g."
+	Txt02                                       // "\u200f/"
+	Txt03                                       // "ꆪ-"
+	Txt04                                       // "tháng "
+	Txt05                                       // "ел"
+	Txt06                                       // "སྤྱི་ཟླ་"
+	Txt08                                       // "urteko"
+	Txt09                                       // "an"
+	Txt10                                       // "оны"
+	TxtArabicComma                              // "،"
+	TxtCyrillicShortI                           // "й"
+	TxtKurdishHam                               // "ھەم"
+	TxtPersianOrdinalSuffix                     // "م"
+	TxtHebrewHeDash                             // " ה-"
+	TxtColognianDa                              // " dä "
+	TxtBurmeseDay                               // " ရက် "
+	TxtVietnameseNgay                           // ", ngày "
+	TxtYiddishDem                               // " דעם "
+	TxtYiddishTn                                // "טן"
+	TxtDanishDen                                // " den "
+	symbolStart                                 // the start of CLDR symbols
+	MonthUnit                                   // "month" in the local language
+	DayUnit                                     // "day" in the local language
+	Symbol_G                                    // G, era, abbreviated
+	Symbol_GGGG                                 // GGGG, era, long
+	Symbol_GGGGG                                // GGGGG, era, narrow
+	Symbol_y                                    // y, year
+	Symbol_yy                                   // yy, two-digit year
+	Symbol_M                                    // M, month
+	Symbol_MM                                   // MM, two-digit month
+	Symbol_d                                    // d, day
+	Symbol_dd                                   // dd, two-digit day
+	Symbol_LLL                                  // LLL, stand-alone abbreviated
+	Symbol_LLLLL                                // LLLLL, stand-alone narrow
+	Symbol_MMM                                  // MMM, format abbreviated
+	Symbol_MMMMM                                // MMMMM, format narrow
+	Symbol_E                                    // E, format abbreviated
+	Symbol_EEEE                                 // EEEE, format wide
+	Symbol_EEEEE                                // EEEEE, format narrow
+	Symbol_EEEEEE                               // EEEEEE, format short
+	Symbol_ccc                                  // ccc, stand-alone abbreviated
+	Symbol_cccc                                 // cccc, stand-alone wide
+	Symbol_ccccc                                // ccccc, stand-alone narrow
+	Symbol_cccccc                               // cccccc, stand-alone short
 )
 
+//nolint:cyclop
 func (s Symbol) String() string {
 	switch s {
 	default:
@@ -111,6 +121,24 @@ func (s Symbol) String() string {
 		return "،"
 	case TxtCyrillicShortI:
 		return "й"
+	case TxtKurdishHam:
+		return "ھەم"
+	case TxtPersianOrdinalSuffix:
+		return "م"
+	case TxtHebrewHeDash:
+		return " ה-"
+	case TxtColognianDa:
+		return " dä "
+	case TxtBurmeseDay:
+		return " ရက် "
+	case TxtVietnameseNgay:
+		return ", ngày "
+	case TxtYiddishDem:
+		return " דעם "
+	case TxtYiddishTn:
+		return "טן"
+	case TxtDanishDen:
+		return " den "
 	}
 }
 
