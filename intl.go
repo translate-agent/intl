@@ -472,14 +472,8 @@ func NewDateTimeFormat(locale language.Tag, options Options) DateTimeFormat {
 	}
 
 	cal := cldr.DefaultCalendar(locale)
-	switch cal {
-	default:
-		return DateTimeFormat{fmt: gregorianDateTimeFormat(locale, options), calendar: cal}
-	case cldr.CalendarTypePersian:
-		return DateTimeFormat{fmt: persianDateTimeFormat(locale, options), calendar: cal}
-	case cldr.CalendarTypeBuddhist:
-		return DateTimeFormat{fmt: buddhistDateTimeFormat(locale, options), calendar: cal}
-	}
+
+	return DateTimeFormat{fmt: dateTimeFormat(locale, options), calendar: cal}
 }
 
 // Format formats the given [time.Time] value according to the [DateTimeFormat]'s configuration.
@@ -520,7 +514,7 @@ func (f DateTimeFormat) Format(t time.Time) string {
 }
 
 //nolint:cyclop
-func gregorianDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
+func dateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
 	var seq *symbols.Seq
 
 	switch {
@@ -547,7 +541,7 @@ func gregorianDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
 	case !opts.Year.und() && !opts.Day.und():
 		seq = seqYearDay(locale, opts)
 	case !opts.Year.und():
-		seq = seqYear(locale, opts.Year)
+		seq = seqYear(locale, opts)
 	case !opts.Month.und() && !opts.Day.und():
 		seq = seqMonthDay(locale, opts)
 	case !opts.Month.und():
@@ -558,94 +552,6 @@ func gregorianDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
 		seq = seqDay(locale, opts.Day)
 	case !opts.Weekday.und():
 		seq = seqWeekday(locale, opts.Weekday)
-	}
-
-	return seq.Fmt()
-}
-
-//nolint:cyclop
-func persianDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
-	var seq *symbols.Seq
-
-	switch {
-	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		seq = seqEraYearMonthDayPersian(locale, opts)
-	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und():
-		seq = seqEraYearMonthPersian(locale, opts)
-	case !opts.Era.und() && !opts.Year.und() && !opts.Day.und():
-		seq = seqEraYearDayPersian(locale, opts)
-	case !opts.Era.und() && !opts.Year.und():
-		seq = seqEraYearPersian(locale, opts)
-	case !opts.Era.und() && !opts.Month.und() && !opts.Day.und():
-		seq = seqEraMonthDayPersian(locale, opts)
-	case !opts.Era.und() && !opts.Month.und():
-		seq = seqEraMonthPersian(locale, opts)
-	case !opts.Era.und() && !opts.Day.und():
-		seq = seqEraDayPersian(locale, opts)
-	case !opts.Era.und():
-		seq = seqEraYearMonthDayPersian(locale, opts)
-	case !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		seq = seqYearMonthDayPersian(locale, opts)
-	case !opts.Year.und() && !opts.Month.und():
-		seq = seqYearMonthPersian(locale, opts)
-	case !opts.Year.und() && !opts.Day.und():
-		seq = seqYearDayPersian(locale, opts)
-	case !opts.Year.und():
-		seq = seqYearPersian(locale, opts.Year)
-	case !opts.Month.und() && !opts.Day.und():
-		seq = seqMonthDayPersian(locale, opts)
-	case !opts.Month.und():
-		seq = seqMonthPersian(locale, opts.Month)
-	case !opts.Day.und() && !opts.Weekday.und():
-		seq = seqDayWeekdayPersian(locale, opts)
-	case !opts.Day.und():
-		seq = seqDayPersian(locale, opts.Day)
-	case !opts.Weekday.und():
-		seq = seqWeekdayPersian(locale, opts.Weekday)
-	}
-
-	return seq.Fmt()
-}
-
-//nolint:cyclop
-func buddhistDateTimeFormat(locale language.Tag, opts Options) cldr.Fmt {
-	var seq *symbols.Seq
-
-	switch {
-	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		seq = seqEraYearMonthDayBuddhist(locale, opts)
-	case !opts.Era.und() && !opts.Year.und() && !opts.Month.und():
-		seq = seqEraYearMonthBuddhist(locale, opts)
-	case !opts.Era.und() && !opts.Year.und() && !opts.Day.und():
-		seq = seqEraYearDayBuddhist(locale, opts)
-	case !opts.Era.und() && !opts.Year.und():
-		seq = seqEraYearBuddhist(locale, opts)
-	case !opts.Era.und() && !opts.Month.und() && !opts.Day.und():
-		seq = seqEraMonthDayBuddhist(locale, opts)
-	case !opts.Era.und() && !opts.Month.und():
-		seq = seqEraMonthBuddhist(locale, opts)
-	case !opts.Era.und() && !opts.Day.und():
-		seq = seqEraDayBuddhist(locale, opts)
-	case !opts.Era.und():
-		seq = seqEraYearMonthDayBuddhist(locale, opts)
-	case !opts.Year.und() && !opts.Month.und() && !opts.Day.und():
-		seq = seqYearMonthDayBuddhist(locale, opts)
-	case !opts.Year.und() && !opts.Month.und():
-		seq = seqYearMonthBuddhist(locale, opts)
-	case !opts.Year.und() && !opts.Day.und():
-		seq = seqYearDayBuddhist(locale, opts)
-	case !opts.Year.und():
-		seq = seqYearBuddhist(locale, opts)
-	case !opts.Month.und() && !opts.Day.und():
-		seq = seqMonthDayBuddhist(locale, opts)
-	case !opts.Month.und():
-		seq = seqMonthBuddhist(locale, opts.Month)
-	case !opts.Day.und() && !opts.Weekday.und():
-		seq = seqDayWeekdayBuddhist(locale, opts)
-	case !opts.Day.und():
-		seq = seqDayBuddhist(locale, opts.Day)
-	case !opts.Weekday.und():
-		seq = seqWeekdayBuddhist(locale, opts.Weekday)
 	}
 
 	return seq.Fmt()

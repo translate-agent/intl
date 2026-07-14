@@ -6,10 +6,11 @@ import (
 	"golang.org/x/text/language"
 )
 
-func seqYear(locale language.Tag, opt Year) *symbols.Seq {
+func seqYear(locale language.Tag, opts Options) *symbols.Seq {
 	lang, _ := locale.Base()
+	region, regionConfidence := locale.Region()
 	seq := symbols.NewSeq(locale)
-	year := opt.symbol()
+	year := opts.Year.symbol()
 
 	switch lang {
 	default:
@@ -26,22 +27,25 @@ func seqYear(locale language.Tag, opt Year) *symbols.Seq {
 		seq.Add(year, symbols.Txt01)
 	case cldr.TOK:
 		seq.Add('#', year)
+	case cldr.TH, cldr.SHN:
+		if region == cldr.RegionTH {
+			seq.Add(opts.Era.symbol(), ' ', year)
+		} else {
+			seq.Add(year)
+		}
+	case cldr.LRC, cldr.MZN, cldr.PS, cldr.CKB:
+		if region == cldr.RegionIR || region == cldr.RegionAF {
+			seq.Add(symbols.Symbol_GGGGG, ' ', year)
+		} else {
+			seq.Add(year)
+		}
+	case cldr.UZ:
+		if region == cldr.RegionAF && regionConfidence != language.Exact {
+			seq.Add(symbols.Symbol_GGGGG, ' ', year)
+		} else {
+			seq.Add(year)
+		}
 	}
 
 	return seq
-}
-
-func seqYearBuddhist(locale language.Tag, opts Options) *symbols.Seq {
-	return symbols.NewSeq(locale).Add(opts.Era.symbol(), ' ', opts.Year.symbol())
-}
-
-func seqYearPersian(locale language.Tag, opt Year) *symbols.Seq {
-	lang, _, region := locale.Raw()
-	seq := symbols.NewSeq(locale)
-
-	if lang != cldr.FA && (lang != cldr.UZ || region != cldr.RegionAF) {
-		seq.Add(symbols.Symbol_GGGGG, ' ')
-	}
-
-	return seq.Add(opt.symbol())
 }

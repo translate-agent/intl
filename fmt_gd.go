@@ -80,33 +80,3 @@ func seqEraDay(locale language.Tag, opts Options) *symbols.Seq {
 
 	return seq
 }
-
-func seqEraDayPersian(locale language.Tag, opts Options) *symbols.Seq {
-	seq := symbols.NewSeq(locale)
-	era := opts.Era.symbol()
-	day := opts.Day.symbol()
-	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
-
-	if withName {
-		seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
-	} else {
-		seq.Add(era, ' ', day)
-	}
-
-	return seq
-}
-
-func seqEraDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
-	seq := symbols.NewSeq(locale)
-	era := opts.Era.symbol()
-	day := opts.Day.symbol()
-	withName := opts.Era.short() || opts.Era.long() && opts.Day.twoDigit()
-
-	if withName {
-		seq.Add(era, ' ', '(', symbols.DayUnit, ':', ' ', day, ')')
-	} else {
-		seq.Add(era, ' ', day)
-	}
-
-	return seq
-}

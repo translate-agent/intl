@@ -9,7 +9,7 @@ import (
 func seqYearDay(locale language.Tag, opts Options) *symbols.Seq {
 	lang, script, _ := locale.Raw()
 	seq := symbols.NewSeq(locale)
-	year := seqYear(locale, opts.Year)
+	year := seqYear(locale, opts)
 	day := seqDay(locale, opts.Day)
 	withName := !opts.Year.twoDigit() || !opts.Day.numeric()
 
@@ -40,28 +40,4 @@ func seqYearDay(locale language.Tag, opts Options) *symbols.Seq {
 	}
 
 	return seq
-}
-
-func seqYearDayPersian(locale language.Tag, opts Options) *symbols.Seq {
-	seq := symbols.NewSeq(locale)
-	year := seqYearPersian(locale, opts.Year)
-	day := opts.Day.symbol()
-
-	if !opts.Year.twoDigit() || !opts.Day.numeric() {
-		return seq.AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ', day).Add(')')
-	}
-
-	return seq.AddSeq(year).Add(' ', day)
-}
-
-func seqYearDayBuddhist(locale language.Tag, opts Options) *symbols.Seq {
-	seq := symbols.NewSeq(locale)
-	year := seqYearBuddhist(locale, opts)
-	day := opts.Day.symbol()
-
-	if !opts.Year.twoDigit() || !opts.Day.numeric() {
-		return seq.AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ', day).Add(')')
-	}
-
-	return seq.AddSeq(year).Add(' ', day)
 }

@@ -6,91 +6,95 @@ import (
 	"golang.org/x/text/language"
 )
 
+//nolint:cyclop
 func seqEraYear(locale language.Tag, opts Options) *symbols.Seq {
-	lang, script, region := locale.Raw()
+	lang, script, _ := locale.Raw()
+	region, regionConfidence := locale.Region()
 	seq := symbols.NewSeq(locale)
 	era := opts.Era.symbol()
-	year := seqYear(locale, opts.Year)
+	year := seqYear(locale, opts)
 
 	switch lang {
+	case cldr.TH, cldr.SHN:
+		if region == cldr.RegionTH {
+			seq.AddSeq(seqYear(locale, opts))
+		} else {
+			seq.Add(era, ' ').AddSeq(year)
+		}
+	case cldr.FA:
+		if region == cldr.RegionIR || region == cldr.RegionAF {
+			seq.Add(opts.Year.symbol(), ' ', era)
+		}
+	case cldr.CKB, cldr.LRC, cldr.MZN, cldr.PS:
+		if region == cldr.RegionIR || region == cldr.RegionAF {
+			seq.Add(era, ' ', opts.Year.symbol())
+		} else {
+			seq.Add(era, ' ').AddSeq(year)
+		}
+	case cldr.UZ:
+		if region == cldr.RegionAF && regionConfidence != language.Exact {
+			seq.AddSeq(year)
+		} else {
+			seq.Add(era, ' ').AddSeq(year)
+		}
 	case cldr.AGQ, cldr.AK, cldr.AS, cldr.ASA, cldr.AZ, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BGC, cldr.BHO, cldr.BM, cldr.BO,
-		cldr.BUA, cldr.CE, cldr.CGG, cldr.CKB, cldr.CSW, cldr.CV, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DZ, cldr.DYO,
+		cldr.BUA, cldr.CE, cldr.CGG, cldr.CSW, cldr.CV, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DZ, cldr.DYO,
 		cldr.EBU, cldr.EU, cldr.EWO, cldr.FUR, cldr.FY, cldr.GAA, cldr.GSW, cldr.GU, cldr.GUZ, cldr.GV, cldr.HA, cldr.HU,
 		cldr.IG, cldr.II, cldr.JMC, cldr.JGO, cldr.JV, cldr.KAB, cldr.KAM, cldr.KDE, cldr.KHQ, cldr.KI, cldr.KL, cldr.KLN,
 		cldr.KN, cldr.KO, cldr.KOK, cldr.KSB, cldr.KSF, cldr.KSH, cldr.KU, cldr.KW, cldr.LAG, cldr.LG, cldr.LIJ, cldr.LKT,
-		cldr.LMO, cldr.LN, cldr.LO, cldr.LRC, cldr.LV, cldr.LU, cldr.LUO, cldr.LUY, cldr.MAS, cldr.MER, cldr.MFE, cldr.MG,
+		cldr.LMO, cldr.LN, cldr.LO, cldr.LV, cldr.LU, cldr.LUO, cldr.LUY, cldr.MAS, cldr.MER, cldr.MFE, cldr.MG,
 		cldr.MGH, cldr.MGO, cldr.ML, cldr.MN, cldr.MNI, cldr.MR, cldr.MT, cldr.MUA, cldr.MY, cldr.NAQ, cldr.ND, cldr.NDS,
 		cldr.NE, cldr.NMG, cldr.NNH, cldr.NQO, cldr.NSO, cldr.NUS, cldr.NYN, cldr.OC, cldr.OM, cldr.OS, cldr.PA, cldr.PCM,
-		cldr.PMS, cldr.PRG, cldr.PS, cldr.QU, cldr.RAJ, cldr.RN, cldr.ROF, cldr.RWK, cldr.SAQ, cldr.SAT, cldr.SBP, cldr.SEH,
-		cldr.SES, cldr.SG, cldr.SHI, cldr.SHN, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TE, cldr.TEO, cldr.TK,
-		cldr.TN, cldr.TR, cldr.TWQ, cldr.TZM, cldr.UZ, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI,
+		cldr.PMS, cldr.PRG, cldr.QU, cldr.RAJ, cldr.RN, cldr.ROF, cldr.RWK, cldr.SAQ, cldr.SAT, cldr.SBP, cldr.SEH,
+		cldr.SES, cldr.SG, cldr.SHI, cldr.SI, cldr.SN, cldr.ST, cldr.SZL, cldr.TA, cldr.TE, cldr.TEO, cldr.TK,
+		cldr.TN, cldr.TR, cldr.TWQ, cldr.TZM, cldr.VAI, cldr.VMW, cldr.VUN, cldr.WAE, cldr.XOG, cldr.YAV, cldr.YI,
 		cldr.YO, cldr.ZA, cldr.ZGH, cldr.ZU:
-		return seq.Add(era, ' ').AddSeq(year)
+		seq.Add(era, ' ').AddSeq(year)
 	case cldr.KS:
 		if script == cldr.Deva {
-			return seq.Add(era, ' ').AddSeq(year)
-		}
-	case cldr.HI:
-		if script == cldr.Latn {
-			return seq.AddSeq(year).Add(' ', era)
+			seq.Add(era, ' ').AddSeq(year)
 		}
 	case cldr.SD:
 		if script != cldr.Deva {
-			return seq.Add(era, ' ').AddSeq(year)
+			seq.Add(era, ' ').AddSeq(year)
 		}
 	case cldr.FF:
 		if script != cldr.Adlm {
-			return seq.Add(era, ' ').AddSeq(year)
+			seq.Add(era, ' ').AddSeq(year)
 		}
 	case cldr.SE:
 		if region != cldr.RegionFI {
-			return seq.Add(era, ' ').AddSeq(year)
+			seq.Add(era, ' ').AddSeq(year)
 		}
 	case cldr.BE, cldr.RU:
-		return seq.AddSeq(year).Add(' ', symbols.Txt00, ' ', era)
+		seq.AddSeq(year).Add(' ', symbols.Txt00, ' ', era)
 	case cldr.KK:
 		if script == cldr.Arab {
-			return seq.Add(era, ' ').AddSeq(year)
+			seq.Add(era, ' ').AddSeq(year)
+		} else {
+			seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txtж, '.')
 		}
-
-		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txtж, '.')
 	case cldr.HY:
-		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txtթ, '.')
+		seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txtթ, '.')
 	case cldr.KY:
-		return seq.Add(era, ' ').AddSeq(year).Add('-', symbols.Txtж, '.')
+		seq.Add(era, ' ').AddSeq(year).Add('-', symbols.Txtж, '.')
 	case cldr.LT:
-		return seq.AddSeq(year).Add(' ', 'm', '.', ' ', era)
+		seq.AddSeq(year).Add(' ', 'm', '.', ' ', era)
 	case cldr.TT:
-		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txt05)
+		seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.Txt05)
 	case cldr.SAH:
-		return seq.AddSeq(year).Add(' ', symbols.Txtс, '.', ' ', era)
+		seq.AddSeq(year).Add(' ', symbols.Txtс, '.', ' ', era)
 	case cldr.JA, cldr.BRX, cldr.YUE, cldr.ZH:
-		return seq.Add(era).AddSeq(year)
+		seq.Add(era).AddSeq(year)
 	case cldr.BA:
-		return seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.TxtCyrillicShortI, '.')
+		seq.Add(era, ' ').AddSeq(year).Add(' ', symbols.TxtCyrillicShortI, '.')
 	case cldr.TOK, cldr.TYV, cldr.XH:
-		return seq.Add(era, ' ', opts.Year.symbol())
+		seq.Add(era, ' ', opts.Year.symbol())
 	}
 
-	return seq.AddSeq(year).Add(' ', era)
-}
-
-func seqEraYearPersian(locale language.Tag, opts Options) *symbols.Seq {
-	lang, _ := locale.Base()
-	seq := symbols.NewSeq(locale)
-	era := opts.Era.symbol()
-	year := opts.Year.symbol()
-
-	switch lang {
-	default:
-		seq.Add(year, ' ', era)
-	case cldr.CKB, cldr.LRC, cldr.MZN, cldr.PS, cldr.UZ:
-		seq.Add(era, ' ', year)
+	if seq.Empty() {
+		seq.AddSeq(year).Add(' ', era)
 	}
 
 	return seq
-}
-
-func seqEraYearBuddhist(locale language.Tag, opts Options) *symbols.Seq {
-	return seqYearBuddhist(locale, opts)
 }

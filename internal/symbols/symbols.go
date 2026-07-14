@@ -151,6 +151,11 @@ func NewSeq(locale language.Tag) *Seq {
 	return &Seq{locale: locale}
 }
 
+// Empty returns true if the sequence has no symbols.
+func (s *Seq) Empty() bool {
+	return len(s.symbols) == 0
+}
+
 // Add appends one or more [Symbol] to the [Seq].
 func (s *Seq) Add(symbol ...Symbol) *Seq {
 	s.symbols = append(s.symbols, symbol...)
