@@ -20,7 +20,7 @@ import (
 // and triggers special handling in some methods.
 type Digits [10]rune
 
-func (d Digits) appendTwoDigit(b []byte, number int) []byte {
+func (d *Digits) appendTwoDigit(b []byte, number int) []byte {
 	if d[0] == '0' {
 		if number < 10 { //nolint:mnd
 			//nolint:gosec // number is < 10, won't overflow
@@ -51,7 +51,7 @@ func (d Digits) appendTwoDigit(b []byte, number int) []byte {
 	return b
 }
 
-func (d Digits) appendNumeric(b []byte, number int) []byte {
+func (d *Digits) appendNumeric(b []byte, number int) []byte {
 	if d[0] == '0' {
 		if number < 10 { //nolint:mnd
 			//nolint:gosec // number is < 10, won't overflow
