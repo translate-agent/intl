@@ -62,14 +62,14 @@ func seqEraYearDay(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.UZ:
 		if region == cldr.RegionAF {
 			_, _, rawRegion := locale.Raw()
-			if rawRegion == cldr.RegionAF {
-				seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
-			} else {
+			if rawRegion != cldr.RegionAF {
 				seq.AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+
+				break
 			}
-		} else if script != cldr.Arab {
-			seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 		}
+
+		seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 	case cldr.FF:
 		if script != cldr.Adlm {
 			seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
