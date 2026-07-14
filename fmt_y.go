@@ -7,8 +7,8 @@ import (
 )
 
 func seqYear(locale language.Tag, opts Options) *symbols.Seq {
-	lang, _, _ := locale.Raw()
-	region, _ := locale.Region()
+	lang, _ := locale.Base()
+	region, regionConfidence := locale.Region()
 	seq := symbols.NewSeq(locale)
 	year := opts.Year.symbol()
 
@@ -40,13 +40,8 @@ func seqYear(locale language.Tag, opts Options) *symbols.Seq {
 			seq.Add(year)
 		}
 	case cldr.UZ:
-		if region == cldr.RegionAF {
-			_, _, rawRegion := locale.Raw()
-			if rawRegion == cldr.RegionAF {
-				seq.Add(year)
-			} else {
-				seq.Add(symbols.Symbol_GGGGG, ' ', year)
-			}
+		if region == cldr.RegionAF && regionConfidence != language.Exact {
+			seq.Add(symbols.Symbol_GGGGG, ' ', year)
 		} else {
 			seq.Add(year)
 		}

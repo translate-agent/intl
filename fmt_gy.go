@@ -8,8 +8,9 @@ import (
 
 //nolint:cyclop
 func seqEraYear(locale language.Tag, opts Options) *symbols.Seq {
-	lang, script, _ := locale.Raw()
-	region, _ := locale.Region()
+	lang, _ := locale.Base()
+	script, _ := locale.Script()
+	region, regionConfidence := locale.Region()
 	seq := symbols.NewSeq(locale)
 	era := opts.Era.symbol()
 	year := seqYear(locale, opts)
@@ -32,16 +33,11 @@ func seqEraYear(locale language.Tag, opts Options) *symbols.Seq {
 			seq.Add(era, ' ').AddSeq(year)
 		}
 	case cldr.UZ:
-		if region == cldr.RegionAF {
-			_, _, rawRegion := locale.Raw()
-			if rawRegion != cldr.RegionAF {
-				seq.AddSeq(year)
-
-				break
-			}
+		if region == cldr.RegionAF && regionConfidence != language.Exact {
+			seq.AddSeq(year)
+		} else {
+			seq.Add(era, ' ').AddSeq(year)
 		}
-
-		seq.Add(era, ' ').AddSeq(year)
 	case cldr.AGQ, cldr.AK, cldr.AS, cldr.ASA, cldr.AZ, cldr.BAS, cldr.BEM, cldr.BEZ, cldr.BGC, cldr.BHO, cldr.BM, cldr.BO,
 		cldr.BUA, cldr.CE, cldr.CGG, cldr.CSW, cldr.CV, cldr.DAV, cldr.DJE, cldr.DOI, cldr.DUA, cldr.DZ, cldr.DYO,
 		cldr.EBU, cldr.EU, cldr.EWO, cldr.FUR, cldr.FY, cldr.GAA, cldr.GSW, cldr.GU, cldr.GUZ, cldr.GV, cldr.HA, cldr.HU,

@@ -7,7 +7,7 @@ import (
 )
 
 func seqMonth(locale language.Tag, opt Month) *symbols.Seq {
-	lang, _, _ := locale.Raw()
+	lang, _ := locale.Base()
 	seq := symbols.NewSeq(locale)
 
 	switch lang {

@@ -8,8 +8,9 @@ import (
 
 //nolint:cyclop,gocognit
 func seqEraYearMonth(locale language.Tag, opts Options) *symbols.Seq {
-	lang, script, _ := locale.Raw()
-	region, _ := locale.Region()
+	lang, _ := locale.Base()
+	script, _ := locale.Script()
+	region, regionConfidence := locale.Region()
 	seq := symbols.NewSeq(locale)
 	era := opts.Era.symbol()
 	year := seqYear(locale, opts)
@@ -154,8 +155,7 @@ func seqEraYearMonth(locale language.Tag, opts Options) *symbols.Seq {
 	case cldr.UZ:
 		switch {
 		case region == cldr.RegionAF:
-			_, _, rawRegion := locale.Raw()
-			if rawRegion == cldr.RegionAF {
+			if regionConfidence == language.Exact {
 				seq.Add(era, ' ').AddSeq(year).Add('-', month)
 			} else {
 				seq.AddSeq(year).Add('-', month)

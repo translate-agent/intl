@@ -8,7 +8,8 @@ import (
 
 //nolint:gocognit,cyclop
 func seqMonthDay(locale language.Tag, opts Options) *symbols.Seq {
-	lang, script, _ := locale.Raw()
+	lang, _ := locale.Base()
+	script, _ := locale.Script()
 	region, _ := locale.Region()
 	seq := symbols.NewSeq(locale)
 	month := opts.Month.symbolFormat()

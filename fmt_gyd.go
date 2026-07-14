@@ -6,10 +6,10 @@ import (
 	"golang.org/x/text/language"
 )
 
-//nolint:cyclop
 func seqEraYearDay(locale language.Tag, opts Options) *symbols.Seq {
-	lang, script, _ := locale.Raw()
-	region, _ := locale.Region()
+	lang, _ := locale.Base()
+	script, _ := locale.Script()
+	region, regionConfidence := locale.Region()
 	seq := symbols.NewSeq(locale)
 	era := opts.Era.symbol()
 	year := seqYear(locale, opts)
@@ -60,16 +60,11 @@ func seqEraYearDay(locale language.Tag, opts Options) *symbols.Seq {
 		cldr.ZGH, cldr.ZU:
 		seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 	case cldr.UZ:
-		if region == cldr.RegionAF {
-			_, _, rawRegion := locale.Raw()
-			if rawRegion != cldr.RegionAF {
-				seq.AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
-
-				break
-			}
+		if region == cldr.RegionAF && regionConfidence != language.Exact {
+			seq.AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
+		} else {
+			seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 		}
-
-		seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
 	case cldr.FF:
 		if script != cldr.Adlm {
 			seq.Add(era, ' ').AddSeq(year).Add(' ', '(', symbols.DayUnit, ':', ' ').AddSeq(day).Add(')')
