@@ -12,6 +12,18 @@ import (
 	"sync"
 )
 
+var skipLocales = []string{
+	"en_Dsrt", "en_Dsrt_US", "en_Shaw", "en_Shaw_GB",
+	"mn_Mong", "mn_Mong_MN", "mn_Mong_CN",
+	"bm_Nkoo", "bm_Nkoo_ML",
+	"ha_Arab", "ha_Arab_NG", "ha_Arab_SD",
+	"ku_Arab", "ku_Arab_IQ", "ku_Arab_IR",
+	"mni_Mtei", "mni_Mtei_IN",
+	"ms_Arab", "ms_Arab_BN", "ms_Arab_MY",
+	"sat_Deva", "sat_Deva_IN",
+	"az_Arab", "az_Arab_IQ", "az_Arab_IR", "az_Arab_TR",
+}
+
 func DecodePath(dir string) (*CLDR, error) {
 	commonMain := os.DirFS(path.Join(dir, "common/main"))
 
@@ -87,9 +99,10 @@ func DecodePath(dir string) (*CLDR, error) {
 
 	for v := range cldr.ldml {
 		if v != "root" {
-			if v == "en_Dsrt" || v == "en_Dsrt_US" || v == "en_Shaw" || v == "en_Shaw_GB" || v == "mn_Mong" || v == "mn_Mong_MN" || v == "mn_Mong_CN" || v == "bm_Nkoo" || v == "bm_Nkoo_ML" || v == "ha_Arab" || v == "ha_Arab_NG" || v == "ha_Arab_SD" || v == "ku_Arab" || v == "ku_Arab_IQ" || v == "ku_Arab_IR" || v == "mni_Mtei" || v == "mni_Mtei_IN" || v == "ms_Arab" || v == "ms_Arab_BN" || v == "ms_Arab_MY" || v == "sat_Deva" || v == "sat_Deva_IN" || v == "az_Arab" || v == "az_Arab_IQ" || v == "az_Arab_IR" || v == "az_Arab_TR" {
+			if slices.Contains(skipLocales, v) {
 				continue
 			}
+
 			locales = append(locales, v)
 		}
 	}
@@ -130,54 +143,60 @@ func cleanLDML(ldml *LDML) {
 	}
 
 	dates := ldml.Dates
-	if dates == nil || dates.Calendars == nil {
+	if dates == nil {
 		return
 	}
 
-	for _, calendar := range dates.Calendars.Calendar {
-		if calendar.Months != nil {
-			for _, monthContext := range calendar.Months.MonthContext {
-				for _, monthWidth := range monthContext.MonthWidth {
-					monthWidth.Month = filter(monthWidth.Month, func(v *Month) bool {
-						return v.isContributedOrApproved()
-					})
-				}
-			}
+	if dates.Calendars != nil {
+		for _, calendar := range dates.Calendars.Calendar {
+			cleanCalendar(calendar)
 		}
+	}
 
-		if calendar.Days != nil {
-			for _, dayContext := range calendar.Days.DayContext {
-				for _, dayWidth := range dayContext.DayWidth {
-					dayWidth.Day = filter(dayWidth.Day, func(v *Weekday) bool {
-						return v.isContributedOrApproved()
-					})
-				}
-			}
-		}
+	if dates.Fields != nil {
+		dates.Fields.Field = filter(dates.Fields.Field, func(v *Field) bool {
+			return len(v.DisplayName) > 0 && v.DisplayName[0].isContributedOrApproved()
+		})
+	}
+}
 
-		if calendar.DateTimeFormats != nil && calendar.DateTimeFormats.AvailableFormats != nil {
-			calendar.DateTimeFormats.AvailableFormats.DateFormatItem = filter(
-				calendar.DateTimeFormats.AvailableFormats.DateFormatItem,
-				func(v *DateFormatItem) bool {
+func cleanCalendar(calendar *Calendar) {
+	if calendar.Months != nil {
+		for _, monthContext := range calendar.Months.MonthContext {
+			for _, monthWidth := range monthContext.MonthWidth {
+				monthWidth.Month = filter(monthWidth.Month, func(v *Month) bool {
 					return v.isContributedOrApproved()
-				},
-			)
-		}
-
-		if eras := calendar.Eras; eras != nil {
-			eras.EraAbbr = cleanEra(eras.EraAbbr)
-			eras.EraNames = cleanEra(eras.EraNames)
-			eras.EraNarrow = cleanEra(eras.EraNarrow)
-
-			if eras.EraAbbr == nil && eras.EraNames == nil && eras.EraNarrow == nil {
-				calendar.Eras = nil
+				})
 			}
 		}
+	}
 
-		if dates.Fields != nil {
-			dates.Fields.Field = filter(dates.Fields.Field, func(v *Field) bool {
-				return len(v.DisplayName) > 0 && v.DisplayName[0].isContributedOrApproved()
-			})
+	if calendar.Days != nil {
+		for _, dayContext := range calendar.Days.DayContext {
+			for _, dayWidth := range dayContext.DayWidth {
+				dayWidth.Day = filter(dayWidth.Day, func(v *Weekday) bool {
+					return v.isContributedOrApproved()
+				})
+			}
+		}
+	}
+
+	if calendar.DateTimeFormats != nil && calendar.DateTimeFormats.AvailableFormats != nil {
+		calendar.DateTimeFormats.AvailableFormats.DateFormatItem = filter(
+			calendar.DateTimeFormats.AvailableFormats.DateFormatItem,
+			func(v *DateFormatItem) bool {
+				return v.isContributedOrApproved()
+			},
+		)
+	}
+
+	if eras := calendar.Eras; eras != nil {
+		eras.EraAbbr = cleanEra(eras.EraAbbr)
+		eras.EraNames = cleanEra(eras.EraNames)
+		eras.EraNarrow = cleanEra(eras.EraNarrow)
+
+		if eras.EraAbbr == nil && eras.EraNames == nil && eras.EraNarrow == nil {
+			calendar.Eras = nil
 		}
 	}
 }

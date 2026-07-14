@@ -23,6 +23,17 @@ import (
 //go:embed cldr_data.go.tmpl
 var cldrDataTemplate string
 
+var allowedParentRootLocales = []string{
+	"sd_Deva", "sr_Latn", "bs_Cyrl", "zh_Hant", "uz_Arab", "pa_Arab", "az_Cyrl", "uz_Cyrl",
+	"kxv_Deva", "kxv_Orya", "kxv_Telu", "en_Dsrt", "en_Shaw", "zh_Hans",
+	"az_Arab", "bal_Latn", "blt_Latn", "bm_Nkoo", "byn_Latn", "cu_Glag", "dje_Arab",
+	"dyo_Arab", "ff_Adlm", "ff_Arab", "ha_Arab", "iu_Latn", "kaa_Latn", "kk_Arab",
+	"kok_Latn", "ks_Deva", "ku_Arab", "ky_Arab", "ky_Latn", "ml_Arab", "mn_Mong",
+	"mni_Mtei", "ms_Arab", "sat_Deva", "sd_Khoj", "sd_Sind", "shi_Latn", "so_Arab",
+	"sw_Arab", "suz_Sunu", "tg_Arab", "ug_Cyrl", "vai_Latn", "wo_Arab", "yo_Arab",
+	"yue_Hans",
+}
+
 // LocaleLookup maps a shared property (the key) to a list of locales that share that property.
 type LocaleLookup map[string][]string
 
@@ -186,16 +197,7 @@ func (g *Generator) merge(ctx context.Context, log *slog.Logger) {
 		for _, parentLocale := range parentLocales.ParentLocale {
 			for loc := range strings.FieldsSeq(parentLocale.Locales) {
 				if parentLocale.Parent == "root" {
-					if !slices.Contains([]string{
-						"sd_Deva", "sr_Latn", "bs_Cyrl", "zh_Hant", "uz_Arab", "pa_Arab", "az_Cyrl", "uz_Cyrl",
-						"kxv_Deva", "kxv_Orya", "kxv_Telu", "en_Dsrt", "en_Shaw", "zh_Hans",
-						"az_Arab", "bal_Latn", "blt_Latn", "bm_Nkoo", "byn_Latn", "cu_Glag", "dje_Arab",
-						"dyo_Arab", "ff_Adlm", "ff_Arab", "ha_Arab", "iu_Latn", "kaa_Latn", "kk_Arab",
-						"kok_Latn", "ks_Deva", "ku_Arab", "ky_Arab", "ky_Latn", "ml_Arab", "mn_Mong",
-						"mni_Mtei", "ms_Arab", "sat_Deva", "sd_Khoj", "sd_Sind", "shi_Latn", "so_Arab",
-						"sw_Arab", "suz_Sunu", "tg_Arab", "ug_Cyrl", "vai_Latn", "wo_Arab", "yo_Arab",
-						"yue_Hans",
-					}, loc) {
+					if !slices.Contains(allowedParentRootLocales, loc) {
 						continue
 					}
 				}

@@ -128,19 +128,23 @@ func resolveWeekdayIndex(indexes weekdayIndexes, context, width string) int {
 
 func WeekdayNames(locale string, context, width string) CalendarWeekdays {
 	indexes := findWeekdayIndexes(locale)
+
 	v := resolveWeekdayIndex(indexes, context, width)
 	if v > 0 {
 		return CalendarWeekdayNames[v]
 	}
+
 	return CalendarWeekdays{}
 }
 
 func WeekdayNamesPtr(locale string, context, width string) *CalendarWeekdays {
 	indexes := findWeekdayIndexes(locale)
+
 	v := resolveWeekdayIndex(indexes, context, width)
 	if v > 0 {
 		return &CalendarWeekdayNames[v]
 	}
+
 	return &CalendarWeekdayNames[0]
 }
 
@@ -153,27 +157,42 @@ type fieldsEntry struct {
 	fields Fields
 }
 
-func findFields(locale string) (Fields, bool) {
+func findLookup[T any](locale string, list []T, getLocale func(*T) string) (*T, bool) {
 	for {
-		low, high := 0, len(fieldsLookup)-1
+		low, high := 0, len(list)-1
+
 		for low <= high {
-			mid := int(uint(low+high) >> 1)
-			midVal := &fieldsLookup[mid]
+			mid := low + (high-low)/2 //nolint:mnd
+			midVal := &list[mid]
+
+			loc := getLocale(midVal)
+
 			switch {
-			case midVal.locale < locale:
+			case loc < locale:
 				low = mid + 1
-			case midVal.locale > locale:
+			case loc > locale:
 				high = mid - 1
 			default:
-				return midVal.fields, true
+				return midVal, true
 			}
 		}
+
 		idx := strings.LastIndexAny(locale, "-_")
 		if idx == -1 {
 			break
 		}
+
 		locale = locale[:idx]
 	}
+
+	return nil, false
+}
+
+func findFields(locale string) (Fields, bool) {
+	if entry, ok := findLookup(locale, fieldsLookup[:], func(e *fieldsEntry) string { return e.locale }); ok {
+		return entry.fields, true
+	}
+
 	return Fields{}, false
 }
 
@@ -187,26 +206,10 @@ type eraEntry struct {
 }
 
 func findEra(locale string) (Era, bool) {
-	for {
-		low, high := 0, len(eraLookup)-1
-		for low <= high {
-			mid := int(uint(low+high) >> 1)
-			midVal := &eraLookup[mid]
-			switch {
-			case midVal.locale < locale:
-				low = mid + 1
-			case midVal.locale > locale:
-				high = mid - 1
-			default:
-				return midVal.era, true
-			}
-		}
-		idx := strings.LastIndexAny(locale, "-_")
-		if idx == -1 {
-			break
-		}
-		locale = locale[:idx]
+	if entry, ok := findLookup(locale, eraLookup[:], func(e *eraEntry) string { return e.locale }); ok {
+		return entry.era, true
 	}
+
 	return Era{}, false
 }
 
@@ -229,26 +232,10 @@ type monthEntry struct {
 }
 
 func findMonthIndexes(locale string) monthIndexes {
-	for {
-		low, high := 0, len(monthLookup)-1
-		for low <= high {
-			mid := int(uint(low+high) >> 1)
-			midVal := &monthLookup[mid]
-			switch {
-			case midVal.locale < locale:
-				low = mid + 1
-			case midVal.locale > locale:
-				high = mid - 1
-			default:
-				return midVal.indexes
-			}
-		}
-		idx := strings.LastIndexAny(locale, "-_")
-		if idx == -1 {
-			break
-		}
-		locale = locale[:idx]
+	if entry, ok := findLookup(locale, monthLookup[:], func(e *monthEntry) string { return e.locale }); ok {
+		return entry.indexes
 	}
+
 	return monthIndexes{}
 }
 
@@ -273,26 +260,10 @@ type weekdayEntry struct {
 }
 
 func findWeekdayIndexes(locale string) weekdayIndexes {
-	for {
-		low, high := 0, len(weekdayLookup)-1
-		for low <= high {
-			mid := int(uint(low+high) >> 1)
-			midVal := &weekdayLookup[mid]
-			switch {
-			case midVal.locale < locale:
-				low = mid + 1
-			case midVal.locale > locale:
-				high = mid - 1
-			default:
-				return midVal.indexes
-			}
-		}
-		idx := strings.LastIndexAny(locale, "-_")
-		if idx == -1 {
-			break
-		}
-		locale = locale[:idx]
+	if entry, ok := findLookup(locale, weekdayLookup[:], func(e *weekdayEntry) string { return e.locale }); ok {
+		return entry.indexes
 	}
+
 	return weekdayIndexes{}
 }
 

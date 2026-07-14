@@ -14,17 +14,18 @@ Go version 1.24+.
 
 | Option                 | Supported |
 | ---------------------- | :-------: |
-| era                    |    ✅︎    |
-| year                   |    ✅︎    |
-| month                  |    ✅︎    |
-| day                    |    ✅︎    |
-| hour                   |    ❌     |
-| minute                 |    ❌     |
-| second                 |    ❌     |
-| fractionalSecondDigits |    ❌     |
-| weekday                |    ❌     |
-| hourCycle              |    ❌     |
-| timeZoneName           |    ❌     |
+| era                    |     ✅︎    |
+| year                   |     ✅︎    |
+| month                  |     ✅︎    |
+| day                    |     ✅︎    |
+| weekday (standalone)   |     ✅︎    |
+| weekday (format)       |     ❌    |
+| hour                   |     ❌    |
+| minute                 |     ❌    |
+| second                 |     ❌    |
+| fractionalSecondDigits |     ❌    |
+| hourCycle              |     ❌    |
+| timeZoneName           |     ❌    |
 
 # Development
 
