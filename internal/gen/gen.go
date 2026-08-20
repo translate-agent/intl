@@ -886,7 +886,7 @@ func (g *Generator) fields() Fields {
 
 	// remove the entries if the language has the same values
 	for k, v := range fields {
-		lang := strings.Split(k, "-")[0]
+		lang, _, _ := strings.Cut(k, "-")
 
 		if k != lang {
 			continue
