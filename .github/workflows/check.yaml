@@ -7,24 +7,24 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   check:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     strategy:
       matrix:
-        go-version: ['1.24', '1.25', '1.26']
+        go-version: ['1.25', '1.26', '1.27']
       fail-fast: false
-    env:
-      FORCE_COLOR: 1
     steps:
       - uses: EarthBuild/actions-setup@f4d20223e70dbb43b5fc08c4d857ab9cf0dbf3ae # v2.2.0
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Go ${{ matrix.go-version }}
         run: echo "golang_version=${{ matrix.go-version }}" > .arg
       - name: Generate cldr.go
-        if: ${{ matrix.go-version == '1.26' }}
+        if: ${{ matrix.go-version == '1.27' }}
         run: |
           earth --strict +generate
           if ! git diff --quiet internal/cldr/data.go; then
@@ -33,8 +33,7 @@ jobs:
             exit 1
           fi
       - name: Lint
-        if: ${{ matrix.go-version == '1.26' }}
+        if: ${{ matrix.go-version == '1.27' }}
         run: earth --ci +lint
       - name: Test Unit
-        if: ${{ matrix.go-version == '1.26' }}
         run: earth --ci +test

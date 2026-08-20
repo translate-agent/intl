@@ -1,6 +1,6 @@
 VERSION 0.8
 # renovate: datasource=docker packageName=golang
-ARG go_version=1.26.6-alpine3.24
+ARG go_version=1.27.0-alpine3.24
 FROM golang:$go_version
 WORKDIR /intl
 
@@ -75,7 +75,7 @@ test:
 # lint runs all linters for golang
 lint:
   # renovate: datasource=docker packageName=golangci/golangci-lint
-  ARG golangci_lint_version=2.11.4
+  ARG golangci_lint_version=2.13.0
   FROM golangci/golangci-lint:v$golangci_lint_version-alpine
   WORKDIR /intl
   COPY go.mod go.sum *.go .golangci.yml .
