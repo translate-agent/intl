@@ -12,7 +12,7 @@ init:
 
 node-base:
   # renovate: datasource=docker packageName=node
-  ARG node_version=26.7.0
+  ARG node_version=26.8.1
   FROM node:$node_version-alpine
   # renovate: datasource=npm packageName=npm
   ARG npm_version=12.0.2
